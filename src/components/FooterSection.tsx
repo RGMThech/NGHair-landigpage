@@ -11,7 +11,7 @@ const FooterSection = () => {
               Transformando vidas através da beleza desde 2021. Venha viver essa experiência.
             </p>
             <div className="flex gap-4 mt-6">
-              <a href="#" className="text-cream/50 hover:text-accent transition-colors" aria-label="Instagram">
+              <a href="https://www.instagram.com/nghair01/" className="text-cream/50 hover:text-accent transition-colors" aria-label="Instagram">
                 <Instagram className="h-5 w-5" />
               </a>
             </div>
