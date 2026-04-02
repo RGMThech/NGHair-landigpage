@@ -76,7 +76,7 @@ const Navbar = () => {
             </a>
           ))}
           <a
-            href="https://wa.me/5511947962201"
+            href="https://www.trinks.com/nghair/framebusca?rwg_token=AFd1xnGhS4dEqFta6HGjCtw2CLGeW_7ZBFBo3-oeBEQ0d7Wwd8yXl867b1PBWoqP6eLxRYFb99odxSXP2hV3mESCDN4M4YUtFA%3D%3D"
             target="_blank"
             rel="noopener noreferrer"
             className="rounded-full bg-primary px-6 py-3 font-body text-xs font-semibold text-primary-foreground uppercase tracking-wider text-center"
