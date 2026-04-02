@@ -6,9 +6,9 @@ const FooterSection = () => {
       <div className="container max-w-6xl">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12 mb-12">
           <div>
-            <h3 className="font-display text-2xl font-medium text-cream mb-4">Belezza</h3>
+            <h3 className="font-display text-2xl font-medium text-cream mb-4">NGHair</h3>
             <p className="font-body text-sm text-cream/60 leading-relaxed">
-              Transformando vidas através da beleza desde 2015. Venha viver essa experiência.
+              Transformando vidas através da beleza desde 2021. Venha viver essa experiência.
             </p>
             <div className="flex gap-4 mt-6">
               <a href="#" className="text-cream/50 hover:text-accent transition-colors" aria-label="Instagram">
@@ -43,7 +43,7 @@ const FooterSection = () => {
           </div>
         </div>
         <div className="border-t border-cream/10 pt-8 text-center">
-          <p className="font-body text-xs text-cream/40">© 2026 Belezza. Todos os direitos reservados.</p>
+          <p className="font-body text-xs text-cream/40">© 2026 NGHair. Todos os direitos reservados.</p>
         </div>
       </div>
     </footer>
