@@ -16,24 +16,31 @@ Deno.serve(async (req) => {
       throw new Error("GOOGLE_PLACES_API_KEY not configured");
     }
 
-    const url = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${PLACE_ID}&fields=reviews,rating,user_ratings_total&language=pt-BR&key=${apiKey}`;
+    // Using Places API (New)
+    const url = `https://places.googleapis.com/v1/places/${PLACE_ID}?fields=rating,userRatingCount,reviews&languageCode=pt-BR`;
 
-    const response = await fetch(url);
+    const response = await fetch(url, {
+      headers: {
+        "X-Goog-Api-Key": apiKey,
+        "X-Goog-FieldMask": "rating,userRatingCount,reviews",
+      },
+    });
+
     const data = await response.json();
 
-    if (data.status !== "OK") {
-      throw new Error(`Google API error: ${data.status} - ${data.error_message || ""}`);
+    if (!response.ok) {
+      throw new Error(`Google API error: ${response.status} - ${JSON.stringify(data)}`);
     }
 
     const result = {
-      rating: data.result?.rating,
-      totalReviews: data.result?.user_ratings_total,
-      reviews: (data.result?.reviews || []).map((r: any) => ({
-        name: r.author_name,
-        text: r.text,
+      rating: data.rating,
+      totalReviews: data.userRatingCount,
+      reviews: (data.reviews || []).map((r: any) => ({
+        name: r.authorAttribution?.displayName || "Anônimo",
+        text: r.text?.text || r.originalText?.text || "",
         rating: r.rating,
-        time: r.relative_time_description,
-        profilePhoto: r.profile_photo_url,
+        time: r.relativePublishTimeDescription || "",
+        profilePhoto: r.authorAttribution?.photoUri || "",
       })),
     };
 
