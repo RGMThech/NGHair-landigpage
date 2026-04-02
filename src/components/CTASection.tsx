@@ -24,7 +24,7 @@ const CTASection = () => {
           Entre em contato pelo WhatsApp e agende seu horário. Nossa equipe está pronta para cuidar de você.
         </p>
         <a
-          href="https://wa.me/5511999999999?text=Olá! Gostaria de agendar um horário"
+          href="https://wa.me/5511947962201?text=Olá! Gostaria de agendar um horário"
           target="_blank"
           rel="noopener noreferrer"
           className="inline-flex items-center gap-3 rounded-full bg-whatsapp px-10 py-5 font-body text-base font-semibold text-cream uppercase tracking-wider transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-whatsapp/30"

@@ -28,7 +28,7 @@ const HeroSection = () => {
         </p>
         <div className="animate-fade-up-delay-3 mt-10 flex flex-col sm:flex-row gap-4">
           <a
-            href="https://wa.me/5511999999999?text=Olá! Gostaria de agendar um horário"
+            href="https://wa.me/5511947962201?text=Olá! Gostaria de agendar um horário"
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-3 rounded-full bg-whatsapp px-8 py-4 font-body text-sm font-semibold text-cream uppercase tracking-wider transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-whatsapp/30"
