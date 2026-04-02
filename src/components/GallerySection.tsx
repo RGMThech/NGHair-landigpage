@@ -1,18 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselPrevious,
-  CarouselNext,
-} from "@/components/ui/carousel";
-
-// Fallback images (used when DB is empty)
 import galleryNails from "@/assets/gallery-nails.jpg";
 import galleryMakeup from "@/assets/gallery-makeup.jpg";
 import galleryProducts from "@/assets/gallery-products.jpg";
 import heroSalon from "@/assets/hero-salon.jpg";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 const fallbackImages = [
   { image_url: heroSalon, alt_text: "Interior do salão" },
@@ -23,10 +15,26 @@ const fallbackImages = [
 
 type GalleryImage = { id: string; image_url: string; alt_text: string };
 
+// Layout pattern: repeats every 5 images
+// Page 1: 1 large (2x2), 2 small, 1 wide (2x1)
+// Page 2: same pattern shifted
+const spanPattern = [
+  "md:col-span-2 md:row-span-2",
+  "",
+  "",
+  "md:col-span-2",
+  "",
+];
+
 const GallerySection = () => {
-  const [images, setImages] = useState<GalleryImage[]>([]);
+  const [allImages, setAllImages] = useState<GalleryImage[]>([]);
+  const [page, setPage] = useState(0);
   const [visible, setVisible] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+
+  const PAGE_SIZE = 5;
+  const totalPages = Math.max(1, Math.ceil(allImages.length / PAGE_SIZE));
+  const currentImages = allImages.slice(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -46,13 +54,16 @@ const GallerySection = () => {
         .order("display_order", { ascending: true });
 
       if (data && data.length > 0) {
-        setImages(data);
+        setAllImages(data);
       } else {
-        setImages(fallbackImages.map((img, i) => ({ ...img, id: `fallback-${i}` })));
+        setAllImages(fallbackImages.map((img, i) => ({ ...img, id: `fallback-${i}` })));
       }
     };
     fetchImages();
   }, []);
+
+  const prev = () => setPage((p) => (p - 1 + totalPages) % totalPages);
+  const next = () => setPage((p) => (p + 1) % totalPages);
 
   return (
     <section className="py-24 lg:py-32 bg-secondary/30">
@@ -66,36 +77,56 @@ const GallerySection = () => {
           </h2>
         </div>
 
-        <div className={`${visible ? "animate-fade-up" : "opacity-0"}`}>
-          <Carousel
-            opts={{ align: "start", loop: true }}
-            className="w-full"
-          >
-            <CarouselContent className="-ml-4">
-              {images.map((img) => (
-                <CarouselItem key={img.id} className="pl-4 basis-full md:basis-1/2 lg:basis-1/3">
-                  <div className="overflow-hidden rounded-2xl">
-                    <img
-                      src={img.image_url}
-                      alt={img.alt_text}
-                      loading="lazy"
-                      className="h-80 w-full object-cover image-zoom"
-                    />
-                  </div>
-                </CarouselItem>
-              ))}
-            </CarouselContent>
-            <CarouselPrevious className="hidden md:flex -left-12" />
-            <CarouselNext className="hidden md:flex -right-12" />
-          </Carousel>
-
-          {/* Mobile dots indicator */}
-          <div className="flex justify-center gap-2 mt-6 md:hidden">
-            {images.slice(0, 5).map((_, i) => (
-              <div key={i} className="w-2 h-2 rounded-full bg-primary/30" />
-            ))}
-          </div>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          {currentImages.map((img, i) => (
+            <div
+              key={img.id}
+              className={`overflow-hidden rounded-2xl ${spanPattern[i % spanPattern.length]} ${
+                visible ? "animate-scale-in" : "opacity-0"
+              }`}
+              style={{ animationDelay: `${i * 0.15}s` }}
+            >
+              <img
+                src={img.image_url}
+                alt={img.alt_text}
+                loading="lazy"
+                className="h-full w-full object-cover image-zoom aspect-square"
+              />
+            </div>
+          ))}
         </div>
+
+        {/* Navigation */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-center gap-4 mt-8">
+            <button
+              onClick={prev}
+              className="p-2 rounded-full border border-border hover:bg-accent transition-colors"
+              aria-label="Anterior"
+            >
+              <ChevronLeft className="h-5 w-5 text-foreground" />
+            </button>
+            <div className="flex gap-2">
+              {Array.from({ length: totalPages }).map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => setPage(i)}
+                  className={`w-2.5 h-2.5 rounded-full transition-colors ${
+                    i === page ? "bg-primary" : "bg-primary/30"
+                  }`}
+                  aria-label={`Página ${i + 1}`}
+                />
+              ))}
+            </div>
+            <button
+              onClick={next}
+              className="p-2 rounded-full border border-border hover:bg-accent transition-colors"
+              aria-label="Próximo"
+            >
+              <ChevronRight className="h-5 w-5 text-foreground" />
+            </button>
+          </div>
+        )}
       </div>
     </section>
   );
