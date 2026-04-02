@@ -21,11 +21,11 @@ const FooterSection = () => {
             <div className="space-y-3">
               <div className="flex items-center gap-3 text-cream/60">
                 <Phone className="h-4 w-4 text-accent" />
-                <span className="font-body text-sm">(11) 99999-9999</span>
+                <span className="font-body text-sm">(11) 94796-2201</span>
               </div>
               <div className="flex items-center gap-3 text-cream/60">
                 <MapPin className="h-4 w-4 text-accent" />
-                <span className="font-body text-sm">Rua da Beleza, 123 - São Paulo</span>
+                <span className="font-body text-sm">Rua João Alvares Soares, 1292 - São Paulo</span>
               </div>
             </div>
           </div>
