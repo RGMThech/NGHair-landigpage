@@ -6,25 +6,25 @@ const services = [
     icon: Scissors,
     title: "Corte & Styling",
     description: "Cortes modernos e clássicos com os melhores profissionais do mercado",
-    price: "A partir de R$ 80",
+    price: "",
   },
   {
     icon: Palette,
     title: "Coloração",
     description: "Técnicas exclusivas de coloração, mechas e balayage para realçar sua beleza",
-    price: "A partir de R$ 150",
+    price: "",
   },
   {
     icon: Sparkles,
     title: "Tratamentos Capilares",
     description: "Hidratação profunda, reconstrução e selagem para cabelos saudáveis e brilhantes",
-    price: "A partir de R$ 120",
+    price: "",
   },
   {
     icon: Heart,
     title: "Manicure & Pedicure",
     description: "Unhas perfeitas com esmaltação em gel, nail art e cuidados completos",
-    price: "A partir de R$ 60",
+    price: "",
   },
 ];
 
