@@ -49,6 +49,14 @@ const HeroSection = () => {
             </svg>
             Siga no Instagram
           </a>
+          <a
+            href="https://www.trinks.com/nghair/framebusca?rwg_token=AFd1xnGhS4dEqFta6HGjCtw2CLGeW_7ZBFBo3-oeBEQ0d7Wwd8yXl867b1PBWoqP6eLxRYFb99odxSXP2hV3mESCDN4M4YUtFA%3D%3D"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-3 rounded-full bg-primary px-8 py-4 font-body text-sm font-semibold text-primary-foreground uppercase tracking-wider transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-primary/30"
+          >
+            Agendar
+          </a>
         </div>
       </div>
 
