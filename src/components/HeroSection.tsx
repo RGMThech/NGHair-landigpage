@@ -1,3 +1,4 @@
+import { CalendarCheck } from "lucide-react";
 import heroImage from "@/assets/hero-salon.jpg";
 
 const HeroSection = () => {
@@ -33,6 +34,7 @@ const HeroSection = () => {
             rel="noopener noreferrer"
             className="inline-flex items-center gap-3 rounded-full bg-primary px-8 py-4 font-body text-sm font-semibold text-primary-foreground uppercase tracking-wider transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-primary/30"
           >
+            <CalendarCheck className="h-5 w-5" />
             Agendar
           </a>          
           <a
