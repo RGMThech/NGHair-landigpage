@@ -41,6 +41,42 @@ export type Database = {
         }
         Relationships: []
       }
+      google_reviews: {
+        Row: {
+          author_name: string
+          created_at: string
+          google_review_id: string | null
+          id: string
+          profile_photo_url: string | null
+          rating: number
+          relative_time: string | null
+          review_text: string
+          updated_at: string
+        }
+        Insert: {
+          author_name: string
+          created_at?: string
+          google_review_id?: string | null
+          id?: string
+          profile_photo_url?: string | null
+          rating: number
+          relative_time?: string | null
+          review_text?: string
+          updated_at?: string
+        }
+        Update: {
+          author_name?: string
+          created_at?: string
+          google_review_id?: string | null
+          id?: string
+          profile_photo_url?: string | null
+          rating?: number
+          relative_time?: string | null
+          review_text?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
