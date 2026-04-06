@@ -2,7 +2,6 @@ import { Star, ChevronLeft, ChevronRight } from "lucide-react";
 import { useEffect, useRef, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import useEmblaCarousel from "embla-carousel-react";
-import Autoplay from "embla-carousel-autoplay";
 
 interface GoogleReview {
   name: string;
@@ -45,8 +44,7 @@ const TestimonialsSection = () => {
   const sectionRef = useRef<HTMLDivElement>(null);
 
   const [emblaRef, emblaApi] = useEmblaCarousel(
-    { loop: true, align: "start", slidesToScroll: 1 },
-    [Autoplay({ delay: 5000, stopOnInteraction: true })]
+    { loop: true, align: "start", slidesToScroll: 1 }
   );
 
   const [canScrollPrev, setCanScrollPrev] = useState(false);
