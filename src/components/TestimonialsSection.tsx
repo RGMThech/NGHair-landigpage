@@ -44,8 +44,7 @@ const TestimonialsSection = () => {
   const sectionRef = useRef<HTMLDivElement>(null);
 
   const [emblaRef, emblaApi] = useEmblaCarousel(
-    { loop: true, align: "start", slidesToScroll: 1 },
-    [Autoplay({ delay: 5000, stopOnInteraction: true })]
+    { loop: true, align: "start", slidesToScroll: 1 }
   );
 
   const [canScrollPrev, setCanScrollPrev] = useState(false);
