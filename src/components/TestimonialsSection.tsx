@@ -1,7 +1,6 @@
-import { Star, ChevronLeft, ChevronRight } from "lucide-react";
-import { useEffect, useRef, useState, useCallback } from "react";
+import { Star } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import useEmblaCarousel from "embla-carousel-react";
 
 interface GoogleReview {
   name: string;
@@ -35,43 +34,28 @@ const fallbackTestimonials: GoogleReview[] = [
   },
 ];
 
+// Layout pattern matching the gallery: 1 large, 2 small, 1 wide, 1 small
+const spanPattern = [
+  "md:col-span-2 md:row-span-2",
+  "",
+  "",
+  "md:col-span-2",
+  "",
+];
+
 const TestimonialsSection = () => {
   const [visible, setVisible] = useState(false);
   const [reviews, setReviews] = useState<GoogleReview[]>([]);
   const [overallRating, setOverallRating] = useState<number | null>(null);
   const [totalReviews, setTotalReviews] = useState<number | null>(null);
-  const [loading, setLoading] = useState(true);
-  const sectionRef = useRef<HTMLDivElement>(null);
-
-  const [emblaRef, emblaApi] = useEmblaCarousel(
-    { loop: true, align: "start", slidesToScroll: 1 }
-  );
-
-  const [canScrollPrev, setCanScrollPrev] = useState(false);
-  const [canScrollNext, setCanScrollNext] = useState(false);
-
-  const onSelect = useCallback(() => {
-    if (!emblaApi) return;
-    setCanScrollPrev(emblaApi.canScrollPrev());
-    setCanScrollNext(emblaApi.canScrollNext());
-  }, [emblaApi]);
-
-  useEffect(() => {
-    if (!emblaApi) return;
-    onSelect();
-    emblaApi.on("select", onSelect);
-    emblaApi.on("reInit", onSelect);
-    return () => {
-      emblaApi.off("select", onSelect);
-    };
-  }, [emblaApi, onSelect]);
+  const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => { if (entry.isIntersecting) setVisible(true); },
       { threshold: 0.2 }
     );
-    if (sectionRef.current) observer.observe(sectionRef.current);
+    if (ref.current) observer.observe(ref.current);
     return () => observer.disconnect();
   }, []);
 
@@ -90,8 +74,6 @@ const TestimonialsSection = () => {
       } catch (err) {
         console.error("Failed to fetch Google reviews:", err);
         setReviews(fallbackTestimonials);
-      } finally {
-        setLoading(false);
       }
     };
     fetchReviews();
@@ -101,7 +83,7 @@ const TestimonialsSection = () => {
 
   return (
     <section className="py-24 lg:py-32 bg-background">
-      <div className="container max-w-6xl" ref={sectionRef}>
+      <div className="container max-w-6xl" ref={ref}>
         <div className="text-center mb-16">
           <p className="font-body text-xs uppercase tracking-[0.3em] text-muted-foreground mb-4">
             Depoimentos
@@ -125,64 +107,48 @@ const TestimonialsSection = () => {
           )}
         </div>
 
-        {/* Carousel */}
-        <div className={`relative ${visible ? "animate-fade-up" : "opacity-0"}`}>
-          <div className="overflow-hidden" ref={emblaRef}>
-            <div className="flex -ml-4">
-              {displayReviews.map((t, i) => (
-                <div
-                  key={`${t.name}-${i}`}
-                  className="min-w-0 shrink-0 grow-0 basis-full md:basis-1/2 lg:basis-1/3 pl-4"
-                >
-                  <div className="rounded-2xl bg-card p-8 border border-border/50 h-full flex flex-col">
-                    <div className="flex gap-1 mb-4">
-                      {Array.from({ length: 5 }).map((_, j) => (
-                        <Star
-                          key={j}
-                          className={`h-4 w-4 ${j < t.rating ? "fill-accent text-accent" : "text-muted-foreground/30"}`}
-                        />
-                      ))}
-                    </div>
-                    <p className="font-body text-foreground/80 leading-relaxed mb-6 italic flex-1">"{t.text}"</p>
-                    <div className="flex items-center gap-3">
-                      {t.profilePhoto && (
-                        <img
-                          src={t.profilePhoto}
-                          alt={t.name}
-                          className="h-10 w-10 rounded-full object-cover"
-                          referrerPolicy="no-referrer"
-                        />
-                      )}
-                      <div>
-                        <p className="font-display text-base font-medium text-foreground">{t.name}</p>
-                        {t.time && (
-                          <p className="font-body text-xs text-muted-foreground mt-1">{t.time}</p>
-                        )}
-                      </div>
-                    </div>
-                  </div>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          {displayReviews.map((t, i) => (
+            <div
+              key={`${t.name}-${i}`}
+              className={`rounded-2xl bg-card p-8 border border-border/50 flex flex-col justify-between ${spanPattern[i % spanPattern.length]} ${
+                visible ? "animate-scale-in" : "opacity-0"
+              }`}
+              style={{ animationDelay: `${i * 0.15}s` }}
+            >
+              <div>
+                <div className="flex gap-1 mb-4">
+                  {Array.from({ length: 5 }).map((_, j) => (
+                    <Star
+                      key={j}
+                      className={`h-4 w-4 ${j < t.rating ? "fill-accent text-accent" : "text-muted-foreground/30"}`}
+                    />
+                  ))}
                 </div>
-              ))}
+                <p className={`font-body text-foreground/80 leading-relaxed mb-6 italic ${
+                  spanPattern[i % spanPattern.length].includes("row-span-2") ? "text-lg" : "text-sm"
+                }`}>
+                  "{t.text}"
+                </p>
+              </div>
+              <div className="flex items-center gap-3">
+                {t.profilePhoto && (
+                  <img
+                    src={t.profilePhoto}
+                    alt={t.name}
+                    className="h-10 w-10 rounded-full object-cover"
+                    referrerPolicy="no-referrer"
+                  />
+                )}
+                <div>
+                  <p className="font-display text-base font-medium text-foreground">{t.name}</p>
+                  {t.time && (
+                    <p className="font-body text-xs text-muted-foreground mt-1">{t.time}</p>
+                  )}
+                </div>
+              </div>
             </div>
-          </div>
-
-          {/* Navigation buttons */}
-          <button
-            onClick={() => emblaApi?.scrollPrev()}
-            disabled={!canScrollPrev}
-            className="absolute -left-4 lg:-left-12 top-1/2 -translate-y-1/2 h-10 w-10 rounded-full bg-card border border-border/50 flex items-center justify-center text-foreground hover:bg-accent/10 transition-colors disabled:opacity-30"
-            aria-label="Anterior"
-          >
-            <ChevronLeft className="h-5 w-5" />
-          </button>
-          <button
-            onClick={() => emblaApi?.scrollNext()}
-            disabled={!canScrollNext}
-            className="absolute -right-4 lg:-right-12 top-1/2 -translate-y-1/2 h-10 w-10 rounded-full bg-card border border-border/50 flex items-center justify-center text-foreground hover:bg-accent/10 transition-colors disabled:opacity-30"
-            aria-label="Próximo"
-          >
-            <ChevronRight className="h-5 w-5" />
-          </button>
+          ))}
         </div>
       </div>
     </section>
