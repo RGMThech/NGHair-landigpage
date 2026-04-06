@@ -2,7 +2,6 @@ import { Star, ChevronLeft, ChevronRight } from "lucide-react";
 import { useEffect, useRef, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import useEmblaCarousel from "embla-carousel-react";
-import Autoplay from "embla-carousel-autoplay";
 
 interface GoogleReview {
   name: string;
