@@ -97,6 +97,7 @@ const TestimonialsSection = () => {
     return () => clearInterval(interval);
   }, [reviews.length, visibleCount, maxIndex]);
 
+  if (isLoading) return null;
   if (reviews.length === 0) return null;
 
   return (
