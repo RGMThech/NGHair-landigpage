@@ -16,6 +16,7 @@ const TestimonialsSection = () => {
   const [overallRating, setOverallRating] = useState<number | null>(null);
   const [totalReviews, setTotalReviews] = useState<number | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
   const ref = useRef<HTMLDivElement>(null);
   const carouselRef = useRef<HTMLDivElement>(null);
 
@@ -40,6 +41,26 @@ const TestimonialsSection = () => {
         }
       } catch (err) {
         console.error("Failed to fetch Google reviews:", err);
+        // Fallback: fetch directly from database
+        try {
+          const { data: cached } = await supabase
+            .from("google_reviews")
+            .select("*")
+            .order("rating", { ascending: false });
+          if (cached?.length) {
+            setReviews(cached.map((r) => ({
+              name: r.author_name,
+              text: r.review_text,
+              rating: r.rating,
+              time: r.relative_time || "",
+              profilePhoto: r.profile_photo_url || "",
+            })));
+          }
+        } catch (fallbackErr) {
+          console.error("Fallback fetch also failed:", fallbackErr);
+        }
+      } finally {
+        setIsLoading(false);
       }
     };
     fetchReviews();
@@ -76,6 +97,7 @@ const TestimonialsSection = () => {
     return () => clearInterval(interval);
   }, [reviews.length, visibleCount, maxIndex]);
 
+  if (isLoading) return null;
   if (reviews.length === 0) return null;
 
   return (
