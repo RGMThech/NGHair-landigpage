@@ -50,6 +50,22 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   gtag('config', 'AW-17444441836');
 </script>
 
+<!-- Event snippet for Contato conversion -->
+<script>
+function gtag_report_conversion(url) {
+  var callback = function () {
+    if (typeof(url) != 'undefined') {
+      window.location = url;
+    }
+  };
+  gtag('event', 'conversion', {
+    'send_to': 'AW-17444441836/QjfJCL2aupgcEOydlP5A',
+    'event_callback': callback
+  });
+  return false;
+}
+</script>
+
   </head>
 
   <body>
