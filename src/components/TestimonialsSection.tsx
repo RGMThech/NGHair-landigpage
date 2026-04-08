@@ -41,6 +41,26 @@ const TestimonialsSection = () => {
         }
       } catch (err) {
         console.error("Failed to fetch Google reviews:", err);
+        // Fallback: fetch directly from database
+        try {
+          const { data: cached } = await supabase
+            .from("google_reviews")
+            .select("*")
+            .order("rating", { ascending: false });
+          if (cached?.length) {
+            setReviews(cached.map((r) => ({
+              name: r.author_name,
+              text: r.review_text,
+              rating: r.rating,
+              time: r.relative_time || "",
+              profilePhoto: r.profile_photo_url || "",
+            })));
+          }
+        } catch (fallbackErr) {
+          console.error("Fallback fetch also failed:", fallbackErr);
+        }
+      } finally {
+        setIsLoading(false);
       }
     };
     fetchReviews();
