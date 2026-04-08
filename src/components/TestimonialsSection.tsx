@@ -16,6 +16,7 @@ const TestimonialsSection = () => {
   const [overallRating, setOverallRating] = useState<number | null>(null);
   const [totalReviews, setTotalReviews] = useState<number | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
   const ref = useRef<HTMLDivElement>(null);
   const carouselRef = useRef<HTMLDivElement>(null);
 
