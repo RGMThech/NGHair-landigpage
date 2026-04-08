@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Menu, X } from "lucide-react";
+import { reportConversion } from "@/lib/gtag";
 
 const links = [
   { label: "Início", href: "#" },
@@ -46,6 +47,7 @@ const Navbar = () => {
             href="https://www.trinks.com/nghair/framebusca?rwg_token=AFd1xnGhS4dEqFta6HGjCtw2CLGeW_7ZBFBo3-oeBEQ0d7Wwd8yXl867b1PBWoqP6eLxRYFb99odxSXP2hV3mESCDN4M4YUtFA%3D%3D"
             target="_blank"
             rel="noopener noreferrer"
+            onClick={reportConversion}
             className="rounded-full bg-primary px-6 py-2.5 font-body text-xs font-semibold text-primary-foreground uppercase tracking-wider transition-all duration-300 hover:scale-105"
           >
             Agendar
@@ -79,6 +81,7 @@ const Navbar = () => {
             href="https://www.trinks.com/nghair/framebusca?rwg_token=AFd1xnGhS4dEqFta6HGjCtw2CLGeW_7ZBFBo3-oeBEQ0d7Wwd8yXl867b1PBWoqP6eLxRYFb99odxSXP2hV3mESCDN4M4YUtFA%3D%3D"
             target="_blank"
             rel="noopener noreferrer"
+            onClick={reportConversion}
             className="rounded-full bg-primary px-6 py-3 font-body text-xs font-semibold text-primary-foreground uppercase tracking-wider text-center"
           >
             Agendar

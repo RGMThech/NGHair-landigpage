@@ -1,4 +1,5 @@
 import galleryMakeup from "@/assets/gallery-makeup.jpg";
+import { reportConversion } from "@/lib/gtag";
 
 const CTASection = () => {
   return (
@@ -27,6 +28,7 @@ const CTASection = () => {
           href="https://wa.me/5511947962201?text=Olá! Gostaria de agendar um horário"
           target="_blank"
           rel="noopener noreferrer"
+          onClick={reportConversion}
           className="inline-flex items-center gap-3 rounded-full bg-whatsapp px-10 py-5 font-body text-base font-semibold text-cream uppercase tracking-wider transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-whatsapp/30"
         >
           <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
