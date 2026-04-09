@@ -165,10 +165,7 @@ const TestimonialsSection = () => {
                   style={{ width: `${100 / visibleCount}%` }}
                 >
                   <div
-                    className={`rounded-2xl bg-card p-8 border border-border/50 flex flex-col justify-between h-full min-h-[280px] ${
-                      visible ? "animate-scale-in" : "opacity-0"
-                    }`}
-                    style={{ animationDelay: `${Math.min(i, 5) * 0.1}s` }}
+                    className="rounded-2xl bg-card p-8 border border-border/50 flex flex-col justify-between h-full min-h-[280px]"
                   >
                     <div>
                       <div className="flex gap-1 mb-4">
