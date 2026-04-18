@@ -68,11 +68,12 @@ Deno.serve(async (req) => {
     }
 
     // 3. Return ALL cached reviews from database
+    // Order by most recently updated (fresh from Google) first, then by rating
     const { data: cachedReviews, error: dbError } = await supabase
       .from("google_reviews")
       .select("*")
-      .order("rating", { ascending: false })
-      .order("created_at", { ascending: false });
+      .order("updated_at", { ascending: false })
+      .order("rating", { ascending: false });
 
     if (dbError) {
       throw new Error(`Database error: ${dbError.message}`);
