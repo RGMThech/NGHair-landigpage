@@ -10,11 +10,15 @@ const FooterSection = () => {
             <p className="font-body text-sm text-cream/60 leading-relaxed">
               Transformando vidas através da beleza desde 2021. Venha viver essa experiência.
             </p>
-            <div className="flex gap-4 mt-6">
+            
+            {/* 
+              <div className="flex gap-4 mt-6">
               <a href="https://www.instagram.com/nghair01/" className="text-cream/50 hover:text-accent transition-colors" aria-label="Instagram">
                 <Instagram className="h-5 w-5" />
               </a>
             </div>
+            */}
+
           </div>
           <div>
             <h4 className="font-display text-base font-medium text-cream mb-4">Contato</h4>
