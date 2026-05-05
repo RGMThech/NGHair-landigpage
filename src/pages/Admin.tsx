@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Trash2, Plus, LogOut, GripVertical, Eye, EyeOff } from "lucide-react";
+import { Trash2, Plus, LogOut, GripVertical, Eye, EyeOff, FileSpreadsheet } from "lucide-react";
+import * as XLSX from "xlsx";
 
 type GalleryImage = {
   id: string;
@@ -57,6 +58,146 @@ const AdminPanel = () => {
   const [uploading, setUploading] = useState(false);
   const [altText, setAltText] = useState("");
   const { toast } = useToast();
+  const [eurofarmaUploading, setEurofarmaUploading] = useState(false);
+  const [monthRef, setMonthRef] = useState<string>(() => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+  });
+  const [eurofarmaMonths, setEurofarmaMonths] = useState<{ month_ref: string; count: number }[]>([]);
+
+  const fetchEurofarmaMonths = async () => {
+    const { data } = await supabase.from("eurofarma_entries").select("month_ref");
+    if (!data) return;
+    const counts = data.reduce<Record<string, number>>((acc, r) => {
+      acc[r.month_ref] = (acc[r.month_ref] || 0) + 1;
+      return acc;
+    }, {});
+    setEurofarmaMonths(
+      Object.entries(counts)
+        .map(([month_ref, count]) => ({ month_ref, count }))
+        .sort((a, b) => b.month_ref.localeCompare(a.month_ref)),
+    );
+  };
+
+  const parseExcelDate = (v: unknown): string | null => {
+    if (!v) return null;
+    if (v instanceof Date) {
+      return v.toISOString().slice(0, 10);
+    }
+    if (typeof v === "number") {
+      const d = XLSX.SSF.parse_date_code(v);
+      if (!d) return null;
+      return `${d.y}-${String(d.m).padStart(2, "0")}-${String(d.d).padStart(2, "0")}`;
+    }
+    const s = String(v).trim();
+    const m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+    if (m) return `${m[3]}-${m[2].padStart(2, "0")}-${m[1].padStart(2, "0")}`;
+    return null;
+  };
+
+  const parseTime = (v: unknown): string | null => {
+    if (!v) return null;
+    if (v instanceof Date) {
+      return `${String(v.getHours()).padStart(2, "0")}:${String(v.getMinutes()).padStart(2, "0")}`;
+    }
+    if (typeof v === "number") {
+      const totalMin = Math.round(v * 24 * 60);
+      const h = Math.floor(totalMin / 60);
+      const m = totalMin % 60;
+      return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+    }
+    return String(v).trim().slice(0, 5);
+  };
+
+  const handleEurofarmaUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!/^\d{4}-\d{2}$/.test(monthRef)) {
+      toast({ title: "Mês inválido", description: "Use formato AAAA-MM", variant: "destructive" });
+      return;
+    }
+    setEurofarmaUploading(true);
+    try {
+      const buf = await file.arrayBuffer();
+      const wb = XLSX.read(buf, { cellDates: true });
+      const sheet =
+        wb.SheetNames.find((n) => /lancamentos/i.test(n)) ?? wb.SheetNames[0];
+      const ws = wb.Sheets[sheet];
+      const rows: unknown[][] = XLSX.utils.sheet_to_json(ws, { header: 1, raw: true });
+
+      // Find header row containing "Data" and "RE"
+      let headerIdx = -1;
+      for (let i = 0; i < Math.min(rows.length, 30); i++) {
+        const row = rows[i].map((c) => String(c ?? "").trim().toLowerCase());
+        if (row.includes("data") && row.includes("re")) {
+          headerIdx = i;
+          break;
+        }
+      }
+      if (headerIdx === -1) throw new Error("Cabeçalho não encontrado");
+      const headers = rows[headerIdx].map((c) => String(c ?? "").trim().toLowerCase());
+      const idx = (name: string) => headers.indexOf(name.toLowerCase());
+      const cols = {
+        data: idx("data"),
+        hora: idx("hora"),
+        profissional: idx("profissional"),
+        servico: idx("serviço") !== -1 ? idx("serviço") : idx("servico"),
+        cliente: idx("cliente"),
+        re: idx("re"),
+        valor: idx("valor"),
+        rubrica: idx("rubrica"),
+      };
+
+      const entries = [];
+      for (let i = headerIdx + 1; i < rows.length; i++) {
+        const r = rows[i];
+        if (!r || r.every((c) => c == null || c === "")) continue;
+        const re = r[cols.re];
+        if (re == null || String(re).trim() === "") continue;
+        entries.push({
+          month_ref: monthRef,
+          data: parseExcelDate(r[cols.data]),
+          hora: parseTime(r[cols.hora]),
+          profissional: r[cols.profissional] ? String(r[cols.profissional]).trim() : null,
+          servico: r[cols.servico] ? String(r[cols.servico]).trim() : null,
+          cliente: r[cols.cliente] ? String(r[cols.cliente]).trim() : null,
+          re: String(re).trim(),
+          valor:
+            r[cols.valor] != null && r[cols.valor] !== ""
+              ? Number(String(r[cols.valor]).replace(",", "."))
+              : null,
+          rubrica: r[cols.rubrica] ? String(r[cols.rubrica]).trim() : null,
+        });
+      }
+
+      // Replace existing month
+      await supabase.from("eurofarma_entries").delete().eq("month_ref", monthRef);
+
+      // Insert in chunks
+      const chunk = 500;
+      for (let i = 0; i < entries.length; i += chunk) {
+        const { error } = await supabase
+          .from("eurofarma_entries")
+          .insert(entries.slice(i, i + chunk));
+        if (error) throw error;
+      }
+      toast({ title: "Importação concluída", description: `${entries.length} lançamentos importados para ${monthRef}.` });
+      fetchEurofarmaMonths();
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Erro desconhecido";
+      toast({ title: "Erro na importação", description: msg, variant: "destructive" });
+    } finally {
+      setEurofarmaUploading(false);
+      e.target.value = "";
+    }
+  };
+
+  const deleteEurofarmaMonth = async (month: string) => {
+    if (!confirm(`Remover todos os lançamentos de ${month}?`)) return;
+    await supabase.from("eurofarma_entries").delete().eq("month_ref", month);
+    toast({ title: "Mês removido" });
+    fetchEurofarmaMonths();
+  };
 
   const fetchImages = async () => {
     const { data } = await supabase
@@ -66,7 +207,10 @@ const AdminPanel = () => {
     if (data) setImages(data);
   };
 
-  useEffect(() => { fetchImages(); }, []);
+  useEffect(() => {
+    fetchImages();
+    fetchEurofarmaMonths();
+  }, []);
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -212,6 +356,68 @@ const AdminPanel = () => {
             Nenhuma foto ainda. Adicione a primeira!
           </p>
         )}
+
+        <div className="mt-16">
+          <h2 className="font-display text-2xl font-medium text-foreground mb-4">
+            Lançamentos Eurofarma
+          </h2>
+          <div className="border-2 border-dashed border-border rounded-2xl p-6 mb-6 bg-card">
+            <div className="flex flex-col sm:flex-row gap-4 items-end">
+              <div className="space-y-2">
+                <Label>Mês de referência (AAAA-MM)</Label>
+                <Input
+                  value={monthRef}
+                  onChange={(e) => setMonthRef(e.target.value)}
+                  placeholder="2026-04"
+                  className="w-40"
+                />
+              </div>
+              <div>
+                <Label
+                  htmlFor="euro-upload"
+                  className="inline-flex items-center gap-2 cursor-pointer px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+                >
+                  <FileSpreadsheet className="h-4 w-4" />
+                  {eurofarmaUploading ? "Importando..." : "Importar planilha"}
+                </Label>
+                <input
+                  id="euro-upload"
+                  type="file"
+                  accept=".xlsx,.xls"
+                  onChange={handleEurofarmaUpload}
+                  disabled={eurofarmaUploading}
+                  className="hidden"
+                />
+              </div>
+            </div>
+            <p className="text-xs text-muted-foreground mt-3">
+              Reimportar o mesmo mês substitui os lançamentos anteriores.
+            </p>
+          </div>
+
+          {eurofarmaMonths.length > 0 && (
+            <div className="space-y-2">
+              {eurofarmaMonths.map((m) => (
+                <div
+                  key={m.month_ref}
+                  className="flex items-center justify-between border rounded-lg px-4 py-3 bg-card"
+                >
+                  <div>
+                    <p className="font-medium">{m.month_ref}</p>
+                    <p className="text-xs text-muted-foreground">{m.count} lançamentos</p>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => deleteEurofarmaMonth(m.month_ref)}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
