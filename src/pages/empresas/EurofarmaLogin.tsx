@@ -8,6 +8,12 @@ import { toast } from "@/hooks/use-toast";
 
 const reToEmail = (re: string) => `re-${re.trim().toLowerCase()}@eurofarma.local`;
 
+const createTemporaryPassword = () => {
+  const bytes = new Uint8Array(24);
+  window.crypto.getRandomValues(bytes);
+  return `Ng@${Array.from(bytes, (byte) => byte.toString(36)).join("")}`;
+};
+
 const EurofarmaLogin = () => {
   const navigate = useNavigate();
   const [re, setRe] = useState("");
@@ -33,28 +39,21 @@ const EurofarmaLogin = () => {
     }
     setLoading(true);
     const email = reToEmail(cleanRe);
-    const pwd = password || cleanRe;
+    const pwd = password.trim();
 
-    // 1) Try sign in
-    const signIn = await supabase.auth.signInWithPassword({ email, password: pwd });
-
-    let session = signIn.data?.session ?? null;
-
-    if (signIn.error) {
-      // Try first-access signup. If user already exists, signup returns an
-      // error and we can show the appropriate message.
+    if (!pwd) {
       const signup = await supabase.auth.signUp({
         email,
-        password: pwd,
+        password: createTemporaryPassword(),
         options: { emailRedirectTo: `${window.location.origin}/empresas/eurofarma/portal` },
       });
 
       if (signup.error) {
-        const msg = signup.error.message?.toLowerCase() ?? "";
-        const isExisting = msg.includes("registered") || msg.includes("exists");
         setLoading(false);
+        const msg = signup.error.message?.toLowerCase() ?? "";
+        const isExisting = msg.includes("registered") || msg.includes("exists") || msg.includes("already");
         toast({
-          title: isExisting ? "Senha incorreta" : "Erro no acesso",
+          title: isExisting ? "RE já cadastrado" : "Erro no primeiro acesso",
           description: isExisting
             ? "Esse RE já tem cadastro. Informe sua senha ou use 'Esqueci minha senha'."
             : signup.error.message,
@@ -63,30 +62,43 @@ const EurofarmaLogin = () => {
         return;
       }
 
-      session = signup.data.session;
-
-      // Create profile (auto-confirm is on, so we have a session)
-      if (signup.data.user) {
-        await supabase.from("eurofarma_profiles").upsert(
-          {
-            user_id: signup.data.user.id,
-            re: cleanRe,
-            must_change_password: true,
-          },
-          { onConflict: "user_id" },
-        );
+      if (!signup.data.session || !signup.data.user) {
+        setLoading(false);
+        toast({
+          title: "Sessão não iniciada",
+          description: "Tente novamente em instantes.",
+          variant: "destructive",
+        });
+        return;
       }
+
+      await supabase.from("eurofarma_profiles").upsert(
+        {
+          user_id: signup.data.user.id,
+          re: cleanRe,
+          must_change_password: true,
+        },
+        { onConflict: "user_id" },
+      );
+
+      setLoading(false);
+      navigate("/empresas/eurofarma/trocar-senha");
+      return;
     }
 
-    if (!session) {
+    const signIn = await supabase.auth.signInWithPassword({ email, password: pwd });
+
+    if (signIn.error || !signIn.data?.session) {
       setLoading(false);
       toast({
-        title: "Sessão não iniciada",
-        description: "Tente novamente em instantes.",
+        title: "Senha incorreta",
+        description: "Confira sua senha ou use 'Esqueci minha senha'. No primeiro acesso, deixe a senha em branco.",
         variant: "destructive",
       });
       return;
     }
+
+    const session = signIn.data.session;
 
     // Decide next step based on profile flag
     const { data: profile } = await supabase
