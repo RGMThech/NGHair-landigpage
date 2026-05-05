@@ -30,7 +30,7 @@ const EurofarmaPortal = () => {
 
   const logout = async () => {
     await supabase.auth.signOut();
-    navigate("/empresas/eurofarma");
+    window.location.href = "https://www.nghair.com.br";
   };
 
   return (
