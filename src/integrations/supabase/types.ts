@@ -101,6 +101,48 @@ export type Database = {
         }
         Relationships: []
       }
+      eurofarma_entries: {
+        Row: {
+          cliente: string | null
+          created_at: string
+          data: string | null
+          hora: string | null
+          id: string
+          month_ref: string
+          profissional: string | null
+          re: string
+          rubrica: string | null
+          servico: string | null
+          valor: number | null
+        }
+        Insert: {
+          cliente?: string | null
+          created_at?: string
+          data?: string | null
+          hora?: string | null
+          id?: string
+          month_ref: string
+          profissional?: string | null
+          re: string
+          rubrica?: string | null
+          servico?: string | null
+          valor?: number | null
+        }
+        Update: {
+          cliente?: string | null
+          created_at?: string
+          data?: string | null
+          hora?: string | null
+          id?: string
+          month_ref?: string
+          profissional?: string | null
+          re?: string
+          rubrica?: string | null
+          servico?: string | null
+          valor?: number | null
+        }
+        Relationships: []
+      }
       eurofarma_password_resets: {
         Row: {
           created_at: string
