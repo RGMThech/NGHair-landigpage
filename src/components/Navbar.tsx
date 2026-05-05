@@ -1,5 +1,9 @@
 import { useState, useEffect } from "react";
-import { Menu, X } from "lucide-react";
+import { Menu, X, ChevronDown } from "lucide-react";
+import { Link } from "react-router-dom";
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { reportConversion } from "@/lib/gtag";
 
 const links = [
@@ -43,6 +47,23 @@ const Navbar = () => {
               {link.label}
             </a>
           ))}
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              className={`font-body text-sm uppercase tracking-widest transition-colors duration-300 hover:text-primary inline-flex items-center gap-1 outline-none ${
+                scrolled ? "text-foreground/70" : "text-cream/80"
+              }`}
+            >
+              Empresas <ChevronDown className="h-3 w-3" />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuItem asChild>
+                <Link to="/empresas/eurofarma">Eurofarma</Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link to="/empresas/convenios">Convênios Corporativos</Link>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
           <a
             href="https://www.trinks.com/nghair/framebusca?rwg_token=AFd1xnGhS4dEqFta6HGjCtw2CLGeW_7ZBFBo3-oeBEQ0d7Wwd8yXl867b1PBWoqP6eLxRYFb99odxSXP2hV3mESCDN4M4YUtFA%3D%3D"
             target="_blank"
@@ -77,6 +98,21 @@ const Navbar = () => {
               {link.label}
             </a>
           ))}
+          <div className="font-body text-xs uppercase tracking-widest text-muted-foreground pt-2">Empresas</div>
+          <Link
+            to="/empresas/eurofarma"
+            onClick={() => setOpen(false)}
+            className="font-body text-sm uppercase tracking-widest text-foreground/70 hover:text-primary pl-3"
+          >
+            Eurofarma
+          </Link>
+          <Link
+            to="/empresas/convenios"
+            onClick={() => setOpen(false)}
+            className="font-body text-sm uppercase tracking-widest text-foreground/70 hover:text-primary pl-3"
+          >
+            Convênios Corporativos
+          </Link>
           <a
             href="https://www.trinks.com/nghair/framebusca?rwg_token=AFd1xnGhS4dEqFta6HGjCtw2CLGeW_7ZBFBo3-oeBEQ0d7Wwd8yXl867b1PBWoqP6eLxRYFb99odxSXP2hV3mESCDN4M4YUtFA%3D%3D"
             target="_blank"
