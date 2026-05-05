@@ -56,7 +56,7 @@ const EurofarmaPortal = () => {
               className="flex items-center gap-3 rounded-full pl-1 pr-3 py-1 hover:bg-muted transition-colors"
               aria-label="Meu perfil"
             >
-              <Avatar className="h-9 w-9">
+              <Avatar className="h-12 w-12">
                 {avatarUrl && <AvatarImage src={avatarUrl} alt={fullName || re} />}
                 <AvatarFallback>{(fullName || re).slice(0, 2).toUpperCase()}</AvatarFallback>
               </Avatar>
