@@ -41,32 +41,23 @@ const EurofarmaLogin = () => {
     let session = signIn.data?.session ?? null;
 
     if (signIn.error) {
-      // 2) If user typed a custom password and it failed → wrong password
-      if (password) {
-        setLoading(false);
-        toast({
-          title: "Senha incorreta",
-          description: "Verifique sua senha e tente novamente.",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      // 3) No password typed → try first-access signup with RE as password
+      // Try first-access signup. If user already exists, signup returns an
+      // error and we can show the appropriate message.
       const signup = await supabase.auth.signUp({
         email,
-        password: cleanRe,
+        password: pwd,
         options: { emailRedirectTo: `${window.location.origin}/empresas/eurofarma/portal` },
       });
 
       if (signup.error) {
-        // Account exists but RE is no longer the password → user already changed it
         const msg = signup.error.message?.toLowerCase() ?? "";
         const isExisting = msg.includes("registered") || msg.includes("exists");
         setLoading(false);
         toast({
-          title: isExisting ? "Senha necessária" : "Erro no acesso",
-          description: isExisting ? "Você já alterou sua senha. Informe-a no campo Senha." : signup.error.message,
+          title: isExisting ? "Senha incorreta" : "Erro no acesso",
+          description: isExisting
+            ? "Esse RE já tem cadastro. Informe sua senha ou use 'Esqueci minha senha'."
+            : signup.error.message,
           variant: "destructive",
         });
         return;
