@@ -57,5 +57,5 @@ export const eurofarmaPrices: PriceItem[] = [
   { name: "Dedos dos pés ou mãos (depilação)", full: 44, collaborator: 22 },
   { name: "Coloração de sobrancelha (Henna) - sem design", full: 60, collaborator: 30 },
   { name: "Completa (1/2 perna + virilha íntima com nádegas)", full: 260, collaborator: 130 },
-  { name: "Design de sobrancelha (com pinça)", full: 68, collaborator: 34 },
+  /*  { name: "Design de sobrancelha (com pinça)", full: 68, collaborator: 34 }, */
 ];
