@@ -66,9 +66,7 @@ const EurofarmaLogin = () => {
         setLoading(false);
         toast({
           title: isExisting ? "Senha necessária" : "Erro no acesso",
-          description: isExisting
-            ? "Você já alterou sua senha. Informe-a no campo Senha."
-            : signup.error.message,
+          description: isExisting ? "Você já alterou sua senha. Informe-a no campo Senha." : signup.error.message,
           variant: "destructive",
         });
         return;
@@ -107,11 +105,7 @@ const EurofarmaLogin = () => {
       .maybeSingle();
 
     setLoading(false);
-    navigate(
-      profile?.must_change_password
-        ? "/empresas/eurofarma/trocar-senha"
-        : "/empresas/eurofarma/portal",
-    );
+    navigate(profile?.must_change_password ? "/empresas/eurofarma/trocar-senha" : "/empresas/eurofarma/portal");
   };
 
   return (
@@ -119,7 +113,7 @@ const EurofarmaLogin = () => {
       <div className="w-full max-w-md bg-card border border-border rounded-2xl p-8 shadow-sm">
         <h1 className="font-display text-3xl text-foreground mb-2 text-center">Acesso Eurofarma</h1>
         <p className="text-sm text-muted-foreground text-center mb-8">
-          Use seu RE de colaborador. No primeiro acesso, a senha é o próprio RE.
+          Use seu RE de colaborador. No primeiro acesso, apenas RE, entre sem senha.
         </p>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
