@@ -14,27 +14,69 @@ export type Database = {
   }
   public: {
     Tables: {
-      eurofarma_profiles: {
+      eurofarma_password_resets: {
         Row: {
           created_at: string
+          expires_at: string
+          id: string
+          token_hash: string
+          used_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at: string
+          id?: string
+          token_hash: string
+          used_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          token_hash?: string
+          used_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      eurofarma_profiles: {
+        Row: {
+          avatar_url: string | null
+          birth_date: string | null
+          created_at: string
+          full_name: string | null
           id: string
           must_change_password: boolean
+          personal_email: string | null
+          phone: string | null
           re: string
           updated_at: string
           user_id: string
         }
         Insert: {
+          avatar_url?: string | null
+          birth_date?: string | null
           created_at?: string
+          full_name?: string | null
           id?: string
           must_change_password?: boolean
+          personal_email?: string | null
+          phone?: string | null
           re: string
           updated_at?: string
           user_id: string
         }
         Update: {
+          avatar_url?: string | null
+          birth_date?: string | null
           created_at?: string
+          full_name?: string | null
           id?: string
           must_change_password?: boolean
+          personal_email?: string | null
+          phone?: string | null
           re?: string
           updated_at?: string
           user_id?: string
