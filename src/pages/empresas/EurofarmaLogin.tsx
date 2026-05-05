@@ -22,50 +22,96 @@ const EurofarmaLogin = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!re.trim()) return;
-    setLoading(true);
-    const email = reToEmail(re);
-    const pwd = password || re.trim();
-
-    // Try sign in
-    let { data, error } = await supabase.auth.signInWithPassword({ email, password: pwd });
-
-    if (error) {
-      // First access: try sign up using RE as initial password
-      const signup = await supabase.auth.signUp({
-        email,
-        password: re.trim(),
-        options: { emailRedirectTo: `${window.location.origin}/empresas/eurofarma/portal` },
+    const cleanRe = re.trim();
+    if (!/^[a-zA-Z0-9]{3,20}$/.test(cleanRe)) {
+      toast({
+        title: "RE inválido",
+        description: "Use apenas letras e números (3 a 20 caracteres).",
+        variant: "destructive",
       });
-      if (signup.error) {
-        toast({ title: "Erro no acesso", description: signup.error.message, variant: "destructive" });
+      return;
+    }
+    setLoading(true);
+    const email = reToEmail(cleanRe);
+    const pwd = password || cleanRe;
+
+    // 1) Try sign in
+    const signIn = await supabase.auth.signInWithPassword({ email, password: pwd });
+
+    let session = signIn.data?.session ?? null;
+
+    if (signIn.error) {
+      // 2) If user typed a custom password and it failed → wrong password
+      if (password) {
         setLoading(false);
+        toast({
+          title: "Senha incorreta",
+          description: "Verifique sua senha e tente novamente.",
+          variant: "destructive",
+        });
         return;
       }
-      // Insert profile
-      if (signup.data.user) {
-        await supabase.from("eurofarma_profiles").insert({
-          user_id: signup.data.user.id,
-          re: re.trim(),
-          must_change_password: true,
+
+      // 3) No password typed → try first-access signup with RE as password
+      const signup = await supabase.auth.signUp({
+        email,
+        password: cleanRe,
+        options: { emailRedirectTo: `${window.location.origin}/empresas/eurofarma/portal` },
+      });
+
+      if (signup.error) {
+        // Account exists but RE is no longer the password → user already changed it
+        const msg = signup.error.message?.toLowerCase() ?? "";
+        const isExisting = msg.includes("registered") || msg.includes("exists");
+        setLoading(false);
+        toast({
+          title: isExisting ? "Senha necessária" : "Erro no acesso",
+          description: isExisting
+            ? "Você já alterou sua senha. Informe-a no campo Senha."
+            : signup.error.message,
+          variant: "destructive",
         });
+        return;
       }
-      data = signup.data as typeof data;
+
+      session = signup.data.session;
+
+      // Create profile (auto-confirm is on, so we have a session)
+      if (signup.data.user) {
+        await supabase.from("eurofarma_profiles").upsert(
+          {
+            user_id: signup.data.user.id,
+            re: cleanRe,
+            must_change_password: true,
+          },
+          { onConflict: "user_id" },
+        );
+      }
     }
 
-    setLoading(false);
-    if (data?.session) {
-      const { data: profile } = await supabase
-        .from("eurofarma_profiles")
-        .select("must_change_password")
-        .eq("user_id", data.session.user.id)
-        .maybeSingle();
-      if (profile?.must_change_password) {
-        navigate("/empresas/eurofarma/trocar-senha");
-      } else {
-        navigate("/empresas/eurofarma/portal");
-      }
+    if (!session) {
+      setLoading(false);
+      toast({
+        title: "Sessão não iniciada",
+        description: "Tente novamente em instantes.",
+        variant: "destructive",
+      });
+      return;
     }
+
+    // Decide next step based on profile flag
+    const { data: profile } = await supabase
+      .from("eurofarma_profiles")
+      .select("must_change_password")
+      .eq("user_id", session.user.id)
+      .maybeSingle();
+
+    setLoading(false);
+    navigate(
+      profile?.must_change_password
+        ? "/empresas/eurofarma/trocar-senha"
+        : "/empresas/eurofarma/portal",
+    );
   };
 
   return (
