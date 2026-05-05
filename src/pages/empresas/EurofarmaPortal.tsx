@@ -2,11 +2,14 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { LogOut, Table as TableIcon, History } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { LogOut, Table as TableIcon, History, User } from "lucide-react";
 
 const EurofarmaPortal = () => {
   const navigate = useNavigate();
   const [re, setRe] = useState<string>("");
+  const [fullName, setFullName] = useState<string>("");
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -17,14 +20,18 @@ const EurofarmaPortal = () => {
       }
       const { data: profile } = await supabase
         .from("eurofarma_profiles")
-        .select("re, must_change_password")
+        .select("re, must_change_password, full_name, avatar_url")
         .eq("user_id", session.user.id)
         .maybeSingle();
       if (profile?.must_change_password) {
         navigate("/empresas/eurofarma/trocar-senha");
         return;
       }
-      if (profile) setRe(profile.re);
+      if (profile) {
+        setRe(profile.re);
+        setFullName(profile.full_name ?? "");
+        setAvatarUrl(profile.avatar_url ?? null);
+      }
     })();
   }, [navigate]);
 
@@ -43,9 +50,24 @@ const EurofarmaPortal = () => {
               Portal Eurofarma {re && `· RE ${re}`}
             </p>
           </div>
-          <Button variant="ghost" onClick={logout}>
-            <LogOut className="h-4 w-4" /> Sair
-          </Button>
+          <div className="flex items-center gap-2">
+            <Link
+              to="/empresas/eurofarma/perfil"
+              className="flex items-center gap-3 rounded-full pl-1 pr-3 py-1 hover:bg-muted transition-colors"
+              aria-label="Meu perfil"
+            >
+              <Avatar className="h-9 w-9">
+                {avatarUrl && <AvatarImage src={avatarUrl} alt={fullName || re} />}
+                <AvatarFallback>{(fullName || re).slice(0, 2).toUpperCase()}</AvatarFallback>
+              </Avatar>
+              <span className="hidden sm:inline text-sm text-foreground">
+                {fullName || "Meu perfil"}
+              </span>
+            </Link>
+            <Button variant="ghost" onClick={logout}>
+              <LogOut className="h-4 w-4" /> Sair
+            </Button>
+          </div>
         </div>
       </header>
 
@@ -73,6 +95,17 @@ const EurofarmaPortal = () => {
             <h2 className="font-display text-2xl mb-2">Serviços utilizados</h2>
             <p className="text-sm text-muted-foreground">
               Consulte por período os serviços que você utilizou.
+            </p>
+          </Link>
+
+          <Link
+            to="/empresas/eurofarma/perfil"
+            className="group border border-border rounded-2xl p-8 bg-card hover:border-primary transition-all"
+          >
+            <User className="h-8 w-8 text-primary mb-4" />
+            <h2 className="font-display text-2xl mb-2">Meu perfil</h2>
+            <p className="text-sm text-muted-foreground">
+              Atualize foto, telefone, data de nascimento e email pessoal.
             </p>
           </Link>
         </div>

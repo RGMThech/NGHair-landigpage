@@ -11,6 +11,9 @@ import EurofarmaChangePassword from "./pages/empresas/EurofarmaChangePassword.ts
 import EurofarmaPortal from "./pages/empresas/EurofarmaPortal.tsx";
 import EurofarmaPrices from "./pages/empresas/EurofarmaPrices.tsx";
 import EurofarmaHistory from "./pages/empresas/EurofarmaHistory.tsx";
+import EurofarmaForgotPassword from "./pages/empresas/EurofarmaForgotPassword.tsx";
+import EurofarmaResetPassword from "./pages/empresas/EurofarmaResetPassword.tsx";
+import EurofarmaProfile from "./pages/empresas/EurofarmaProfile.tsx";
 import Convenios from "./pages/empresas/Convenios.tsx";
 
 const queryClient = new QueryClient();
@@ -26,7 +29,10 @@ const App = () => (
           <Route path="/admin" element={<Admin />} />
           <Route path="/empresas/eurofarma" element={<EurofarmaLogin />} />
           <Route path="/empresas/eurofarma/trocar-senha" element={<EurofarmaChangePassword />} />
+          <Route path="/empresas/eurofarma/esqueci-senha" element={<EurofarmaForgotPassword />} />
+          <Route path="/empresas/eurofarma/redefinir-senha" element={<EurofarmaResetPassword />} />
           <Route path="/empresas/eurofarma/portal" element={<EurofarmaPortal />} />
+          <Route path="/empresas/eurofarma/perfil" element={<EurofarmaProfile />} />
           <Route path="/empresas/eurofarma/precos" element={<EurofarmaPrices />} />
           <Route path="/empresas/eurofarma/historico" element={<EurofarmaHistory />} />
           <Route path="/empresas/convenios" element={<Convenios />} />
