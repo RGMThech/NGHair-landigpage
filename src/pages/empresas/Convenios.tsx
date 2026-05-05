@@ -50,7 +50,7 @@ const Convenios = () => {
               <Mail className="h-4 w-4" /> contato@nghair.com.br
             </a>
             <a
-              href="https://wa.me/5511947962201?text=Olá! Gostaria de mais informações sobre os convênios corporativos             target="_blank"
+              href="https://wa.me/5511947962201?text=Olá! Gostaria de mais informações sobre os convênios corporativos"
               rel="noopener noreferrer"
               className="flex items-center gap-3 text-foreground hover:text-primary"
             >
