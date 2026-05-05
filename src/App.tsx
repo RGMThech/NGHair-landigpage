@@ -6,6 +6,12 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import Index from "./pages/Index.tsx";
 import Admin from "./pages/Admin.tsx";
 import NotFound from "./pages/NotFound.tsx";
+import EurofarmaLogin from "./pages/empresas/EurofarmaLogin.tsx";
+import EurofarmaChangePassword from "./pages/empresas/EurofarmaChangePassword.tsx";
+import EurofarmaPortal from "./pages/empresas/EurofarmaPortal.tsx";
+import EurofarmaPrices from "./pages/empresas/EurofarmaPrices.tsx";
+import EurofarmaHistory from "./pages/empresas/EurofarmaHistory.tsx";
+import Convenios from "./pages/empresas/Convenios.tsx";
 
 const queryClient = new QueryClient();
 
@@ -18,6 +24,12 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/admin" element={<Admin />} />
+          <Route path="/empresas/eurofarma" element={<EurofarmaLogin />} />
+          <Route path="/empresas/eurofarma/trocar-senha" element={<EurofarmaChangePassword />} />
+          <Route path="/empresas/eurofarma/portal" element={<EurofarmaPortal />} />
+          <Route path="/empresas/eurofarma/precos" element={<EurofarmaPrices />} />
+          <Route path="/empresas/eurofarma/historico" element={<EurofarmaHistory />} />
+          <Route path="/empresas/convenios" element={<Convenios />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

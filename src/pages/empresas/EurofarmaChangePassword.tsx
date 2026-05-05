@@ -1,0 +1,73 @@
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { toast } from "@/hooks/use-toast";
+
+const EurofarmaChangePassword = () => {
+  const navigate = useNavigate();
+  const [pwd, setPwd] = useState("");
+  const [confirm, setConfirm] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      if (!data.session) navigate("/empresas/eurofarma");
+    });
+  }, [navigate]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (pwd.length < 6) {
+      toast({ title: "Senha curta", description: "Mínimo 6 caracteres.", variant: "destructive" });
+      return;
+    }
+    if (pwd !== confirm) {
+      toast({ title: "Senhas diferentes", description: "Confirme a mesma senha.", variant: "destructive" });
+      return;
+    }
+    setLoading(true);
+    const { error } = await supabase.auth.updateUser({ password: pwd });
+    if (error) {
+      toast({ title: "Erro", description: error.message, variant: "destructive" });
+      setLoading(false);
+      return;
+    }
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      await supabase
+        .from("eurofarma_profiles")
+        .update({ must_change_password: false })
+        .eq("user_id", user.id);
+    }
+    setLoading(false);
+    toast({ title: "Senha atualizada", description: "Acesse o portal." });
+    navigate("/empresas/eurofarma/portal");
+  };
+
+  return (
+    <main className="min-h-screen flex items-center justify-center bg-background px-4">
+      <div className="w-full max-w-md bg-card border border-border rounded-2xl p-8 shadow-sm">
+        <h1 className="font-display text-3xl text-foreground mb-2 text-center">Defina sua nova senha</h1>
+        <p className="text-sm text-muted-foreground text-center mb-8">Primeiro acesso detectado. Escolha uma senha segura.</p>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <Label htmlFor="pwd">Nova senha</Label>
+            <Input id="pwd" type="password" value={pwd} onChange={(e) => setPwd(e.target.value)} required />
+          </div>
+          <div>
+            <Label htmlFor="confirm">Confirme a senha</Label>
+            <Input id="confirm" type="password" value={confirm} onChange={(e) => setConfirm(e.target.value)} required />
+          </div>
+          <Button type="submit" className="w-full" disabled={loading}>
+            {loading ? "Salvando..." : "Salvar"}
+          </Button>
+        </form>
+      </div>
+    </main>
+  );
+};
+
+export default EurofarmaChangePassword;

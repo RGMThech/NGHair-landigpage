@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      eurofarma_profiles: {
+        Row: {
+          created_at: string
+          id: string
+          must_change_password: boolean
+          re: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          must_change_password?: boolean
+          re: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          must_change_password?: boolean
+          re?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       gallery_images: {
         Row: {
           active: boolean
