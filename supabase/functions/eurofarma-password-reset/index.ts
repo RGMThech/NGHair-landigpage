@@ -107,7 +107,7 @@ Deno.serve(async (req) => {
       const newPwd = String(new_password ?? "");
       if (!cleanRe || !code || newPwd.length < 6) {
         return new Response(JSON.stringify({ error: "Dados inválidos" }), {
-          status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
 
@@ -119,7 +119,7 @@ Deno.serve(async (req) => {
 
       if (!profile) {
         return new Response(JSON.stringify({ error: "Código inválido ou expirado" }), {
-          status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
 
@@ -135,7 +135,7 @@ Deno.serve(async (req) => {
 
       if (!reset || reset.used_at || new Date(reset.expires_at) < new Date()) {
         return new Response(JSON.stringify({ error: "Código inválido ou expirado" }), {
-          status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
 
@@ -143,8 +143,12 @@ Deno.serve(async (req) => {
         password: newPwd,
       });
       if (updErr) {
-        return new Response(JSON.stringify({ error: updErr.message }), {
-          status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        console.error("updateUserById failed", updErr);
+        const msg = /different from the old/i.test(updErr.message)
+          ? "A nova senha precisa ser diferente da senha atual."
+          : updErr.message;
+        return new Response(JSON.stringify({ error: msg }), {
+          status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
 
