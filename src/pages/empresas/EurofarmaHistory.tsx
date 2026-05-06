@@ -83,6 +83,17 @@ const EurofarmaHistory = () => {
     [entries],
   );
 
+  const totalColaborador = useMemo(
+    () =>
+      entries.reduce((acc, e) => {
+        const valor = Number(e.valor) || 0;
+        const rubrica = (e.rubrica ?? "").trim();
+        const fator = rubrica === "0105" ? 0.5 : 1;
+        return acc + valor * fator;
+      }, 0),
+    [entries],
+  );
+
   return (
     <main className="min-h-screen bg-background">
       <header className="border-b border-border">
@@ -191,6 +202,17 @@ const EurofarmaHistory = () => {
                       </TableCell>
                       <TableCell className="text-right font-medium">
                         {total.toLocaleString("pt-BR", {
+                          style: "currency",
+                          currency: "BRL",
+                        })}
+                      </TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell colSpan={7} className="font-medium text-right">
+                        Valor do colaborador
+                      </TableCell>
+                      <TableCell className="text-right font-medium">
+                        {totalColaborador.toLocaleString("pt-BR", {
                           style: "currency",
                           currency: "BRL",
                         })}
