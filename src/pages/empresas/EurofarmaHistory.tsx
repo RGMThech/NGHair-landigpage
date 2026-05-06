@@ -87,8 +87,8 @@ const EurofarmaHistory = () => {
     () =>
       entries.reduce((acc, e) => {
         const valor = Number(e.valor) || 0;
-        const rubrica = (e.rubrica ?? "").trim();
-        const fator = rubrica === "0105" ? 0.5 : 1;
+        const rubrica = (e.rubrica ?? "").trim().replace(/^0+/, "");
+        const fator = rubrica === "105" ? 0.5 : 1;
         return acc + valor * fator;
       }, 0),
     [entries],
