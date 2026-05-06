@@ -58,6 +58,9 @@ const EurofarmaChangePassword = () => {
           <div>
             <Label htmlFor="pwd">Nova senha</Label>
             <Input id="pwd" type="password" value={pwd} onChange={(e) => setPwd(e.target.value)} required />
+            <div className="mt-2">
+              <PasswordRulesChecklist password={pwd} />
+            </div>
           </div>
           <div>
             <Label htmlFor="confirm">Confirme a senha</Label>
