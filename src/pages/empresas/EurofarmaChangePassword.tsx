@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/hooks/use-toast";
+import { PasswordRulesChecklist } from "@/components/PasswordRulesChecklist";
+import { validatePassword } from "@/lib/password-rules";
 
 const EurofarmaChangePassword = () => {
   const navigate = useNavigate();
@@ -20,8 +22,8 @@ const EurofarmaChangePassword = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (pwd.length < 6) {
-      toast({ title: "Senha curta", description: "Mínimo 6 caracteres.", variant: "destructive" });
+    if (!validatePassword(pwd)) {
+      toast({ title: "Senha fora do padrão", description: "Atenda a todos os requisitos listados.", variant: "destructive" });
       return;
     }
     if (pwd !== confirm) {
@@ -56,6 +58,9 @@ const EurofarmaChangePassword = () => {
           <div>
             <Label htmlFor="pwd">Nova senha</Label>
             <Input id="pwd" type="password" value={pwd} onChange={(e) => setPwd(e.target.value)} required />
+            <div className="mt-2">
+              <PasswordRulesChecklist password={pwd} />
+            </div>
           </div>
           <div>
             <Label htmlFor="confirm">Confirme a senha</Label>
