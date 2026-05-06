@@ -1,8 +1,30 @@
 import { createClient } from "npm:@supabase/supabase-js@2.95.0";
 import { corsHeaders } from "npm:@supabase/supabase-js@2.95.0/cors";
+import { SMTPClient } from "https://deno.land/x/denomailer@1.6.0/mod.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_ROLE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+const SMTP_PASSWORD = Deno.env.get("SMTP_PASSWORD")!;
+const SMTP_HOST = "smtp.hostinger.com";
+const SMTP_PORT = 465;
+const SMTP_USER = "contato@nghair.com.br";
+const SMTP_FROM = "NGHair <contato@nghair.com.br>";
+
+async function sendSmtpEmail(to: string, subject: string, html: string) {
+  const client = new SMTPClient({
+    connection: {
+      hostname: SMTP_HOST,
+      port: SMTP_PORT,
+      tls: true,
+      auth: { username: SMTP_USER, password: SMTP_PASSWORD },
+    },
+  });
+  try {
+    await client.send({ from: SMTP_FROM, to, subject, content: "auto", html });
+  } finally {
+    await client.close();
+  }
+}
 
 const reToEmail = (re: string) => `re-${re.trim().toLowerCase()}@eurofarma.local`;
 
@@ -61,21 +83,19 @@ Deno.serve(async (req) => {
         expires_at: expiresAt,
       });
 
-      // Send via transactional email function (set up after email domain)
+      // Send via SMTP (Hostinger)
       try {
-        await admin.functions.invoke("send-transactional-email", {
-          body: {
-            to: email,
-            subject: "Código para redefinir sua senha - NGHair",
-            html: `<p>Olá,</p>
-              <p>Use o código abaixo para redefinir sua senha no portal Eurofarma:</p>
-              <h2 style="font-family:monospace;letter-spacing:4px">${code}</h2>
-              <p>O código expira em 15 minutos.</p>
-              <p>Se você não solicitou, ignore este email.</p>`,
-          },
-        });
+        await sendSmtpEmail(
+          email,
+          "Código para redefinir sua senha - NGHair",
+          `<p>Olá,</p>
+            <p>Use o código abaixo para redefinir sua senha no portal Eurofarma:</p>
+            <h2 style="font-family:monospace;letter-spacing:4px">${code}</h2>
+            <p>O código expira em 15 minutos.</p>
+            <p>Se você não solicitou, ignore este email.</p>`,
+        );
       } catch (e) {
-        console.error("email send failed", e);
+        console.error("smtp send failed", e);
       }
 
       return okResp;
