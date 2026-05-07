@@ -1,4 +1,5 @@
-import { CalendarCheck } from "lucide-react";
+import { CalendarCheck, HardHat } from "lucide-react";
+import { toast } from "sonner";
 import heroImage from "@/assets/hero-salon.jpg";
 import { reportConversion } from "@/lib/gtag";
 
@@ -62,6 +63,13 @@ const HeroSection = () => {
             </svg>
             WhatsApp Humano
           </a>
+          <button
+            onClick={() => toast("Em construção", { icon: "🚧" })}
+            className="inline-flex items-center gap-3 rounded-full bg-gradient-to-r from-blue-500 to-blue-700 px-8 py-4 font-body text-sm font-semibold text-white uppercase tracking-wider transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-blue-500/30 cursor-pointer"
+          >
+            <HardHat className="h-5 w-5" />
+            Em construção
+          </button>
         </div>
       </div>
 
