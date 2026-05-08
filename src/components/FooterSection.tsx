@@ -1,4 +1,4 @@
-import { MapPin, Phone, Clock, Instagram } from "lucide-react";
+import { MapPin, Phone, Clock, Instagram, Building2 } from "lucide-react";
 
 const FooterSection = () => {
   return (
