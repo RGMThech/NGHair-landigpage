@@ -49,6 +49,7 @@ const FooterSection = () => {
         </div>
         <div className="border-t border-cream/10 pt-8 text-center">
           <p className="font-body text-xs text-cream/40">© 2026 NGHair. Todos os direitos reservados.</p>
+          <p className="font-body text-xs text-cream/30 mt-1">CNPJ: 21.819.799/0001-12</p>
         </div>
       </div>
     </footer>
