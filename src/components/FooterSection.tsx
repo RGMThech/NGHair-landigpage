@@ -10,6 +10,7 @@ const FooterSection = () => {
             <p className="font-body text-sm text-cream/60 leading-relaxed">
               Transformando vidas através da beleza desde 2021. Venha viver essa experiência.
             </p>
+            <p className="font-body text-xs text-cream/40 mt-2">CNPJ: 21.819.799/0001-12</p>
             
             {/* 
               <div className="flex gap-4 mt-6">
