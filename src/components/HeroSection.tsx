@@ -63,8 +63,11 @@ const HeroSection = () => {
             </svg>
             WhatsApp Humano
           </a>
-          <button
-            onClick={() => toast("Em construção", { icon: "🚧" })}
+          <a
+            href="https://wa.me/5511947962201?text=Olá! Gostaria de agendar um horário"
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={reportConversion}
             className="inline-flex items-center gap-3 rounded-full bg-gradient-to-r from-blue-500 to-blue-700 px-8 py-4 font-body text-sm font-semibold text-white uppercase tracking-wider transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-blue-500/30 cursor-pointer"
           >
             <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
