@@ -1,5 +1,5 @@
 import { CalendarCheck } from "lucide-react";
-import { toast } from "sonner";
+
 import heroImage from "@/assets/hero-salon.jpg";
 import { reportConversion } from "@/lib/gtag";
 
