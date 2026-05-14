@@ -7,7 +7,18 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from "@/hooks/use-toast";
-import { ArrowLeft, Camera } from "lucide-react";
+import { ArrowLeft, Camera, Trash2 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 type Profile = {
   user_id: string;
@@ -26,6 +37,8 @@ const EurofarmaProfile = () => {
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [confirmStep, setConfirmStep] = useState<0 | 1 | 2>(0);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -103,6 +116,23 @@ const EurofarmaProfile = () => {
   if (!profile) return null;
 
   const initials = (profile.full_name ?? profile.re).slice(0, 2).toUpperCase();
+
+  const handleDeleteAccount = async () => {
+    setDeleting(true);
+    const { data: { session } } = await supabase.auth.getSession();
+    const { error } = await supabase.functions.invoke("eurofarma-delete-account", {
+      headers: session ? { Authorization: `Bearer ${session.access_token}` } : undefined,
+    });
+    if (error) {
+      setDeleting(false);
+      setConfirmStep(0);
+      toast({ title: "Erro ao excluir", description: error.message, variant: "destructive" });
+      return;
+    }
+    await supabase.auth.signOut();
+    toast({ title: "Perfil excluído", description: "Seus dados foram removidos." });
+    navigate("/empresas/eurofarma");
+  };
 
   return (
     <main className="min-h-screen bg-background">
@@ -210,6 +240,86 @@ const EurofarmaProfile = () => {
             {saving ? "Salvando..." : "Salvar alterações"}
           </Button>
         </form>
+
+        <div className="mt-10 border border-destructive/30 rounded-2xl p-6 bg-destructive/5">
+          <h2 className="font-display text-lg text-foreground mb-1">Excluir meu perfil</h2>
+          <p className="text-sm text-muted-foreground mb-4">
+            Esta ação remove permanentemente seu acesso, seu perfil e todo o histórico de
+            consumos mensais vinculado ao seu RE. Não é possível desfazer.
+          </p>
+          <AlertDialog
+            open={confirmStep > 0}
+            onOpenChange={(open) => {
+              if (!open && !deleting) setConfirmStep(0);
+            }}
+          >
+            <AlertDialogTrigger asChild>
+              <Button
+                type="button"
+                variant="destructive"
+                onClick={() => setConfirmStep(1)}
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                Excluir perfil
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              {confirmStep === 1 ? (
+                <>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Você está prestes a excluir seu perfil. Isso apagará seu cadastro,
+                      sua conta de acesso e todos os consumos mensais registrados no seu RE
+                      ({profile.re}). Deseja continuar?
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel onClick={() => setConfirmStep(0)}>
+                      Cancelar
+                    </AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setConfirmStep(2);
+                      }}
+                    >
+                      Continuar
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </>
+              ) : (
+                <>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Tem certeza absoluta?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Esta é a confirmação final. Ao prosseguir, todos os seus dados serão
+                      excluídos permanentemente e você será desconectado.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel
+                      disabled={deleting}
+                      onClick={() => setConfirmStep(0)}
+                    >
+                      Cancelar
+                    </AlertDialogCancel>
+                    <AlertDialogAction
+                      disabled={deleting}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handleDeleteAccount();
+                      }}
+                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    >
+                      {deleting ? "Excluindo..." : "Excluir definitivamente"}
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </>
+              )}
+            </AlertDialogContent>
+          </AlertDialog>
+        </div>
       </section>
     </main>
   );
