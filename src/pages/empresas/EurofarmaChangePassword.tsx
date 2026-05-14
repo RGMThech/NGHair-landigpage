@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "@/hooks/use-toast";
 import { PasswordRulesChecklist } from "@/components/PasswordRulesChecklist";
 import { validatePassword } from "@/lib/password-rules";
@@ -13,6 +14,7 @@ const EurofarmaChangePassword = () => {
   const [pwd, setPwd] = useState("");
   const [confirm, setConfirm] = useState("");
   const [loading, setLoading] = useState(false);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -22,6 +24,10 @@ const EurofarmaChangePassword = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!acceptedTerms) {
+      toast({ title: "Aceite obrigatório", description: "Você precisa aceitar o Termo de Consentimento (LGPD) para continuar.", variant: "destructive" });
+      return;
+    }
     if (!validatePassword(pwd)) {
       toast({ title: "Senha fora do padrão", description: "Atenda a todos os requisitos listados.", variant: "destructive" });
       return;
@@ -66,7 +72,27 @@ const EurofarmaChangePassword = () => {
             <Label htmlFor="confirm">Confirme a senha</Label>
             <Input id="confirm" type="password" value={confirm} onChange={(e) => setConfirm(e.target.value)} required />
           </div>
-          <Button type="submit" className="w-full" disabled={loading}>
+          <div className="flex items-start gap-2 pt-2">
+            <Checkbox
+              id="terms"
+              checked={acceptedTerms}
+              onCheckedChange={(v) => setAcceptedTerms(v === true)}
+              className="mt-0.5"
+            />
+            <Label htmlFor="terms" className="text-sm font-normal leading-snug text-muted-foreground cursor-pointer">
+              Li e aceito o tratamento e compartilhamento dos meus dados conforme o{" "}
+              <a
+                href="/termo-lgpd-eurofarma.pdf"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline text-foreground hover:text-primary"
+              >
+                Termo de Consentimento (LGPD)
+              </a>
+              .
+            </Label>
+          </div>
+          <Button type="submit" className="w-full" disabled={loading || !acceptedTerms}>
             {loading ? "Salvando..." : "Salvar"}
           </Button>
         </form>
