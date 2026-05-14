@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from "@/hooks/use-toast";
 import { ArrowLeft, Camera } from "lucide-react";
@@ -24,6 +25,7 @@ const EurofarmaProfile = () => {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -76,6 +78,10 @@ const EurofarmaProfile = () => {
   const save = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!profile) return;
+    if (!acceptedTerms) {
+      toast({ title: "Aceite obrigatório", description: "Confirme o Termo de Consentimento (LGPD) para salvar.", variant: "destructive" });
+      return;
+    }
     setSaving(true);
     const { error } = await supabase
       .from("eurofarma_profiles")
@@ -180,7 +186,27 @@ const EurofarmaProfile = () => {
               className="max-w-xs"
             />
           </div>
-          <Button type="submit" disabled={saving}>
+          <div className="flex items-start gap-2">
+            <Checkbox
+              id="terms"
+              checked={acceptedTerms}
+              onCheckedChange={(v) => setAcceptedTerms(v === true)}
+              className="mt-0.5"
+            />
+            <Label htmlFor="terms" className="text-sm font-normal leading-snug text-muted-foreground cursor-pointer">
+              Confirmo o tratamento e compartilhamento dos meus dados conforme o{" "}
+              <a
+                href="/termo-lgpd-eurofarma.pdf"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline text-foreground hover:text-primary"
+              >
+                Termo de Consentimento (LGPD)
+              </a>
+              .
+            </Label>
+          </div>
+          <Button type="submit" disabled={saving || !acceptedTerms}>
             {saving ? "Salvando..." : "Salvar alterações"}
           </Button>
         </form>
