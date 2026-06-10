@@ -17,7 +17,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
 
       - run: npm install
 
@@ -32,11 +32,11 @@ jobs:
           name: dist
           path: dist/
 
-      # Dispara o deploy da Hostinger UMA única vez, no fim do build
-      - name: Trigger Hostinger deployment
-        if: success()
-        run: |
-          test -n "${HOSTINGER_WEBHOOK_URL}"
-          curl -fsS -X POST "${HOSTINGER_WEBHOOK_URL}"
+      # Dispara o deploy da Hostinger via webhook SOMENTE se o secret existir.
+      # Se não houver webhook, a Hostinger puxa do Git automaticamente (deploy nativo)
+      # e este passo é ignorado sem quebrar o workflow.
+      - name: Trigger Hostinger deployment (opcional)
+        if: ${{ success() && secrets.HOSTINGER_WEBHOOK_URL != '' }}
+        run: curl -fsS -X POST "${HOSTINGER_WEBHOOK_URL}"
         env:
           HOSTINGER_WEBHOOK_URL: ${{ secrets.HOSTINGER_WEBHOOK_URL }}
