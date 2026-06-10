@@ -4,7 +4,6 @@ on:
   push:
     branches: [main]
     paths:
-      - 'NGHairBrooklin_prestacaocontas/**'
       - 'public/NGHairBrooklin_prestacaocontas/**'
       - 'public/NGHairBrooklin_prestacaocontas.html'
 
