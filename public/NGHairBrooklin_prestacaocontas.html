@@ -102,11 +102,11 @@
   .alerta strong { color: var(--ink); }
   .credito-banner { background: var(--green-lt); border: 1px solid var(--green); border-left: 4px solid var(--green); border-radius: 4px; padding: 12px 18px; font-size: 13px; color: var(--green); margin-top: 12px; }
   .obs-block { background: var(--bg-card); border-left: 3px solid var(--gold); padding: 14px 18px; border-radius: 0 4px 4px 0; font-size: 13px; color: var(--ink-soft); line-height: 1.7; }
-  .tab-btns { display: flex; gap: 8px; margin-bottom: 24px; flex-wrap: wrap; }
-  .tab-btn { padding: 8px 18px; border: 1px solid var(--rule); background: var(--bg-card); border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: 500; color: var(--ink-soft); transition: all .15s; }
-  .tab-btn.active, .tab-btn:hover { background: var(--ink); color: #fff; border-color: var(--ink); }
-  .tab-panel { display: none; }
-  .tab-panel.active { display: block; }
+  
+  
+  
+  
+  
   .footer { background: var(--ink); color: #666; padding: 28px 56px; font-size: 11px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; font-family: 'JetBrains Mono', monospace; }
   .footer span { color: var(--gold); }
   .divider { border: none; border-top: 1px solid var(--rule); margin: 32px 0; }
@@ -115,8 +115,8 @@
     .section-title { font-size: 20px; } .cat-name { width: 110px; }
   }
   @media print {
-    .status-bar, .lb, .tab-btns { display: none !important; }
-    .tab-panel { display: block !important; }
+    .status-bar, .lb, 
+    
     .cover { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   }
 </style>
@@ -130,7 +130,7 @@
 
 <!-- CAPA -->
 <div class="cover">
-  <div class="cover-eyebrow">Prestação de Contas · Obra Comercial · v10.9</div>
+  <div class="cover-eyebrow">Prestação de Contas · Obra Comercial · v11.0</div>
   <h1>Reforma <em>NGHair</em><br>Unidade Brooklin</h1>
   <div class="cover-subtitle">Rua Barão do Triunfo, 1455 — Brooklin Paulista, São Paulo, SP</div>
   <div class="cover-meta">
@@ -143,7 +143,7 @@
 </div>
 <div class="status-bar">
   <div class="status-dot"></div>
-  OBRA EM ANDAMENTO — Atualizado em 10/06/2026 · v10.9
+  OBRA EM ANDAMENTO — Atualizado em 10/06/2026 · v11.0
 </div>
 
 <div class="container">
@@ -565,7 +565,7 @@
     <div style="background:var(--bg-card);border:1px solid var(--rule);border-radius:4px;padding:20px 24px;margin-bottom:20px">
       <div style="display:flex;flex-wrap:wrap;gap:32px">
         <div><div class="card-label">Empresa</div><div style="font-weight:600;font-size:14px">OCS Remoção de Entulhos</div><div style="font-size:12px;color:var(--ink-muted)">CNPJ 02.812.272/0001-11</div></div>
-        <div><div class="card-label">Endereço</div><div style="font-size:13px">Av10.9 Dr. Ulysses Guimarães, 1140<br>Diadema — SP</div></div>
+        <div><div class="card-label">Endereço</div><div style="font-size:13px">Av11.0 Dr. Ulysses Guimarães, 1140<br>Diadema — SP</div></div>
         <div><div class="card-label">Contato</div><div style="font-size:13px">(11) 5674-0588<br>(11) 98111-4643</div></div>
         <div><div class="card-label">Total Pago</div><div style="font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:700;color:var(--green)">R$ 980,00</div><div style="font-size:12px;color:var(--ink-muted)">2 caçambas · PIX</div></div>
       </div>
@@ -838,210 +838,6 @@
 
   </div>
 
-  <!-- ── REGISTROS FOTOGRÁFICOS ── -->
-  <div class="section">
-    <div class="section-header">
-      <span class="section-tag">Registros</span>
-      <h2 class="section-title">Fotos da Obra e Documentos</h2>
-    </div>
-    <div class="tab-btns">
-      <button class="tab-btn active" onclick="showTab('tab-obra')">Andamento da Obra (31 fotos)</button>
-      <button class="tab-btn" onclick="showTab('tab-dep')">Orçamentos e Comprovantes Dep. Zona Sul (8 docs)</button>
-    </div>
-    <div id="tab-obra" class="tab-panel active">
-      <div class="photo-grid">
-<div class="photo-card">
-        <img data-img="i0" src="" alt="Nota Fiscal — Entrega de Materiais" class="photo-img" onclick="showImg('i0')">
-        <div class="photo-caption">
-            <strong>Nota Fiscal — Entrega de Materiais</strong>
-            <div class="photo-date">28/05/2026</div>
-            Nota enviada pelo pedreiro na chegada dos materiais do Dep. Zona Sul
-        </div>
-    </div>
-            Pedreiro questiona se o varal seria mantido ou retirado
-        </div>
-    </div>
-<div class="photo-card">
-        <img data-img="i2" src="" alt="Andamento da obra" class="photo-img" onclick="showImg('i2')">
-        <div class="photo-caption">
-            <strong>Andamento da obra</strong>
-            <div class="photo-date">28/05/2026</div>
-            Registro do trabalho em execução
-        </div>
-    </div>
-            Cano de água da rua identificado nos fundos
-        </div>
-    </div>
-<div class="photo-card">
-        <img data-img="i4" src="" alt="Tubulação existente" class="photo-img" onclick="showImg('i4')">
-        <div class="photo-caption">
-            <strong>Tubulação existente</strong>
-            <div class="photo-date">28/05/2026</div>
-            Detalhe da tubulação encontrada
-        </div>
-    </div>
-            Registro do progresso da obra
-        </div>
-    </div>
-<div class="photo-card">
-        <img data-img="i6" src="" alt="Andamento — Dia 3" class="photo-img" onclick="showImg('i6')">
-        <div class="photo-caption">
-            <strong>Andamento — Dia 3</strong>
-            <div class="photo-date">28/05/2026</div>
-            Vista complementar do andamento
-        </div>
-    </div>
-            Progresso nos serviços de alvenaria
-        </div>
-    </div>
-<div class="photo-card">
-        <img data-img="i8" src="" alt="Chegada de materiais" class="photo-img" onclick="showImg('i8')">
-        <div class="photo-caption">
-            <strong>Chegada de materiais</strong>
-            <div class="photo-date">01/06/2026</div>
-            Confirmação de recebimento de novo pedido
-        </div>
-    </div>
-            Caçamba de entulho lotada, solicitação de troca
-        </div>
-    </div>
-<div class="photo-card">
-        <img data-img="i10" src="" alt="Volume de entulho" class="photo-img" onclick="showImg('i10')">
-        <div class="photo-caption">
-            <strong>Volume de entulho</strong>
-            <div class="photo-date">01/06/2026</div>
-            Material retirado da demolição
-        </div>
-    </div>
-            Registro após troca da caçamba
-        </div>
-    </div>
-<div class="photo-card">
-        <img data-img="i12" src="" alt="Lavatórios recebidos" class="photo-img" onclick="showImg('i12')">
-        <div class="photo-caption">
-            <strong>Lavatórios recebidos</strong>
-            <div class="photo-date">02/06/2026</div>
-            Caixas dos lavatórios (90cm) — maiores que a porta 70cm
-        </div>
-    </div>
-            Lavatório não cabe pela porta de 70cm
-        </div>
-    </div>
-<div class="photo-card">
-        <img data-img="i14" src="" alt="Lavatório — Aguardando solução" class="photo-img" onclick="showImg('i14')">
-        <div class="photo-caption">
-            <strong>Lavatório — Aguardando solução</strong>
-            <div class="photo-date">02/06/2026</div>
-            Caixas aguardando entrada pelo telhado
-        </div>
-    </div>
-            Confirmação de recebimento
-        </div>
-    </div>
-<div class="photo-card">
-        <img data-img="i16" src="" alt="Materiais — Detalhe" class="photo-img" onclick="showImg('i16')">
-        <div class="photo-caption">
-            <strong>Materiais — Detalhe</strong>
-            <div class="photo-date">02/06/2026</div>
-            Vista complementar da entrega
-        </div>
-    </div>
-            Definição de cor para o projeto
-        </div>
-    </div>
-<div class="photo-card">
-        <img data-img="i18" src="" alt="Referência de acabamento" class="photo-img" onclick="showImg('i18')">
-        <div class="photo-caption">
-            <strong>Referência de acabamento</strong>
-            <div class="photo-date">05/06/2026</div>
-            Foto de referência enviada
-        </div>
-    </div>
-            Registro de instalação em execução
-        </div>
-    </div>
-<div class="photo-card">
-        <img data-img="i20" src="" alt="💳 PIX R$ 10.000 — Natalício" class="photo-img" onclick="showImg('i20')">
-        <div class="photo-caption">
-            <strong>💳 PIX R$ 10.000 — Natalício</strong>
-            <div class="photo-date">08/06/2026</div>
-            Comprovante do pagamento parcial de mão de obra
-        </div>
-    </div>
-            Nota de R$ 236,28 de materiais comprados pela prestadora
-        </div>
-    </div>
-<div class="photo-card">
-        <img data-img="i22" src="" alt="💳 PIX R$ 236,28 — Natalício" class="photo-img" onclick="showImg('i22')">
-        <div class="photo-caption">
-            <strong>💳 PIX R$ 236,28 — Natalício</strong>
-            <div class="photo-date">09/06/2026</div>
-            Comprovante de ressarcimento de materiais
-        </div>
-    </div>
-            Serviço indicado para tratamento de piso
-        </div>
-    </div>
-        <div class="comp-card" onclick="showImg('i138')">
-            <img data-img="i138" src="" alt="NF Santil R$ 2.446,20" class="comp-img">
-            <div class="comp-info"><strong>NF R$ 2.446,20 — Santil</strong><span>05/06/2026 · NFC-e 16811 · Mastercard 3×</span></div>
-        </div>
-        <div class="comp-card" onclick="showImg('i40')">
-            <img class="comp-img" data-img="i40" src="" alt="VDV Móveis R$ 17.600">
-            <div class="comp-info"><strong>Cartão R$ 17.600 — Van De Velde</strong><span>21/05/2026 · Móveis · 10× R$ 1.760</span></div>
-        </div>
-        <div class="comp-card" onclick="showImg('i42')">
-            <img class="comp-img" data-img="i42" src="" alt="VDV Frete R$ 14.950">
-            <div class="comp-info"><strong>Cartão R$ 14.950 — Van De Velde</strong><span>21/05/2026 · Frete/Restante · 10× R$ 1.495</span></div>
-        </div>
-        <div class="comp-card" onclick="showImg('i36')">
-            <img class="comp-img" data-img="i36" src="" alt="PIX R$ 490 Caçamba 1">
-            <div class="comp-info"><strong>PIX R$ 490,00 — Caçamba 1</strong><span>30/05/2026 · OCS Caçambas</span></div>
-        </div>
-        <div class="comp-card" onclick="showImg('i38')">
-            <img class="comp-img" data-img="i38" src="" alt="PIX R$ 490 Caçamba 2">
-            <div class="comp-info"><strong>PIX R$ 490,00 — Caçamba 2</strong><span>02/06/2026 · OCS Caçambas</span></div>
-        </div>        <div class="comp-card" onclick="showImg('i34')">
-            <img class="comp-img" data-img="i34" src="" alt="Cartão R$ 1.500 — Gesso Bispo parcela 1/4">
-            <div class="comp-info"><strong>Cartão 4× R$ 1.500 — Gesso Bispo</strong><span>06/06/2026 · Parcela 1 de 4 · Final 1961</span></div>
-        </div>
-        <div class="comp-card" onclick="showImg('i118')">
-            <img class="comp-img" data-img="i118" src="" alt="PIX R$ 10.000 — 1ª Parcela Natalício">
-            <div class="comp-info"><strong>PIX R$ 10.000 — 1ª Parcela</strong><span>02/06/2026 · Natalicio Inacio da Silva</span></div>
-        </div>
-        <div class="comp-card" onclick="showImg('i120')">
-            <img class="comp-img" data-img="i120" src="" alt="PIX R$ 932,18 — Dep. Zona Sul Orç. 8631801">
-            <div class="comp-info"><strong>PIX R$ 932,18 — Dep. Zona Sul</strong><span>01/06/2026 · Orç. 8631801 · F Barbosa Cia Ltda</span></div>
-        </div>div class="comp-card" onclick="showImg('i96')">
-            <img class="comp-img" data-img="i96" src="" alt="Comprovante PIX — R$ 1.076,50">
-            <div class="comp-info"><strong>Comprovante PIX — R$ 1.076,50</strong><span>27/05/2026 · Orç. 8616701</span></div>
-        </div><div class="comp-card" onclick="showImg('i102')">
-            <img class="comp-img" data-img="i102" src="" alt="Comprovante PIX — R$ 590,93">
-            <div class="comp-info"><strong>Comprovante PIX — R$ 590,93</strong><span>05/06/2026 · Orç. 8664501</span></div>
-        </div><div class="comp-card" onclick="showImg('i104')">
-            <img class="comp-img" data-img="i104" src="" alt="Comprovante PIX — R$ 1.068,42">
-            <div class="comp-info"><strong>Comprovante PIX — R$ 1.068,42</strong><span>08/06/2026 · Orç. 8673801</span></div>
-        </div><div class="comp-card" onclick="showImg('i106')">
-            <img class="comp-img" data-img="i106" src="" alt="Comprovante PIX — R$ 579,76">
-            <div class="comp-info"><strong>Comprovante PIX — R$ 579,76</strong><span>08/06/2026 · Orç. 8680901</span></div>
-        </div><div class="comp-card" onclick="showImg('i84')">
-            <img class="comp-img" data-img="i84" src="" alt="Comprovante PIX — R$ 10.000,00">
-            <div class="comp-info"><strong>Comprovante PIX — R$ 10.000,00</strong><span>08/06/2026 · Mão de Obra Natalício</span></div>
-        </div><div class="comp-card" onclick="showImg('i88')">
-            <img class="comp-img" data-img="i88" src="" alt="Comprovante PIX — R$ 236,28">
-            <div class="comp-info"><strong>Comprovante PIX — R$ 236,28</strong><span>09/06/2026 · Materiais Natalício</span></div>
-        </div><div class="comp-card" onclick="showImg('i44')">
-            <img class="comp-img" data-img="i44" src="" alt="Nota Fiscal — Entrega Materiais">
-            <div class="comp-info"><strong>Nota Fiscal — Entrega Materiais</strong><span>28/05/2026 · Depósito Zona Sul</span></div>
-        </div><div class="comp-card" onclick="showImg('i86')">
-            <img class="comp-img" data-img="i86" src="" alt="Nota — Materiais Avulsos">
-            <div class="comp-info"><strong>Nota — Materiais Avulsos</strong><span>09/06/2026 · Compra pela prestadora</span></div>
-        </div></div>
-    <div class="alerta" style="margin-top:20px">
-      <strong>✅ Comprovante do Orç. 8631801 registrado:</strong> PIX R$ 932,18 em 01/06/2026 — Rodrigo de Mello → F Barbosa E Cia Ltda.
-    </div>
-  </div>
-
   <!-- ── OBSERVAÇÕES ── -->
   <div class="section">
     <div class="section-header">
@@ -1206,60 +1002,19 @@ const IMGS = {
 
 
 
-  "i0": "NGHairBrooklin_prestacaocontas/assets/image-2b5cd56d9a99be0d.jpg",
-  "i2": "NGHairBrooklin_prestacaocontas/assets/image-97dae897a1cf3595.jpg",
-  "i4": "NGHairBrooklin_prestacaocontas/assets/image-768d9cc5ec6ff6ab.jpg",
-  "i6": "NGHairBrooklin_prestacaocontas/assets/image-975e2a868f6faad9.jpg",
-  "i8": "NGHairBrooklin_prestacaocontas/assets/image-148ff51d8649c2a7.jpg",
-  "i10": "NGHairBrooklin_prestacaocontas/assets/image-258c346730ce26c2.jpg",
-  "i12": "NGHairBrooklin_prestacaocontas/assets/image-b83cde1a937d8112.jpg",
-  "i14": "NGHairBrooklin_prestacaocontas/assets/image-750c122d850cc228.jpg",
-  "i16": "NGHairBrooklin_prestacaocontas/assets/image-2a7060173bb6bfe0.jpg",
-  "i18": "NGHairBrooklin_prestacaocontas/assets/image-8393bac152966f3c.jpg",
-  "i20": "NGHairBrooklin_prestacaocontas/assets/image-23a3174e8c810d87.jpg",
-  "i22": "NGHairBrooklin_prestacaocontas/assets/image-cf6423f8bf72680f.jpg",
   "i24": "NGHairBrooklin_prestacaocontas/assets/image-4e0fa20a216b28c8.jpg",
   "i26": "NGHairBrooklin_prestacaocontas/assets/image-95b2a3ce2f46c75b.jpg",
   "i28": "NGHairBrooklin_prestacaocontas/assets/image-ad37f1ddb4bdf303.jpg",
   "i30": "NGHairBrooklin_prestacaocontas/assets/image-1f25d37f781647c5.jpg",
-  "i32": "NGHairBrooklin_prestacaocontas/assets/image-10e0a8ceb0bdd9d9.jpg",
   "i34": "NGHairBrooklin_prestacaocontas/assets/image-e24d795b62b64d87.jpg",
   "i36": "NGHairBrooklin_prestacaocontas/assets/image-758b05b088dbb4e5.jpg",
   "i38": "NGHairBrooklin_prestacaocontas/assets/image-aa3a58674b60dddd.jpg",
   "i40": "NGHairBrooklin_prestacaocontas/assets/image-f3543b73dd6c922b.jpg",
   "i42": "NGHairBrooklin_prestacaocontas/assets/image-10fd1d915a56431b.jpg",
-  "i44": "NGHairBrooklin_prestacaocontas/assets/image-fed998bf0989bcf0.jpg",
-  "i46": "NGHairBrooklin_prestacaocontas/assets/image-bbc906b205ff3b97.jpg",
-  "i48": "NGHairBrooklin_prestacaocontas/assets/image-d4b9dcefa80a8357.jpg",
-  "i50": "NGHairBrooklin_prestacaocontas/assets/image-51f178bc11d6d89c.jpg",
-  "i52": "NGHairBrooklin_prestacaocontas/assets/image-3e99a3382842b9e4.jpg",
-  "i54": "NGHairBrooklin_prestacaocontas/assets/image-740039bbd4b4c092.jpg",
-  "i56": "NGHairBrooklin_prestacaocontas/assets/image-8f3578c8060d76d9.jpg",
-  "i58": "NGHairBrooklin_prestacaocontas/assets/image-36b46ee78d954eca.jpg",
-  "i60": "NGHairBrooklin_prestacaocontas/assets/image-51abf97b8f1ec472.jpg",
-  "i62": "NGHairBrooklin_prestacaocontas/assets/image-1da4f091f162cfb6.jpg",
-  "i64": "NGHairBrooklin_prestacaocontas/assets/image-4773efa66eb845a0.jpg",
-  "i66": "NGHairBrooklin_prestacaocontas/assets/image-a4af5218cb351b07.jpg",
-  "i68": "NGHairBrooklin_prestacaocontas/assets/image-6e5b5c01094abf0f.jpg",
-  "i70": "NGHairBrooklin_prestacaocontas/assets/image-ca52b9c4250d19c3.jpg",
-  "i72": "NGHairBrooklin_prestacaocontas/assets/image-859478e18a71efc5.jpg",
-  "i74": "NGHairBrooklin_prestacaocontas/assets/image-b74862c10fcb2519.jpg",
-  "i76": "NGHairBrooklin_prestacaocontas/assets/image-3e459b04b41034ac.jpg",
-  "i78": "NGHairBrooklin_prestacaocontas/assets/image-e2a44ba63df19e73.jpg",
-  "i80": "NGHairBrooklin_prestacaocontas/assets/image-c717beebd52d29f6.jpg",
-  "i82": "NGHairBrooklin_prestacaocontas/assets/image-bb10d8a76e85ef66.jpg",
-  "i84": "NGHairBrooklin_prestacaocontas/assets/image-402fc1269bab6af5.jpg",
-  "i86": "NGHairBrooklin_prestacaocontas/assets/image-ca3ec3ea384409de.jpg",
-  "i88": "NGHairBrooklin_prestacaocontas/assets/image-120b0384d0a874d9.jpg",
-  "i90": "NGHairBrooklin_prestacaocontas/assets/image-88222f9c3bf5d8f8.jpg",
-  "i92": "NGHairBrooklin_prestacaocontas/assets/image-c064a2a45ac3b8ff.jpg",
-  "i94": "NGHairBrooklin_prestacaocontas/assets/image-01277cb4eeda8f59.jpg",
   "i96": "NGHairBrooklin_prestacaocontas/assets/image-88e466085bb1fb68.jpg",
-  "i100": "NGHairBrooklin_prestacaocontas/assets/image-5148639f2da1162e.jpg",
   "i102": "NGHairBrooklin_prestacaocontas/assets/image-5bd22d374feacbb7.jpg",
   "i104": "NGHairBrooklin_prestacaocontas/assets/image-aaf4d50cf6632be4.jpg",
   "i106": "NGHairBrooklin_prestacaocontas/assets/image-23e454f5e2d94778.jpg",
-  "i118": "NGHairBrooklin_prestacaocontas/assets/image-acb9993a27ec16fe.jpg",
   "i120": "NGHairBrooklin_prestacaocontas/assets/image-e7f13d31deea2509.png",
 };
 
@@ -1284,8 +1039,8 @@ document.addEventListener("keydown", function(e) {
   if (e.key === "Escape") document.getElementById("lightbox").classList.remove("active");
 });
 function showTab(id) {
-  document.querySelectorAll(".tab-panel").forEach(function(p){ p.classList.remove("active"); });
-  document.querySelectorAll(".tab-btn").forEach(function(b){ b.classList.remove("active"); });
+  document.querySelectorAll(");
+  document.querySelectorAll(");
   document.getElementById(id).classList.add("active");
   event.target.classList.add("active");
 }
