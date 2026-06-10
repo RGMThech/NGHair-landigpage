@@ -81,7 +81,7 @@
   .tl-valor { display: inline-block; margin-top: 6px; font-family: 'JetBrains Mono', monospace; font-size: 12px; background: var(--gold-lt); color: #7a5c1a; padding: 2px 10px; border-radius: 2px; font-weight: 600; }
   .photo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
   .photo-card { background: var(--bg-card); border: 1px solid var(--rule); border-radius: 4px; overflow: hidden; }
-  .photo-img { width: 100%; aspect-ratio: 4/3; object-fit: cover; display: block; cursor: pointer; transition: opacity .2s; background: #e8e4dc; }
+  .photo-img { width: 100%; aspect-ratio: 4/3; object-fit: cover; display: block; cursor: pointer; transition: opacity .2s; }
   .photo-img:hover { opacity: .88; }
   .photo-caption { padding: 10px 14px; font-size: 12px; color: var(--ink-soft); border-top: 1px solid var(--rule); }
   .photo-caption strong { display: block; color: var(--ink); font-size: 13px; margin-bottom: 2px; }
@@ -102,11 +102,11 @@
   .alerta strong { color: var(--ink); }
   .credito-banner { background: var(--green-lt); border: 1px solid var(--green); border-left: 4px solid var(--green); border-radius: 4px; padding: 12px 18px; font-size: 13px; color: var(--green); margin-top: 12px; }
   .obs-block { background: var(--bg-card); border-left: 3px solid var(--gold); padding: 14px 18px; border-radius: 0 4px 4px 0; font-size: 13px; color: var(--ink-soft); line-height: 1.7; }
-  
-  
-  
-  
-  
+  .tab-btns { display: flex; gap: 8px; margin-bottom: 24px; flex-wrap: wrap; }
+  .tab-btn { padding: 8px 18px; border: 1px solid var(--rule); background: var(--bg-card); border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: 500; color: var(--ink-soft); transition: all .15s; }
+  .tab-btn.active, .tab-btn:hover { background: var(--ink); color: #fff; border-color: var(--ink); }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
   .footer { background: var(--ink); color: #666; padding: 28px 56px; font-size: 11px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; font-family: 'JetBrains Mono', monospace; }
   .footer span { color: var(--gold); }
   .divider { border: none; border-top: 1px solid var(--rule); margin: 32px 0; }
@@ -115,8 +115,8 @@
     .section-title { font-size: 20px; } .cat-name { width: 110px; }
   }
   @media print {
-    .status-bar, .lb, 
-    
+    .status-bar, .lb, .tab-btns { display: none !important; }
+    .tab-panel { display: block !important; }
     .cover { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   }
 </style>
@@ -130,7 +130,7 @@
 
 <!-- CAPA -->
 <div class="cover">
-  <div class="cover-eyebrow">Prestação de Contas · Obra Comercial · v11.0</div>
+  <div class="cover-eyebrow">Prestação de Contas · Obra Comercial · v11.1</div>
   <h1>Reforma <em>NGHair</em><br>Unidade Brooklin</h1>
   <div class="cover-subtitle">Rua Barão do Triunfo, 1455 — Brooklin Paulista, São Paulo, SP</div>
   <div class="cover-meta">
@@ -143,7 +143,7 @@
 </div>
 <div class="status-bar">
   <div class="status-dot"></div>
-  OBRA EM ANDAMENTO — Atualizado em 10/06/2026 · v11.0
+  OBRA EM ANDAMENTO — Atualizado em 10/06/2026 · v11.1
 </div>
 
 <div class="container">
@@ -511,7 +511,7 @@
     <div style="background:var(--bg-card);border:1px solid var(--rule);border-radius:4px;padding:20px 24px;margin-bottom:20px">
       <div style="display:flex;flex-wrap:wrap;gap:32px">
         <div><div class="card-label">Empresa</div><div style="font-weight:600;font-size:14px">Gesso Bispo</div><div style="font-size:12px;color:var(--ink-muted)">CNPJ 15.250.302/0001-95 · MEI</div></div>
-        <div><div class="card-label">Responsável</div><div style="font-size:13px;font-weight:500">Gilvania da Silva Bispo</div><div style="font-size:12px;color:var(--ink-muted)">(11) 98759-2606 · Rua Vieira de Morais, 885</div></div>
+        <div><div class="card-label">Responsável</div><div style="font-size:13px;font-weight:500">Gilvania da Silva Bispo</div><div style="font-size:12px;color:var(--ink-muted)">(11) 98759-2606</div></div>
         <div><div class="card-label">NFS-e</div><div style="font-weight:600;font-size:13px;color:var(--green)">Nº 86 · 10/06/2026 ✓</div></div>
         <div><div class="card-label">Pagamento</div><div style="font-size:13px;font-weight:600">Cartão · Final 1961</div><div style="font-size:12px;color:var(--ink-muted)">4× R$ 1.500,00 · 06/06/2026</div></div>
         <div><div class="card-label">Total</div><div style="font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:700;color:var(--green)">R$ 6.000,00</div></div>
@@ -526,7 +526,7 @@
         <tbody>
           <tr>
             <td>01</td>
-            <td>Forro de drywall com fechamento lateral na escada — fornecimento integral de materiais, placas e mão de obra</td>
+            <td>Forro de drywall com fechamento lateral na escada — materiais, placas e mão de obra</td>
             <td>40 m²</td>
             <td style="text-align:right;font-family:'JetBrains Mono',monospace">R$ 150,00/m²</td>
             <td style="text-align:right;font-family:'JetBrains Mono',monospace;font-weight:600">R$ 6.000,00</td>
@@ -565,7 +565,7 @@
     <div style="background:var(--bg-card);border:1px solid var(--rule);border-radius:4px;padding:20px 24px;margin-bottom:20px">
       <div style="display:flex;flex-wrap:wrap;gap:32px">
         <div><div class="card-label">Empresa</div><div style="font-weight:600;font-size:14px">OCS Remoção de Entulhos</div><div style="font-size:12px;color:var(--ink-muted)">CNPJ 02.812.272/0001-11</div></div>
-        <div><div class="card-label">Endereço</div><div style="font-size:13px">Av11.0 Dr. Ulysses Guimarães, 1140<br>Diadema — SP</div></div>
+        <div><div class="card-label">Endereço</div><div style="font-size:13px">Av11.1 Dr. Ulysses Guimarães, 1140<br>Diadema — SP</div></div>
         <div><div class="card-label">Contato</div><div style="font-size:13px">(11) 5674-0588<br>(11) 98111-4643</div></div>
         <div><div class="card-label">Total Pago</div><div style="font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:700;color:var(--green)">R$ 980,00</div><div style="font-size:12px;color:var(--ink-muted)">2 caçambas · PIX</div></div>
       </div>
@@ -838,97 +838,45 @@
 
   </div>
 
-  <!-- ── OBSERVAÇÕES ── -->
+  <!-- ── REGISTROS FOTOGRÁFICOS ── -->
   <div class="section">
     <div class="section-header">
-      <span class="section-tag">Notas</span>
-      <h2 class="section-title">Observações Gerais</h2>
+      <span class="section-tag">Registros</span>
+      <h2 class="section-title">Fotos do Andamento da Obra</h2>
     </div>
-    <div class="obs-block">
-      Documento consolidado de prestação de contas da reforma do espaço comercial na Rua Barão do Triunfo, 1455, Brooklin Paulista, São Paulo — para instalação da unidade Brooklin do NGHair (nghair.com.br).<br><br>
-      <strong>Fontes:</strong> Conversa WhatsApp com pedreiro Natalício (ref. Érico) e conversa WhatsApp com Talita — Depósito Zona Sul (F. Barbosa Cia Ltda, CNPJ 62.455.761/0001-95). Áudios não transcritos — eventuais acordos verbais devem ser confirmados e lançados.<br><br>
-      <strong>Pagamentos de mão de obra</strong> realizados via PIX para Elânia Maria Matias Ferraz Silva (CPF 090.316.464-74), responsável pela execução com Natalício.<br><br>
-      <strong>Pagamentos de materiais</strong> realizados via PIX para F. Barbosa Cia Ltda (CNPJ 62.455.761/0001-95, Banco Sicredi).<br><br>
-      <strong>Crédito de R$ 120,00</strong> disponível no Depósito Zona Sul — frete do pedido 8680901, a ser abatido na próxima compra.
+    <p style="font-size:13px;color:var(--ink-soft);margin-bottom:16px">10/06/2026 — Clique para ampliar.</p>
+    <div class="comp-grid">
+      <div class="comp-card" onclick="showImg('i121')">
+        <img class="comp-img" data-img="i121" src="" alt="Vista geral — Salão principal">
+        <div class="comp-info"><strong>Vista geral — Salão principal</strong><span>10/06/2026 · Andamento da obra</span></div>
+      </div>
+      <div class="comp-card" onclick="showImg('i122')">
+        <img class="comp-img" data-img="i122" src="" alt="Coluna e corredor — Térreo">
+        <div class="comp-info"><strong>Coluna e corredor — Térreo</strong><span>10/06/2026 · Andamento da obra</span></div>
+      </div>
+      <div class="comp-card" onclick="showImg('i123')">
+        <img class="comp-img" data-img="i123" src="" alt="Massa corrida — Parede">
+        <div class="comp-info"><strong>Massa corrida — Parede</strong><span>10/06/2026 · Andamento da obra</span></div>
+      </div>
+      <div class="comp-card" onclick="showImg('i124')">
+        <img class="comp-img" data-img="i124" src="" alt="Quadro elétrico — Frente">
+        <div class="comp-info"><strong>Quadro elétrico — Frente</strong><span>10/06/2026 · Andamento da obra</span></div>
+      </div>
+      <div class="comp-card" onclick="showImg('i125')">
+        <img class="comp-img" data-img="i125" src="" alt="Iluminação de trilho">
+        <div class="comp-info"><strong>Iluminação de trilho</strong><span>10/06/2026 · Andamento da obra</span></div>
+      </div>
+      <div class="comp-card" onclick="showImg('i126')">
+        <img class="comp-img" data-img="i126" src="" alt="Área de lavatórios">
+        <div class="comp-info"><strong>Área de lavatórios</strong><span>10/06/2026 · Andamento da obra</span></div>
+      </div>
+      <div class="comp-card" onclick="showImg('i127')">
+        <img class="comp-img" data-img="i127" src="" alt="Vão de acesso">
+        <div class="comp-info"><strong>Vão de acesso</strong><span>10/06/2026 · Andamento da obra</span></div>
+      </div>
+      
     </div>
-  </div>
-
-</div>
-
-
-
-</div>
-
-<div class="footer">
-  <div>NGHair · Unidade Brooklin · Rua Barão do Triunfo, 1455 · São Paulo, SP</div>
-  <div>v10.5 · <span>09/06/2026</span> · Fontes: WhatsApp Natalício · Dep. Zona Sul · Luciano · Silva JJ Laminados<div class="photo-card">
-        <img data-img="i138" src="" alt="Vista geral — Salão principal" class="photo-img" onclick="showImg('i138')">
-        <div class="photo-caption">
-            <strong>Vista geral — Salão principal</strong>
-            <div class="photo-date">10/06/2026</div>
-            Vista panorâmica do salão com iluminação de trilho funcionando, aberturas de janelas e vãos em andamento
-        </div>
-    </div>
-<div class="photo-card">
-        <img data-img="i139" src="" alt="Coluna e corredor — Térreo" class="photo-img" onclick="showImg('i139')">
-        <div class="photo-caption">
-            <strong>Coluna e corredor — Térreo</strong>
-            <div class="photo-date">10/06/2026</div>
-            Coluna estrutural com massa aplicada, corredor de acesso aos ambientes internos
-        </div>
-    </div>
-<div class="photo-card">
-        <img data-img="i140" src="" alt="Aplicação de massa corrida — Parede" class="photo-img" onclick="showImg('i140')">
-        <div class="photo-caption">
-            <strong>Aplicação de massa corrida — Parede</strong>
-            <div class="photo-date">10/06/2026</div>
-            Massa corrida Suvinil sendo aplicada, tomadas e pontos elétricos embutidos na parede
-        </div>
-    </div>
-<div class="photo-card">
-        <img data-img="i141" src="" alt="Quadro elétrico — Frente da loja" class="photo-img" onclick="showImg('i141')">
-        <div class="photo-caption">
-            <strong>Quadro elétrico — Frente da loja</strong>
-            <div class="photo-date">10/06/2026</div>
-            Quadro de disjuntores instalado, eletroduto amarelo sendo passado, fiação múltipla organizada
-        </div>
-    </div>
-<div class="photo-card">
-        <img data-img="i142" src="" alt="Iluminação de trilho — Ambiente" class="photo-img" onclick="showImg('i142')">
-        <div class="photo-caption">
-            <strong>Iluminação de trilho — Ambiente</strong>
-            <div class="photo-date">10/06/2026</div>
-            Trilho de iluminação instalado e funcionando, abertura de janela com grade, massa corrida nas paredes
-        </div>
-    </div>
-<div class="photo-card">
-        <img data-img="i143" src="" alt="Área de lavatórios — Hidráulica" class="photo-img" onclick="showImg('i143')">
-        <div class="photo-caption">
-            <strong>Área de lavatórios — Hidráulica</strong>
-            <div class="photo-date">10/06/2026</div>
-            Ralos de esgoto posicionados, espera hidráulica para lavatórios, reboco e massa em execução
-        </div>
-    </div>
-<div class="photo-card">
-        <img data-img="i144" src="" alt="Vão de acesso — Alvenaria e massa" class="photo-img" onclick="showImg('i144')">
-        <div class="photo-caption">
-            <strong>Vão de acesso — Alvenaria e massa</strong>
-            <div class="photo-date">10/06/2026</div>
-            Abertura de vão concluída com moldura, paredes com massa corrida, fiação elétrica aparente aguardando acabamento
-        </div>
-    </div>
-</div>
-
-    <div id="tab-dep" class="tab-panel">
-      <p style="font-size:13px;color:var(--ink-soft);margin-bottom:20px">Orçamentos e comprovantes do Depósito Zona Sul. Clique para ampliar.</p>
-      <div class="photo-grid"><div class="photo-card">
-        <img data-img="i24" src="" alt="Orçamento anterior — referência" class="photo-img" onclick="showImg('i24')">
-        <div class="photo-caption">
-            <strong>Orçamento anterior — referência</strong>
-            <div class="photo-date">27/05/2026</div>
-            Orçamento de referência enviado para confirmação dos itens
-        </div>
-    </div>
+    
 <div class="photo-card">
         <img data-img="i24" src="" alt="Orçamento Nº 8616701" class="photo-img" onclick="showImg('i24')">
         <div class="photo-caption">
@@ -991,6 +939,14 @@
 
 <script>
 const IMGS = {
+  "i121": "NGHairBrooklin_prestacaocontas/assets/image-2ec7fcc4a6b67b61.jpg",
+  "i122": "NGHairBrooklin_prestacaocontas/assets/image-205afdf795b45ad7.jpg",
+  "i123": "NGHairBrooklin_prestacaocontas/assets/image-75982792129d5919.jpg",
+  "i124": "NGHairBrooklin_prestacaocontas/assets/image-d4033d34f0a4f299.jpg",
+  "i125": "NGHairBrooklin_prestacaocontas/assets/image-eeed134a5b7aaf82.jpg",
+  "i126": "NGHairBrooklin_prestacaocontas/assets/image-d7fef583fddd7647.jpg",
+  "i127": "NGHairBrooklin_prestacaocontas/assets/image-18ec36cf342d8751.jpg",
+
   "i138": "NGHairBrooklin_prestacaocontas/assets/image-081ef0345b7a5a8e.jpg",
   "i139": "NGHairBrooklin_prestacaocontas/assets/image-5d6da62d45d20fe6.jpg",
   "i140": "NGHairBrooklin_prestacaocontas/assets/image-cdc10adf1fb1c516.jpg",
@@ -1002,19 +958,60 @@ const IMGS = {
 
 
 
+  "i0": "NGHairBrooklin_prestacaocontas/assets/image-2b5cd56d9a99be0d.jpg",
+  "i2": "NGHairBrooklin_prestacaocontas/assets/image-97dae897a1cf3595.jpg",
+  "i4": "NGHairBrooklin_prestacaocontas/assets/image-768d9cc5ec6ff6ab.jpg",
+  "i6": "NGHairBrooklin_prestacaocontas/assets/image-975e2a868f6faad9.jpg",
+  "i8": "NGHairBrooklin_prestacaocontas/assets/image-148ff51d8649c2a7.jpg",
+  "i10": "NGHairBrooklin_prestacaocontas/assets/image-258c346730ce26c2.jpg",
+  "i12": "NGHairBrooklin_prestacaocontas/assets/image-b83cde1a937d8112.jpg",
+  "i14": "NGHairBrooklin_prestacaocontas/assets/image-750c122d850cc228.jpg",
+  "i16": "NGHairBrooklin_prestacaocontas/assets/image-2a7060173bb6bfe0.jpg",
+  "i18": "NGHairBrooklin_prestacaocontas/assets/image-8393bac152966f3c.jpg",
+  "i20": "NGHairBrooklin_prestacaocontas/assets/image-23a3174e8c810d87.jpg",
+  "i22": "NGHairBrooklin_prestacaocontas/assets/image-cf6423f8bf72680f.jpg",
   "i24": "NGHairBrooklin_prestacaocontas/assets/image-4e0fa20a216b28c8.jpg",
   "i26": "NGHairBrooklin_prestacaocontas/assets/image-95b2a3ce2f46c75b.jpg",
   "i28": "NGHairBrooklin_prestacaocontas/assets/image-ad37f1ddb4bdf303.jpg",
   "i30": "NGHairBrooklin_prestacaocontas/assets/image-1f25d37f781647c5.jpg",
+  "i32": "NGHairBrooklin_prestacaocontas/assets/image-10e0a8ceb0bdd9d9.jpg",
   "i34": "NGHairBrooklin_prestacaocontas/assets/image-e24d795b62b64d87.jpg",
   "i36": "NGHairBrooklin_prestacaocontas/assets/image-758b05b088dbb4e5.jpg",
   "i38": "NGHairBrooklin_prestacaocontas/assets/image-aa3a58674b60dddd.jpg",
   "i40": "NGHairBrooklin_prestacaocontas/assets/image-f3543b73dd6c922b.jpg",
   "i42": "NGHairBrooklin_prestacaocontas/assets/image-10fd1d915a56431b.jpg",
+  "i44": "NGHairBrooklin_prestacaocontas/assets/image-fed998bf0989bcf0.jpg",
+  "i46": "NGHairBrooklin_prestacaocontas/assets/image-bbc906b205ff3b97.jpg",
+  "i48": "NGHairBrooklin_prestacaocontas/assets/image-d4b9dcefa80a8357.jpg",
+  "i50": "NGHairBrooklin_prestacaocontas/assets/image-51f178bc11d6d89c.jpg",
+  "i52": "NGHairBrooklin_prestacaocontas/assets/image-3e99a3382842b9e4.jpg",
+  "i54": "NGHairBrooklin_prestacaocontas/assets/image-740039bbd4b4c092.jpg",
+  "i56": "NGHairBrooklin_prestacaocontas/assets/image-8f3578c8060d76d9.jpg",
+  "i58": "NGHairBrooklin_prestacaocontas/assets/image-36b46ee78d954eca.jpg",
+  "i60": "NGHairBrooklin_prestacaocontas/assets/image-51abf97b8f1ec472.jpg",
+  "i62": "NGHairBrooklin_prestacaocontas/assets/image-1da4f091f162cfb6.jpg",
+  "i64": "NGHairBrooklin_prestacaocontas/assets/image-4773efa66eb845a0.jpg",
+  "i66": "NGHairBrooklin_prestacaocontas/assets/image-a4af5218cb351b07.jpg",
+  "i68": "NGHairBrooklin_prestacaocontas/assets/image-6e5b5c01094abf0f.jpg",
+  "i70": "NGHairBrooklin_prestacaocontas/assets/image-ca52b9c4250d19c3.jpg",
+  "i72": "NGHairBrooklin_prestacaocontas/assets/image-859478e18a71efc5.jpg",
+  "i74": "NGHairBrooklin_prestacaocontas/assets/image-b74862c10fcb2519.jpg",
+  "i76": "NGHairBrooklin_prestacaocontas/assets/image-3e459b04b41034ac.jpg",
+  "i78": "NGHairBrooklin_prestacaocontas/assets/image-e2a44ba63df19e73.jpg",
+  "i80": "NGHairBrooklin_prestacaocontas/assets/image-c717beebd52d29f6.jpg",
+  "i82": "NGHairBrooklin_prestacaocontas/assets/image-bb10d8a76e85ef66.jpg",
+  "i84": "NGHairBrooklin_prestacaocontas/assets/image-402fc1269bab6af5.jpg",
+  "i86": "NGHairBrooklin_prestacaocontas/assets/image-ca3ec3ea384409de.jpg",
+  "i88": "NGHairBrooklin_prestacaocontas/assets/image-120b0384d0a874d9.jpg",
+  "i90": "NGHairBrooklin_prestacaocontas/assets/image-88222f9c3bf5d8f8.jpg",
+  "i92": "NGHairBrooklin_prestacaocontas/assets/image-c064a2a45ac3b8ff.jpg",
+  "i94": "NGHairBrooklin_prestacaocontas/assets/image-01277cb4eeda8f59.jpg",
   "i96": "NGHairBrooklin_prestacaocontas/assets/image-88e466085bb1fb68.jpg",
+  "i100": "NGHairBrooklin_prestacaocontas/assets/image-5148639f2da1162e.jpg",
   "i102": "NGHairBrooklin_prestacaocontas/assets/image-5bd22d374feacbb7.jpg",
   "i104": "NGHairBrooklin_prestacaocontas/assets/image-aaf4d50cf6632be4.jpg",
   "i106": "NGHairBrooklin_prestacaocontas/assets/image-23e454f5e2d94778.jpg",
+  "i118": "NGHairBrooklin_prestacaocontas/assets/image-acb9993a27ec16fe.jpg",
   "i120": "NGHairBrooklin_prestacaocontas/assets/image-e7f13d31deea2509.png",
 };
 
@@ -1026,21 +1023,18 @@ function openLBsrc(src) {
   document.getElementById("lb-img").src = src;
   document.getElementById("lightbox").classList.add("active");
 }
-function loadImages() {
+document.addEventListener("DOMContentLoaded", function() {
   document.querySelectorAll("[data-img]").forEach(function(el) {
     var key = el.getAttribute("data-img");
     if (IMGS[key]) el.src = IMGS[key];
   });
-}
-document.addEventListener("DOMContentLoaded", loadImages);
-// Also run immediately in case DOM is already ready
-if (document.readyState !== "loading") loadImages();
+});
 document.addEventListener("keydown", function(e) {
   if (e.key === "Escape") document.getElementById("lightbox").classList.remove("active");
 });
 function showTab(id) {
-  document.querySelectorAll(");
-  document.querySelectorAll(");
+  document.querySelectorAll(".tab-panel").forEach(function(p){ p.classList.remove("active"); });
+  document.querySelectorAll(".tab-btn").forEach(function(b){ b.classList.remove("active"); });
   document.getElementById(id).classList.add("active");
   event.target.classList.add("active");
 }
