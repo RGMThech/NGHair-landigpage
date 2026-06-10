@@ -4,8 +4,13 @@ on:
   push:
     branches: [main]
 
+# Cancela execuções antigas se um novo push chegar — garante deploy único
+concurrency:
+  group: deploy-main
+  cancel-in-progress: true
+
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -26,3 +31,12 @@ jobs:
         with:
           name: dist
           path: dist/
+
+      # Dispara o deploy da Hostinger UMA única vez, no fim do build
+      - name: Trigger Hostinger deployment
+        if: success()
+        run: |
+          test -n "${HOSTINGER_WEBHOOK_URL}"
+          curl -fsS -X POST "${HOSTINGER_WEBHOOK_URL}"
+        env:
+          HOSTINGER_WEBHOOK_URL: ${{ secrets.HOSTINGER_WEBHOOK_URL }}
