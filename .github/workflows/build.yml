@@ -32,11 +32,6 @@ jobs:
           name: dist
           path: dist/
 
-      # Dispara o deploy da Hostinger via webhook SOMENTE se o secret existir.
-      # Se não houver webhook, a Hostinger puxa do Git automaticamente (deploy nativo)
-      # e este passo é ignorado sem quebrar o workflow.
-      - name: Trigger Hostinger deployment (opcional)
-        if: ${{ success() && secrets.HOSTINGER_WEBHOOK_URL != '' }}
-        run: curl -fsS -X POST "${HOSTINGER_WEBHOOK_URL}"
-        env:
-          HOSTINGER_WEBHOOK_URL: ${{ secrets.HOSTINGER_WEBHOOK_URL }}
+      # A Hostinger faz o deploy automaticamente puxando do GitHub (deploy nativo
+      # configurado no painel da Hostinger). Não há passo de webhook aqui — o build
+      # apenas valida e gera os artefatos. Os arquivos public/ já vão no commit.
