@@ -79,9 +79,9 @@
   .tl-title { font-weight: 600; font-size: 14px; margin-bottom: 4px; }
   .tl-desc { font-size: 13px; color: var(--ink-soft); }
   .tl-valor { display: inline-block; margin-top: 6px; font-family: 'JetBrains Mono', monospace; font-size: 12px; background: var(--gold-lt); color: #7a5c1a; padding: 2px 10px; border-radius: 2px; font-weight: 600; }
-  .photo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+  .photo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 280px)); gap: 16px; }
   .photo-card { background: var(--bg-card); border: 1px solid var(--rule); border-radius: 4px; overflow: hidden; }
-  .photo-img { width: 100%; aspect-ratio: 4/3; object-fit: cover; display: block; cursor: pointer; transition: opacity .2s; }
+  .photo-img { width: 100%; aspect-ratio: 4/3; object-fit: cover; display: block; cursor: pointer; transition: opacity .2s; max-height: 210px; }
   .photo-img:hover { opacity: .88; }
   .photo-caption { padding: 10px 14px; font-size: 12px; color: var(--ink-soft); border-top: 1px solid var(--rule); }
   .photo-caption strong { display: block; color: var(--ink); font-size: 13px; margin-bottom: 2px; }
@@ -130,7 +130,7 @@
 
 <!-- CAPA -->
 <div class="cover">
-  <div class="cover-eyebrow">Prestação de Contas · Obra Comercial · v10.6</div>
+  <div class="cover-eyebrow">Prestação de Contas · Obra Comercial · v10.7</div>
   <h1>Reforma <em>NGHair</em><br>Unidade Brooklin</h1>
   <div class="cover-subtitle">Rua Barão do Triunfo, 1455 — Brooklin Paulista, São Paulo, SP</div>
   <div class="cover-meta">
@@ -143,7 +143,7 @@
 </div>
 <div class="status-bar">
   <div class="status-dot"></div>
-  OBRA EM ANDAMENTO — Atualizado em 10/06/2026 · v10.6
+  OBRA EM ANDAMENTO — Atualizado em 10/06/2026 · v10.7
 </div>
 
 <div class="container">
@@ -563,9 +563,11 @@
       </div>
     </div>
 
-    <div>
-      <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:10px">Comprovante de pagamento</div>
-      <img data-img="i34" src="" alt="Comprovante Cartão Gesso Bispo 4x R$ 1.500" style="max-width:280px;width:100%;height:220px;object-fit:cover;border:1px solid var(--rule);border-radius:4px;cursor:pointer;display:block" onclick="showImg('i34')">
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,220px));gap:16px;margin-top:8px">
+      <div class="comp-card" onclick="showImg('i34')">
+        <img class="comp-img" data-img="i34" src="" alt="Comprovante Cartão Gesso Bispo">
+        <div class="comp-info"><strong>Cartão 4× R$ 1.500 — Gesso Bispo</strong><span>06/06/2026 · Final 1961</span></div>
+      </div>
     </div>
   </div>
 
@@ -1079,7 +1081,7 @@
 
 <div class="footer">
   <div>NGHair · Unidade Brooklin · Rua Barão do Triunfo, 1455 · São Paulo, SP</div>
-  <div>v10.6 · <span>09/06/2026</span> · Fontes: WhatsApp Natalício · Dep. Zona Sul · Luciano · Silva JJ Laminados<div class="photo-card">
+  <div>v10.7 · <span>09/06/2026</span> · Fontes: WhatsApp Natalício · Dep. Zona Sul · Luciano · Silva JJ Laminados<div class="photo-card">
         <img data-img="i138" src="" alt="Vista geral — Salão principal" class="photo-img" onclick="showImg('i138')">
         <div class="photo-caption">
             <strong>Vista geral — Salão principal</strong>
