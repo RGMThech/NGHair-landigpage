@@ -130,7 +130,7 @@
 
 <!-- CAPA -->
 <div class="cover">
-  <div class="cover-eyebrow">Prestação de Contas · Obra Comercial · v12.0</div>
+  <div class="cover-eyebrow">Prestação de Contas · Obra Comercial · v12.1</div>
   <h1>Reforma <em>NGHair</em><br>Unidade Brooklin</h1>
   <div class="cover-subtitle">Rua Barão do Triunfo, 1455 — Brooklin Paulista, São Paulo, SP</div>
   <div class="cover-meta">
@@ -143,7 +143,7 @@
 </div>
 <div class="status-bar">
   <div class="status-dot"></div>
-  OBRA EM ANDAMENTO — Atualizado em 10/06/2026 · v12.0
+  OBRA EM ANDAMENTO — Atualizado em 10/06/2026 · v12.1
 </div>
 
 <div class="container">
@@ -1324,7 +1324,7 @@
 
 <div class="footer">
   <div>NGHair · Unidade Brooklin · Rua Barão do Triunfo, 1455 · São Paulo, SP</div>
-  <div>v12.0 · <span>09/06/2026</span> · Fontes: WhatsApp Natalício · Dep. Zona Sul · Luciano · Silva JJ Laminados</div>
+  <div>v12.1 · <span>09/06/2026</span> · Fontes: WhatsApp Natalício · Dep. Zona Sul · Luciano · Silva JJ Laminados</div>
 </div>
 
 <script>
@@ -1499,24 +1499,26 @@ document.addEventListener("DOMContentLoaded", function() {
   var imgEls = document.querySelectorAll("[data-img]");
   // Lazy loading via IntersectionObserver: a imagem só carrega quando
   // entra (ou está prestes a entrar) na área visível da tela.
+  function setSrc(el) {
+    var key = el.getAttribute("data-img");
+    if (IMGS[key] && el.getAttribute("data-loaded") !== "1") {
+      el.src = IMGS[key];
+      el.setAttribute("data-loaded", "1");
+    }
+  }
   if ("IntersectionObserver" in window) {
     var io = new IntersectionObserver(function(entries, obs) {
       entries.forEach(function(entry) {
         if (entry.isIntersecting) {
-          var el = entry.target;
-          var key = el.getAttribute("data-img");
-          if (IMGS[key] && !el.src) el.src = IMGS[key];
-          obs.unobserve(el);
+          setSrc(entry.target);
+          obs.unobserve(entry.target);
         }
       });
     }, { rootMargin: "300px" }); // começa a carregar 300px antes de aparecer
     imgEls.forEach(function(el) { io.observe(el); });
   } else {
     // Fallback para navegadores antigos: carrega tudo
-    imgEls.forEach(function(el) {
-      var key = el.getAttribute("data-img");
-      if (IMGS[key]) el.src = IMGS[key];
-    });
+    imgEls.forEach(setSrc);
   }
 });
 document.addEventListener("keydown", function(e) {
