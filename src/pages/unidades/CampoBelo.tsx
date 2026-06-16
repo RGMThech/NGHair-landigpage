@@ -11,7 +11,8 @@ const data: UnidadeData = {
   cidade: "São Paulo - SP",
   telefone: "(11) 94796-2201",
   horarios: [
-    { dia: "Seg a Sex", horario: "9h – 19h" },
+    { dia: "Segunda", horario: "Fechado" },
+    { dia: "Ter a Sex", horario: "9h – 19h" },
     { dia: "Sábado", horario: "9h – 18h" },
     { dia: "Domingo", horario: "Fechado" },
   ],
