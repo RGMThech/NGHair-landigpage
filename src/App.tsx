@@ -15,6 +15,8 @@ import EurofarmaForgotPassword from "./pages/empresas/EurofarmaForgotPassword.ts
 import EurofarmaResetPassword from "./pages/empresas/EurofarmaResetPassword.tsx";
 import EurofarmaProfile from "./pages/empresas/EurofarmaProfile.tsx";
 import Convenios from "./pages/empresas/Convenios.tsx";
+import CampoBelo from "./pages/unidades/CampoBelo.tsx";
+import Brooklin from "./pages/unidades/Brooklin.tsx";
 
 const queryClient = new QueryClient();
 
@@ -36,6 +38,8 @@ const App = () => (
           <Route path="/empresas/eurofarma/precos" element={<EurofarmaPrices />} />
           <Route path="/empresas/eurofarma/historico" element={<EurofarmaHistory />} />
           <Route path="/empresas/convenios" element={<Convenios />} />
+          <Route path="/unidades/campo-belo" element={<CampoBelo />} />
+          <Route path="/unidades/brooklin" element={<Brooklin />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
