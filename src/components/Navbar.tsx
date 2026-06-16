@@ -57,10 +57,10 @@ const Navbar = () => {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
               <DropdownMenuItem asChild>
-                <Link to="/">Campo Belo</Link>
+                <Link to="/unidades/campo-belo">Campo Belo</Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <a href="/NGHairBrooklin_prestacaocontas.html">Brooklin</a>
+                <Link to="/unidades/brooklin">Brooklin</Link>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -117,19 +117,19 @@ const Navbar = () => {
           ))}
           <div className="font-body text-xs uppercase tracking-widest text-muted-foreground pt-2">Unidades</div>
           <Link
-            to="/"
+            to="/unidades/campo-belo"
             onClick={() => setOpen(false)}
             className="font-body text-sm uppercase tracking-widest text-foreground/70 hover:text-primary pl-3"
           >
             Campo Belo
           </Link>
-          <a
-            href="/NGHairBrooklin_prestacaocontas.html"
+          <Link
+            to="/unidades/brooklin"
             onClick={() => setOpen(false)}
             className="font-body text-sm uppercase tracking-widest text-foreground/70 hover:text-primary pl-3"
           >
             Brooklin
-          </a>
+          </Link>
           <div className="font-body text-xs uppercase tracking-widest text-muted-foreground pt-2">Empresas</div>
           <Link
             to="/empresas/eurofarma"
