@@ -53,6 +53,23 @@ const Navbar = () => {
                 scrolled ? "text-foreground/70" : "text-cream/80"
               }`}
             >
+              Unidades <ChevronDown className="h-3 w-3" />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuItem asChild>
+                <Link to="/">NGHair Campo Belo</Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <a href="/NGHairBrooklin_prestacaocontas.html">NGHair Brooklin</a>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              className={`font-body text-sm uppercase tracking-widest transition-colors duration-300 hover:text-primary inline-flex items-center gap-1 outline-none ${
+                scrolled ? "text-foreground/70" : "text-cream/80"
+              }`}
+            >
               Empresas <ChevronDown className="h-3 w-3" />
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
