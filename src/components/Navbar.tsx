@@ -53,6 +53,23 @@ const Navbar = () => {
                 scrolled ? "text-foreground/70" : "text-cream/80"
               }`}
             >
+              Unidades <ChevronDown className="h-3 w-3" />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuItem asChild>
+                <Link to="/">NGHair Campo Belo</Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <a href="/NGHairBrooklin_prestacaocontas.html">NGHair Brooklin</a>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              className={`font-body text-sm uppercase tracking-widest transition-colors duration-300 hover:text-primary inline-flex items-center gap-1 outline-none ${
+                scrolled ? "text-foreground/70" : "text-cream/80"
+              }`}
+            >
               Empresas <ChevronDown className="h-3 w-3" />
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
@@ -98,6 +115,21 @@ const Navbar = () => {
               {link.label}
             </a>
           ))}
+          <div className="font-body text-xs uppercase tracking-widest text-muted-foreground pt-2">Unidades</div>
+          <Link
+            to="/"
+            onClick={() => setOpen(false)}
+            className="font-body text-sm uppercase tracking-widest text-foreground/70 hover:text-primary pl-3"
+          >
+            NGHair Campo Belo
+          </Link>
+          <a
+            href="/NGHairBrooklin_prestacaocontas.html"
+            onClick={() => setOpen(false)}
+            className="font-body text-sm uppercase tracking-widest text-foreground/70 hover:text-primary pl-3"
+          >
+            NGHair Brooklin
+          </a>
           <div className="font-body text-xs uppercase tracking-widest text-muted-foreground pt-2">Empresas</div>
           <Link
             to="/empresas/eurofarma"
