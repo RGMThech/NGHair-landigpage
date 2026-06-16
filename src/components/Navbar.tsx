@@ -115,6 +115,21 @@ const Navbar = () => {
               {link.label}
             </a>
           ))}
+          <div className="font-body text-xs uppercase tracking-widest text-muted-foreground pt-2">Unidades</div>
+          <Link
+            to="/"
+            onClick={() => setOpen(false)}
+            className="font-body text-sm uppercase tracking-widest text-foreground/70 hover:text-primary pl-3"
+          >
+            NGHair Campo Belo
+          </Link>
+          <a
+            href="/NGHairBrooklin_prestacaocontas.html"
+            onClick={() => setOpen(false)}
+            className="font-body text-sm uppercase tracking-widest text-foreground/70 hover:text-primary pl-3"
+          >
+            NGHair Brooklin
+          </a>
           <div className="font-body text-xs uppercase tracking-widest text-muted-foreground pt-2">Empresas</div>
           <Link
             to="/empresas/eurofarma"
