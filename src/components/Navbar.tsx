@@ -30,7 +30,7 @@ const Navbar = () => {
       }`}
     >
       <div className="container max-w-6xl flex items-center justify-between">
-        <a href="#" className={`font-display text-2xl font-medium transition-colors duration-300 ${scrolled ? "text-foreground" : "text-cream"}`}>
+        <a href="https://nghair.com.br" className={`font-display text-2xl font-medium transition-colors duration-300 ${scrolled ? "text-foreground" : "text-cream"}`}>
           NGHair
         </a>
 
