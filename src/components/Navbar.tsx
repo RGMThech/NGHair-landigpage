@@ -5,6 +5,7 @@ import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { reportConversion } from "@/lib/gtag";
+import logoAsset from "@/assets/logo_nghair.jpeg.asset.json";
 
 const links = [
   { label: "Início", href: "#" },
