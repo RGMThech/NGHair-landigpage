@@ -136,6 +136,25 @@ const UnidadePage = ({ unidade }: { unidade: UnidadeData }) => {
                 Agendar nesta unidade
               </a>
             </div>
+
+            {/* Prestação de contas */}
+            {unidade.prestacaoUrl && (
+              <a
+                href={unidade.prestacaoUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-4 bg-card border border-border rounded-2xl p-6 shadow-sm hover:border-primary hover:bg-primary/5 transition-all"
+              >
+                <div className="p-3 rounded-full bg-primary/10">
+                  <FileText className="h-5 w-5 text-primary" />
+                </div>
+                <div>
+                  <p className="font-body text-xs uppercase tracking-widest text-muted-foreground mb-1">Prestação de contas</p>
+                  <p className="font-display text-lg text-foreground">Reforma da unidade</p>
+                  <p className="font-body text-sm text-muted-foreground mt-1">Clique para ver os gastos da reforma</p>
+                </div>
+              </a>
+            )}
           </div>
 
           {/* Mapa */}
