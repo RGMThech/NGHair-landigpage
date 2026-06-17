@@ -31,8 +31,12 @@ const Navbar = () => {
       }`}
     >
       <div className="container max-w-6xl flex items-center justify-between">
-        <a href="https://nghair.com.br" className={`font-display text-2xl font-medium transition-colors duration-300 ${scrolled ? "text-foreground" : "text-cream"}`}>
-          NGHair
+        <a href="https://nghair.com.br" className="transition-transform duration-300 hover:scale-105">
+          <img
+            src={logoAsset.url}
+            alt="NGHair"
+            className="h-10 w-auto rounded-md shadow-sm"
+          />
         </a>
 
         {/* Desktop */}
