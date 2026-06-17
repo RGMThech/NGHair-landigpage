@@ -5,7 +5,6 @@ import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { reportConversion } from "@/lib/gtag";
-import logoAsset from "@/assets/logo_nghair.jpeg.asset.json";
 
 const links = [
   { label: "Início", href: "#" },
@@ -33,9 +32,9 @@ const Navbar = () => {
       <div className="container max-w-6xl flex items-center justify-between">
         <a href="https://nghair.com.br" className="flex items-center transition-transform duration-300 hover:scale-105">
           <img
-            src={logoAsset.url}
+            src="/logo_nghair.jpeg"
             alt="NGHair"
-            className={`w-auto rounded-md shadow-sm transition-all duration-500 ${scrolled ? "h-12" : "h-16"}`}
+            className={`w-auto rounded-md shadow-sm transition-all duration-500 ${scrolled ? "h-14" : "h-20"}`}
           />
         </a>
 
