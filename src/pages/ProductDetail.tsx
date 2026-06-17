@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button";
 import {
   PRODUCT_BY_HANDLE_QUERY,
   formatBRL,
+  isPriceTBD,
+  VIV_WHATSAPP,
   storefrontApiRequest,
   type ShopifyProduct,
 } from "@/lib/shopify";
@@ -34,6 +36,7 @@ const ProductDetail = () => {
   }, [handle]);
 
   const variant = product?.variants.edges[variantIdx]?.node;
+  const tbd = variant ? isPriceTBD(variant.price.amount) : false;
 
   return (
     <main className="min-h-screen bg-background">
@@ -85,21 +88,29 @@ const ProductDetail = () => {
                     </div>
                   </div>
                 )}
-                <Button
-                  size="lg"
-                  disabled={!variant || !variant.availableForSale || isAdding}
-                  onClick={() => variant && product && addItem({
-                    product: { node: product },
-                    variantId: variant.id,
-                    variantTitle: variant.title,
-                    price: variant.price,
-                    quantity: 1,
-                    selectedOptions: variant.selectedOptions || [],
-                  })}
-                  className="w-full sm:w-auto"
-                >
-                  {isAdding ? <Loader2 className="h-4 w-4 animate-spin" /> : "Adicionar à sacola"}
-                </Button>
+                {tbd ? (
+                  <Button size="lg" asChild className="w-full sm:w-auto">
+                    <a href={VIV_WHATSAPP} target="_blank" rel="noopener noreferrer">
+                      Consultar pelo WhatsApp
+                    </a>
+                  </Button>
+                ) : (
+                  <Button
+                    size="lg"
+                    disabled={!variant || !variant.availableForSale || isAdding}
+                    onClick={() => variant && product && addItem({
+                      product: { node: product },
+                      variantId: variant.id,
+                      variantTitle: variant.title,
+                      price: variant.price,
+                      quantity: 1,
+                      selectedOptions: variant.selectedOptions || [],
+                    })}
+                    className="w-full sm:w-auto"
+                  >
+                    {isAdding ? <Loader2 className="h-4 w-4 animate-spin" /> : "Adicionar à sacola"}
+                  </Button>
+                )}
               </div>
             </div>
           )}

@@ -100,5 +100,15 @@ export const PRODUCT_BY_HANDLE_QUERY = `
 
 export function formatBRL(amount: string | number, currency = "BRL") {
   const n = typeof amount === "string" ? parseFloat(amount) : amount;
+  if (!n || n <= 0) return "Sob consulta";
   return new Intl.NumberFormat("pt-BR", { style: "currency", currency }).format(n);
 }
+
+export function isPriceTBD(amount: string | number) {
+  const n = typeof amount === "string" ? parseFloat(amount) : amount;
+  return !n || n <= 0;
+}
+
+export const VIV_WHATSAPP =
+  "https://wa.me/5511947962201?text=" +
+  encodeURIComponent("Olá! Gostaria de saber mais sobre os aromas VIV para minha loja.");

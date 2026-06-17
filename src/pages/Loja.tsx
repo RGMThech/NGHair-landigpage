@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button";
 import {
   STOREFRONT_QUERY,
   formatBRL,
+  isPriceTBD,
+  VIV_WHATSAPP,
   storefrontApiRequest,
   type ShopifyProduct,
 } from "@/lib/shopify";
@@ -75,6 +77,7 @@ const Loja = () => {
                 const img = p.node.images.edges[0]?.node;
                 const variant = p.node.variants.edges[0]?.node;
                 const price = p.node.priceRange.minVariantPrice;
+                const tbd = isPriceTBD(price.amount);
                 return (
                   <div key={p.node.id} className="group flex flex-col rounded-2xl overflow-hidden bg-card border border-border/40 transition-all duration-300 hover:shadow-md">
                     <Link to={`/loja/${p.node.handle}`} className="block aspect-square bg-secondary/30 overflow-hidden">
@@ -104,22 +107,30 @@ const Loja = () => {
                         <span className="font-display text-lg font-medium text-foreground">
                           {formatBRL(price.amount, price.currencyCode)}
                         </span>
-                        <Button
-                          size="sm"
-                          disabled={!variant || !variant.availableForSale || isAdding}
-                          onClick={() =>
-                            variant && addItem({
-                              product: p,
-                              variantId: variant.id,
-                              variantTitle: variant.title,
-                              price: variant.price,
-                              quantity: 1,
-                              selectedOptions: variant.selectedOptions || [],
-                            })
-                          }
-                        >
-                          {isAdding ? <Loader2 className="h-4 w-4 animate-spin" /> : "Adicionar"}
-                        </Button>
+                        {tbd ? (
+                          <Button size="sm" asChild>
+                            <a href={VIV_WHATSAPP} target="_blank" rel="noopener noreferrer">
+                              Consultar
+                            </a>
+                          </Button>
+                        ) : (
+                          <Button
+                            size="sm"
+                            disabled={!variant || !variant.availableForSale || isAdding}
+                            onClick={() =>
+                              variant && addItem({
+                                product: p,
+                                variantId: variant.id,
+                                variantTitle: variant.title,
+                                price: variant.price,
+                                quantity: 1,
+                                selectedOptions: variant.selectedOptions || [],
+                              })
+                            }
+                          >
+                            {isAdding ? <Loader2 className="h-4 w-4 animate-spin" /> : "Adicionar"}
+                          </Button>
+                        )}
                       </div>
                     </div>
                   </div>
