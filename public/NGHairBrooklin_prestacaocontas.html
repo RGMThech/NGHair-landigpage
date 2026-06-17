@@ -131,7 +131,7 @@
 
 <!-- CAPA -->
 <div class="cover">
-  <div class="cover-eyebrow">Prestação de Contas · Obra Comercial · v13.0</div>
+  <div class="cover-eyebrow">Prestação de Contas · Obra Comercial · v13.1</div>
   <h1>Reforma <em>NGHair</em><br>Unidade Brooklin</h1>
   <div class="cover-subtitle">Rua Barão do Triunfo, 1455 — Brooklin Paulista, São Paulo, SP</div>
   <div class="cover-meta">
@@ -144,7 +144,7 @@
 </div>
 <div class="status-bar">
   <div class="status-dot"></div>
-  OBRA EM ANDAMENTO — Atualizado em 16/06/2026 · v13.0
+  OBRA EM ANDAMENTO — Atualizado em 16/06/2026 · v13.1
 </div>
 
 <div class="container">
@@ -585,7 +585,7 @@
             <td><span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--gold)">8712701</span></td>
             <td>15/06/2026</td>
             <td style="font-size:12px">1 lata massa corrida 18L + veda rosca + 6 parafusos telha (crédito R$ 120 abatido)</td>
-            <td style="font-size:11px;color:var(--ink-muted)">Orç 8712701 · PIX</td>
+            <td style="font-size:11px;color:var(--ink-muted)">Orç 8712701 · <span class="badge badge-pago">PIX ✓</span> <img loading="lazy" decoding="async" data-img="i168" src="" onclick="showImg('i168')" style="width:32px;height:40px;object-fit:cover;border-radius:3px;cursor:pointer;border:1px solid var(--rule);vertical-align:middle;margin-left:4px" title="Ver comprovante PIX"></td>
             <td style="text-align:right;font-family:'JetBrains Mono',monospace;font-weight:600">R$ 86,70</td>
           </tr>
         <tfoot>
@@ -1524,8 +1524,37 @@
       </table>
     </div>
     <p style="font-size:12px;color:var(--ink-muted);margin-top:10px">Dreno da máquina inferior a cargo do pedreiro. Entrega dos aparelhos prevista para 12/06/2026.</p>
+  
+    <div style="margin-top:28px">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:14px">Registros da instalação (16/06/2026)</div>
+      <div class="comp-grid">
+        <div class="comp-card" onclick="showImg('i169')">
+          <img loading="lazy" decoding="async" class="comp-img" data-img="i169" src="" alt="Instalação AC — durante 1">
+          <div class="comp-info"><strong>Instalação em andamento</strong><span>16/06/2026 · 14:20</span></div>
+        </div>
+        <div class="comp-card" onclick="showImg('i170')">
+          <img loading="lazy" decoding="async" class="comp-img" data-img="i170" src="" alt="Instalação AC — durante 2">
+          <div class="comp-info"><strong>Instalação em andamento</strong><span>16/06/2026 · 14:21</span></div>
+        </div>
+        <div class="comp-card" onclick="showImg('i171')">
+          <img loading="lazy" decoding="async" class="comp-img" data-img="i171" src="" alt="Instalação AC — durante 3">
+          <div class="comp-info"><strong>Instalação em andamento</strong><span>16/06/2026 · 14:21</span></div>
+        </div>
+        <div class="comp-card" onclick="showImg('i172')">
+          <img loading="lazy" decoding="async" class="comp-img" data-img="i172" src="" alt="Instalação AC — concluída 1">
+          <div class="comp-info"><strong>90% concluído — máquina embalada</strong><span>16/06/2026 · 17:16</span></div>
+        </div>
+        <div class="comp-card" onclick="showImg('i173')">
+          <img loading="lazy" decoding="async" class="comp-img" data-img="i173" src="" alt="Instalação AC — concluída 2">
+          <div class="comp-info"><strong>90% concluído — máquina embalada</strong><span>16/06/2026 · 17:16</span></div>
+        </div>
+        <div class="comp-card" onclick="showImg('i174')">
+          <img loading="lazy" decoding="async" class="comp-img" data-img="i174" src="" alt="Instalação AC — concluída 3">
+          <div class="comp-info"><strong>90% concluído — máquina embalada</strong><span>16/06/2026 · 17:16</span></div>
+        </div>
+      </div>
+    </div>
   </div>
-
 
   <!-- ── MINASМOV ── -->
   <div class="section" id="sec-minasmov">
@@ -1652,6 +1681,10 @@
       <h2 class="section-title">Fotos do Andamento da Obra</h2>
     </div>
     <div class="comp-grid">
+      <div class="comp-card" onclick="showImg('i175')">
+        <img loading="lazy" decoding="async" class="comp-img" data-img="i175" src="" alt="Salinha superior — porta, janela e elétrica">
+        <div class="comp-info"><strong>Salinha superior — porta/janela Leroy instaladas</strong><span>11/06/2026 · fiação elétrica em andamento</span></div>
+      </div>
       <div class="comp-card" onclick="showImg('i138')">
         <img loading="lazy" decoding="async" class="comp-img" data-img="i138" src="" alt="Vista geral — Salão">
         <div class="comp-info"><strong>Vista geral — Salão</strong><span>10/06/2026</span></div>
@@ -1775,11 +1808,19 @@
 
 <div class="footer">
   <div>NGHair · Unidade Brooklin · Rua Barão do Triunfo, 1455 · São Paulo, SP</div>
-  <div>v13.0 · <span>16/06/2026</span> · Fontes: WhatsApp Natalício · Dep. Zona Sul · Luciano · Silva JJ Laminados</div>
+  <div>v13.1 · <span>16/06/2026</span> · Fontes: WhatsApp Natalício · Dep. Zona Sul · Luciano · Silva JJ Laminados</div>
 </div>
 
 <script>
 const IMGS = {
+  "i175": "NGHairBrooklin_prestacaocontas/assets/image-3befb02c07470bee.jpg",
+  "i174": "NGHairBrooklin_prestacaocontas/assets/image-93f661edc451f289.jpg",
+  "i173": "NGHairBrooklin_prestacaocontas/assets/image-2226034df19cb5ea.jpg",
+  "i172": "NGHairBrooklin_prestacaocontas/assets/image-b91e69ff0dfeebdf.jpg",
+  "i171": "NGHairBrooklin_prestacaocontas/assets/image-7c702915035f9b56.jpg",
+  "i170": "NGHairBrooklin_prestacaocontas/assets/image-4ee3c1d6cdd5f6d0.jpg",
+  "i169": "NGHairBrooklin_prestacaocontas/assets/image-13d9dcd22866d248.jpg",
+  "i168": "NGHairBrooklin_prestacaocontas/assets/image-2dddd61d0b4e4620.jpg",
   "i167": "NGHairBrooklin_prestacaocontas/assets/image-5489d3236a89ee56.jpg",
   "i166": "NGHairBrooklin_prestacaocontas/assets/image-9392261ab7ebe053.jpg",
   "i165": "NGHairBrooklin_prestacaocontas/assets/image-b937076139bffcf4.jpg",
