@@ -21,6 +21,7 @@ export type UnidadeData = {
   lng: number;
   // Texto exato usado nas URLs do Google Maps
   enderecoCompleto: string;
+  wazeUrl?: string;
 };
 
 const UnidadePage = ({ unidade }: { unidade: UnidadeData }) => {
@@ -28,7 +29,7 @@ const UnidadePage = ({ unidade }: { unidade: UnidadeData }) => {
   const mapsEmbed = `https://www.google.com/maps?q=${queryAddr}&output=embed`;
   const mapsDriving = `https://www.google.com/maps/dir/?api=1&destination=${queryAddr}&travelmode=driving`;
   const mapsWalking = `https://www.google.com/maps/dir/?api=1&destination=${queryAddr}&travelmode=walking`;
-  const wazeUrl = `https://waze.com/ul?ll=${unidade.lat},${unidade.lng}&navigate=yes`;
+  const wazeUrl = unidade.wazeUrl || `https://waze.com/ul?ll=${unidade.lat},${unidade.lng}&navigate=yes`;
 
   return (
     <main className="min-h-screen bg-background">

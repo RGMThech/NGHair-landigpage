@@ -27,6 +27,7 @@ const data: UnidadeData = {
   lat: -23.6225,
   lng: -46.6736,
   enderecoCompleto: "Rua João Alvares Soares, 1292 - Campo Belo, São Paulo - SP",
+  wazeUrl: "https://ul.waze.com/ul?ll=-23.62187100%2C-46.67170300&navigate=yes&utm_campaign=default&utm_source=waze_website&utm_medium=lm_share_location",
 };
 
 const CampoBelo = () => <UnidadePage unidade={data} />;
