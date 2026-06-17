@@ -5,6 +5,7 @@ import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { reportConversion } from "@/lib/gtag";
+import { CartDrawer } from "@/components/CartDrawer";
 
 const links = [
   { label: "Início", href: "#" },
@@ -51,6 +52,14 @@ const Navbar = () => {
               {link.label}
             </a>
           ))}
+          <Link
+            to="/loja"
+            className={`font-body text-sm uppercase tracking-widest transition-colors duration-300 hover:text-primary ${
+              scrolled ? "text-foreground/70" : "text-cream/80"
+            }`}
+          >
+            Loja
+          </Link>
           <DropdownMenu>
             <DropdownMenuTrigger
               className={`font-body text-sm uppercase tracking-widest transition-colors duration-300 hover:text-primary inline-flex items-center gap-1 outline-none ${
@@ -85,6 +94,9 @@ const Navbar = () => {
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
+          <CartDrawer
+            buttonClassName={`relative inline-flex items-center justify-center h-9 w-9 rounded-full transition ${scrolled ? "text-foreground/70 hover:text-primary" : "text-cream/80 hover:text-primary"}`}
+          />
           <a
             href="https://www.trinks.com/nghair/framebusca?rwg_token=AFd1xnGhS4dEqFta6HGjCtw2CLGeW_7ZBFBo3-oeBEQ0d7Wwd8yXl867b1PBWoqP6eLxRYFb99odxSXP2hV3mESCDN4M4YUtFA%3D%3D"
             target="_blank"
@@ -96,14 +108,19 @@ const Navbar = () => {
           </a>
         </div>
 
-        {/* Mobile toggle */}
-        <button
-          onClick={() => setOpen(!open)}
-          className={`md:hidden transition-colors ${scrolled ? "text-foreground" : "text-cream"}`}
-          aria-label="Menu"
-        >
-          {open ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-        </button>
+        {/* Mobile right side */}
+        <div className="md:hidden flex items-center gap-2">
+          <CartDrawer
+            buttonClassName={`relative inline-flex items-center justify-center h-9 w-9 rounded-full transition ${scrolled ? "text-foreground" : "text-cream"}`}
+          />
+          <button
+            onClick={() => setOpen(!open)}
+            className={`transition-colors ${scrolled ? "text-foreground" : "text-cream"}`}
+            aria-label="Menu"
+          >
+            {open ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+          </button>
+        </div>
       </div>
 
       {/* Mobile menu */}
@@ -119,6 +136,13 @@ const Navbar = () => {
               {link.label}
             </a>
           ))}
+          <Link
+            to="/loja"
+            onClick={() => setOpen(false)}
+            className="font-body text-sm uppercase tracking-widest text-foreground/70 hover:text-primary transition-colors"
+          >
+            Loja
+          </Link>
           <div className="font-body text-xs uppercase tracking-widest text-muted-foreground pt-2">Unidades</div>
           <Link
             to="/unidades/campo-belo"
