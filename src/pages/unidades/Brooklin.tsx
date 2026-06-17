@@ -27,6 +27,7 @@ const data: UnidadeData = {
   lat: -23.6105,
   lng: -46.6896,
   enderecoCompleto: "Rua Barão do Triunfo, 1455 - Brooklin, São Paulo - SP",
+  wazeUrl: "https://waze.com/ul/h6gyc9ue5v",
 };
 
 const Brooklin = () => <UnidadePage unidade={data} />;
