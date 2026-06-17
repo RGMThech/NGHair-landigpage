@@ -17,8 +17,36 @@ import EurofarmaProfile from "./pages/empresas/EurofarmaProfile.tsx";
 import Convenios from "./pages/empresas/Convenios.tsx";
 import CampoBelo from "./pages/unidades/CampoBelo.tsx";
 import Brooklin from "./pages/unidades/Brooklin.tsx";
+import Loja from "./pages/Loja.tsx";
+import ProductDetail from "./pages/ProductDetail.tsx";
+import { useCartSync } from "./hooks/useCartSync";
 
 const queryClient = new QueryClient();
+
+const AppRoutes = () => {
+  useCartSync();
+  return (
+    <Routes>
+      <Route path="/" element={<Index />} />
+      <Route path="/admin" element={<Admin />} />
+      <Route path="/loja" element={<Loja />} />
+      <Route path="/loja/:handle" element={<ProductDetail />} />
+      <Route path="/empresas/eurofarma" element={<EurofarmaLogin />} />
+      <Route path="/empresas/eurofarma/trocar-senha" element={<EurofarmaChangePassword />} />
+      <Route path="/empresas/eurofarma/esqueci-senha" element={<EurofarmaForgotPassword />} />
+      <Route path="/empresas/eurofarma/redefinir-senha" element={<EurofarmaResetPassword />} />
+      <Route path="/empresas/eurofarma/portal" element={<EurofarmaPortal />} />
+      <Route path="/empresas/eurofarma/perfil" element={<EurofarmaProfile />} />
+      <Route path="/empresas/eurofarma/precos" element={<EurofarmaPrices />} />
+      <Route path="/empresas/eurofarma/historico" element={<EurofarmaHistory />} />
+      <Route path="/empresas/convenios" element={<Convenios />} />
+      <Route path="/unidades/campo-belo" element={<CampoBelo />} />
+      <Route path="/unidades/brooklin" element={<Brooklin />} />
+      {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+      <Route path="*" element={<NotFound />} />
+    </Routes>
+  );
+};
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -26,23 +54,7 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/admin" element={<Admin />} />
-          <Route path="/empresas/eurofarma" element={<EurofarmaLogin />} />
-          <Route path="/empresas/eurofarma/trocar-senha" element={<EurofarmaChangePassword />} />
-          <Route path="/empresas/eurofarma/esqueci-senha" element={<EurofarmaForgotPassword />} />
-          <Route path="/empresas/eurofarma/redefinir-senha" element={<EurofarmaResetPassword />} />
-          <Route path="/empresas/eurofarma/portal" element={<EurofarmaPortal />} />
-          <Route path="/empresas/eurofarma/perfil" element={<EurofarmaProfile />} />
-          <Route path="/empresas/eurofarma/precos" element={<EurofarmaPrices />} />
-          <Route path="/empresas/eurofarma/historico" element={<EurofarmaHistory />} />
-          <Route path="/empresas/convenios" element={<Convenios />} />
-          <Route path="/unidades/campo-belo" element={<CampoBelo />} />
-          <Route path="/unidades/brooklin" element={<Brooklin />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        <AppRoutes />
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
