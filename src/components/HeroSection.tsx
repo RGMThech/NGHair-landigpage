@@ -42,6 +42,17 @@ const HeroSection = () => {
             Agendar
           </a>
           <a
+            href="/loja"
+            className="inline-flex items-center gap-3 rounded-full bg-cream px-8 py-4 font-body text-sm font-semibold text-warm-dark uppercase tracking-wider transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-cream/30"
+          >
+            <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+              <line x1="3" y1="6" x2="21" y2="6"/>
+              <path d="M16 10a4 4 0 0 1-8 0"/>
+            </svg>
+            Loja
+          </a>
+          <a
             href="https://www.instagram.com/nghair01/"
             target="_blank"
             rel="noopener noreferrer"
