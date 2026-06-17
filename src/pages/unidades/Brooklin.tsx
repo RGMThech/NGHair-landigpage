@@ -28,6 +28,7 @@ const data: UnidadeData = {
   lng: -46.6896,
   enderecoCompleto: "Rua Barão do Triunfo, 1455 - Brooklin, São Paulo - SP",
   wazeUrl: "https://ul.waze.com/ul?place=ChIJjba-t6NQzpQRS5MDXzXan8Q&ll=-23.61710420%2C-46.67665820&navigate=yes&utm_campaign=default&utm_source=waze_website&utm_medium=lm_share_location",
+  prestacaoUrl: "/NGHairBrooklin_prestacaocontas/",
 };
 
 const Brooklin = () => <UnidadePage unidade={data} />;

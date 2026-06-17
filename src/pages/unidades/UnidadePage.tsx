@@ -1,4 +1,4 @@
-import { MapPin, Phone, Clock, Navigation, Car, Footprints, Instagram } from "lucide-react";
+import { MapPin, Phone, Clock, Navigation, Car, Footprints, FileText } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import FooterSection from "@/components/FooterSection";
 import WhatsAppFloat from "@/components/WhatsAppFloat";
@@ -22,6 +22,7 @@ export type UnidadeData = {
   // Texto exato usado nas URLs do Google Maps
   enderecoCompleto: string;
   wazeUrl?: string;
+  prestacaoUrl?: string;
 };
 
 const UnidadePage = ({ unidade }: { unidade: UnidadeData }) => {
