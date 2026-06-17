@@ -124,14 +124,14 @@
 </head>
 <body>
 
-<div id="lightbox" class="lb" onclick="this.classList.remove('active')">
+<div id="lightbox" class="lb" onclick="this.classList.remove('active');resetLightbox()">
   <span class="lb-close">&times;</span>
   <img id="lb-img" src="" alt="">
 </div>
 
 <!-- CAPA -->
 <div class="cover">
-  <div class="cover-eyebrow">Prestação de Contas · Obra Comercial · v13.1</div>
+  <div class="cover-eyebrow">Prestação de Contas · Obra Comercial · v13.2</div>
   <h1>Reforma <em>NGHair</em><br>Unidade Brooklin</h1>
   <div class="cover-subtitle">Rua Barão do Triunfo, 1455 — Brooklin Paulista, São Paulo, SP</div>
   <div class="cover-meta">
@@ -144,7 +144,7 @@
 </div>
 <div class="status-bar">
   <div class="status-dot"></div>
-  OBRA EM ANDAMENTO — Atualizado em 16/06/2026 · v13.1
+  OBRA EM ANDAMENTO — Atualizado em 16/06/2026 · v13.2
 </div>
 
 <div class="container">
@@ -211,6 +211,9 @@
         <div class="card-value">R$ 1.470,00</div>
         <div class="card-sub">2 caçambas 4m³ · PIX</div>
       </div></a>
+    </div>
+    <div style="margin-top:16px;text-align:center">
+      <a href="#sec-fotos" style="display:inline-flex;align-items:center;gap:8px;font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.06em;color:var(--gold);text-decoration:none;border:1px solid var(--gold-lt);border-radius:24px;padding:10px 22px;background:var(--bg-card);transition:background .15s,color .15s" onmouseover="this.style.background='var(--gold)';this.style.color='#fff'" onmouseout="this.style.background='var(--bg-card)';this.style.color='var(--gold)'">📷 Ver fotos e vídeos da obra →</a>
     </div>
 
     <div class="progress-wrap">
@@ -1675,12 +1678,15 @@
   </div>
 
   <!-- ── REGISTROS FOTOGRÁFICOS ── -->
-  <div class="section">
+  <div class="section" id="sec-fotos">
     <div class="section-header">
       <span class="section-tag">Registros</span>
-      <h2 class="section-title">Fotos do Andamento da Obra</h2>
+      <h2 class="section-title">Fotos e Vídeos da Obra</h2>
+      <a href="#sec-resumo" style="margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.08em;color:var(--gold);text-decoration:none;border:1px solid var(--gold-lt);border-radius:20px;padding:4px 12px;background:var(--bg-card);white-space:nowrap;transition:background .15s,color .15s" onmouseover="this.style.background='var(--gold)';this.style.color='#fff'" onmouseout="this.style.background='var(--bg-card)';this.style.color='var(--gold)'">↑ Resumo</a>
     </div>
     <div class="comp-grid">
+      <!-- Para adicionar VÍDEO: <div class="comp-card" onclick="showVideo('iN')"><video data-vid="iN" ... ></video></div> -->
+      <!-- Para adicionar FOTO: <div class="comp-card" onclick="showImg('iN')"><img class="comp-img" data-img="iN" ...></div> -->
       <div class="comp-card" onclick="showImg('i175')">
         <img loading="lazy" decoding="async" class="comp-img" data-img="i175" src="" alt="Salinha superior — porta, janela e elétrica">
         <div class="comp-info"><strong>Salinha superior — porta/janela Leroy instaladas</strong><span>11/06/2026 · fiação elétrica em andamento</span></div>
@@ -1808,7 +1814,7 @@
 
 <div class="footer">
   <div>NGHair · Unidade Brooklin · Rua Barão do Triunfo, 1455 · São Paulo, SP</div>
-  <div>v13.1 · <span>16/06/2026</span> · Fontes: WhatsApp Natalício · Dep. Zona Sul · Luciano · Silva JJ Laminados</div>
+  <div>v13.2 · <span>16/06/2026</span> · Fontes: WhatsApp Natalício · Dep. Zona Sul · Luciano · Silva JJ Laminados</div>
 </div>
 
 <script>
@@ -1995,6 +2001,31 @@ const IMGS = {
   "i137": "assets/image-ca3ec3ea384409de.jpg",
 };
 
+function showVideo(key) {
+  if (!IMGS[key]) return;
+  var lb = document.getElementById("lightbox");
+  var img = document.getElementById("lb-img");
+  // esconde a imagem e injeta um <video> dentro do lightbox existente
+  if (img) img.style.display = "none";
+  var vid = document.getElementById("lb-video");
+  if (!vid) {
+    vid = document.createElement("video");
+    vid.id = "lb-video";
+    vid.controls = true;
+    vid.style.cssText = "max-width:92vw;max-height:92vh;border-radius:8px";
+    img.parentNode.appendChild(vid);
+  }
+  vid.src = IMGS[key];
+  vid.style.display = "block";
+  vid.play();
+  lb.classList.add("active");
+}
+function resetLightbox() {
+  var vid = document.getElementById("lb-video");
+  if (vid) { vid.pause(); vid.style.display = "none"; }
+  var img = document.getElementById("lb-img");
+  if (img) img.style.display = "";
+}
 function showImg(key) {
   document.getElementById("lb-img").src = IMGS[key] || "";
   document.getElementById("lightbox").classList.add("active");
