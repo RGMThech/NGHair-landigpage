@@ -86,11 +86,20 @@ const Navbar = () => {
               Empresas <ChevronDown className="h-3 w-3" />
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
-              <DropdownMenuItem asChild>
+            <DropdownMenuItem asChild>
                 <Link to="/empresas/eurofarma">Eurofarma</Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
                 <Link to="/empresas/convenios">Convênios Corporativos</Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <a
+                  href="https://www.nghair.com.br/controleEsmaltes"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Administração
+                </a>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -173,6 +182,15 @@ const Navbar = () => {
           >
             Convênios Corporativos
           </Link>
+          <a
+            href="https://www.nghair.com.br/controleEsmaltes"
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={() => setOpen(false)}
+            className="font-body text-sm uppercase tracking-widest text-foreground/70 hover:text-primary pl-3"
+          >
+            Administração
+          </a>
           <a
             href="https://www.trinks.com/nghair/framebusca?rwg_token=AFd1xnGhS4dEqFta6HGjCtw2CLGeW_7ZBFBo3-oeBEQ0d7Wwd8yXl867b1PBWoqP6eLxRYFb99odxSXP2hV3mESCDN4M4YUtFA%3D%3D"
             target="_blank"
