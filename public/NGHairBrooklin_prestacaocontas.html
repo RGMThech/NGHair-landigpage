@@ -131,7 +131,7 @@
 
 <!-- CAPA -->
 <div class="cover">
-  <div class="cover-eyebrow">Prestação de Contas · Obra Comercial · v13.6</div>
+  <div class="cover-eyebrow">Prestação de Contas · Obra Comercial · v13.7</div>
   <h1>Reforma <em>NGHair</em><br>Unidade Brooklin</h1>
   <div class="cover-subtitle">Rua Barão do Triunfo, 1455 — Brooklin Paulista, São Paulo, SP</div>
   <div class="cover-meta">
@@ -144,7 +144,7 @@
 </div>
 <div class="status-bar">
   <div class="status-dot"></div>
-  OBRA EM ANDAMENTO — Atualizado em 18/06/2026 · v13.6
+  OBRA EM ANDAMENTO — Atualizado em 18/06/2026 · v13.7
 </div>
 
 <div class="container">
@@ -1851,7 +1851,7 @@
 
 <div class="footer">
   <div>NGHair · Unidade Brooklin · Rua Barão do Triunfo, 1455 · São Paulo, SP</div>
-  <div>v13.6 · <span>18/06/2026</span> · Fontes: WhatsApp Natalício · Dep. Zona Sul · Luciano · Silva JJ Laminados</div>
+  <div>v13.7 · <span>18/06/2026</span> · Fontes: WhatsApp Natalício · Dep. Zona Sul · Luciano · Silva JJ Laminados</div>
 </div>
 
 <script>
@@ -2174,7 +2174,9 @@ async function handleMediaUpload(event) {
 
 async function carregarMidiasObra() {
   var gallery = document.getElementById("mediaGallery");
+  var status = document.getElementById("uploadStatus");
   if (!gallery) return;
+  function dbg(msg){ if(status) status.textContent = msg; console.log("[obra]", msg); }
   try {
     var resp = await fetch(SUPABASE_URL + "/storage/v1/object/list/" + BUCKET, {
       method: "POST",
@@ -2183,20 +2185,20 @@ async function carregarMidiasObra() {
         "apikey": SUPABASE_KEY,
         "Content-Type": "application/json"
       },
-      body: JSON.stringify({ limit: 500, sortBy: { column: "name", order: "asc" } })
+      body: JSON.stringify({ limit: 500, prefix: "", sortBy: { column: "name", order: "asc" } })
     });
-    if (!resp.ok) return;
+    if (!resp.ok) { dbg("Erro list: " + resp.status + " " + (await resp.text()).slice(0,120)); return; }
     var files = await resp.json();
-    files = files.filter(function(f){ return f.name && f.name.indexOf("_") > 0; });
-    // Ordena cronologicamente pelo timestamp no nome do arquivo
+    console.log("[obra] arquivos brutos:", files);
+    dbg("Encontrados " + (files ? files.length : 0) + " arquivos no bucket");
+    files = (files || []).filter(function(f){ return f.name && f.name.indexOf("_") > 0 && f.name.indexOf(".") > 0; });
     files.sort(function(a,b){
       var ta = parseInt(a.name.split("_")[0]) || 0;
       var tb = parseInt(b.name.split("_")[0]) || 0;
       return ta - tb;
     });
-    if (!files.length) { gallery.innerHTML = ""; return; }
+    if (!files.length) { gallery.innerHTML = ""; dbg("Nenhuma mídia válida encontrada (total bruto: pode incluir placeholder)"); return; }
 
-    // Gera signed URLs em lote (bucket privado)
     var paths = files.map(function(f){ return f.name; });
     var signResp = await fetch(SUPABASE_URL + "/storage/v1/object/sign/" + BUCKET, {
       method: "POST",
@@ -2207,21 +2209,26 @@ async function carregarMidiasObra() {
       },
       body: JSON.stringify({ expiresIn: 86400, paths: paths })
     });
-    var signed = signResp.ok ? await signResp.json() : [];
-    // Mapeia path -> signedURL
+    if (!signResp.ok) { dbg("Erro sign: " + signResp.status + " " + (await signResp.text()).slice(0,120)); return; }
+    var signed = await signResp.json();
+    console.log("[obra] signed:", signed);
     var urlMap = {};
-    signed.forEach(function(s){
-      if (s.signedURL || s.signedUrl) {
+    (signed || []).forEach(function(s){
+      var su = s.signedURL || s.signedUrl;
+      if (su) {
         var key = (s.path || "").replace(/^\//, "");
-        urlMap[key] = SUPABASE_URL + "/storage/v1" + (s.signedURL || s.signedUrl);
+        // signedURL já vem como "/object/sign/bucket/file?token=..." OU "object/sign/..."
+        var full = su.charAt(0) === "/" ? (SUPABASE_URL + "/storage/v1" + su) : (SUPABASE_URL + "/storage/v1/" + su);
+        urlMap[key] = full;
       }
     });
 
     gallery.innerHTML = "";
+    var mostrados = 0;
     files.forEach(function(f) {
       var ts = parseInt(f.name.split("_")[0]) || Date.now();
       var url = urlMap[f.name];
-      if (!url) return;
+      if (!url) { console.warn("[obra] sem URL para", f.name); return; }
       var ext = (f.name.split(".").pop() || "").toLowerCase();
       var isVideo = ["mp4","mov","webm","m4v","3gp","avi"].indexOf(ext) >= 0;
       var card = document.createElement("div");
@@ -2233,12 +2240,15 @@ async function carregarMidiasObra() {
           '<div class="comp-info"><strong>Vídeo da obra</strong><span>' + fmtData(ts) + '</span></div>';
       } else {
         card.onclick = function(u){ return function(){ openLBsrc(u); }; }(url);
-        card.innerHTML = '<img loading="lazy" decoding="async" class="comp-img" src="' + url + '" alt="Foto da obra">' +
+        card.innerHTML = '<img loading="lazy" decoding="async" class="comp-img" src="' + url + '" alt="Foto da obra" onerror="console.error(\'img falhou\', this.src)">' +
           '<div class="comp-info"><strong>Foto da obra</strong><span>' + fmtData(ts) + '</span></div>';
       }
       gallery.appendChild(card);
+      mostrados++;
     });
-  } catch (e) { console.error("Erro ao carregar mídias:", e); }
+    dbg(mostrados + " mídia(s) na galeria");
+    setTimeout(function(){ if(status) status.textContent=""; }, 5000);
+  } catch (e) { dbg("Exceção: " + e.message); console.error(e); }
 }
 
 function openVideoUrl(url) {
