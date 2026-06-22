@@ -131,7 +131,7 @@
 
 <!-- CAPA -->
 <div class="cover">
-  <div class="cover-eyebrow">Prestação de Contas · Obra Comercial · v13.4</div>
+  <div class="cover-eyebrow">Prestação de Contas · Obra Comercial · v13.5</div>
   <h1>Reforma <em>NGHair</em><br>Unidade Brooklin</h1>
   <div class="cover-subtitle">Rua Barão do Triunfo, 1455 — Brooklin Paulista, São Paulo, SP</div>
   <div class="cover-meta">
@@ -144,7 +144,7 @@
 </div>
 <div class="status-bar">
   <div class="status-dot"></div>
-  OBRA EM ANDAMENTO — Atualizado em 18/06/2026 · v13.4
+  OBRA EM ANDAMENTO — Atualizado em 18/06/2026 · v13.5
 </div>
 
 <div class="container">
@@ -1851,7 +1851,7 @@
 
 <div class="footer">
   <div>NGHair · Unidade Brooklin · Rua Barão do Triunfo, 1455 · São Paulo, SP</div>
-  <div>v13.4 · <span>18/06/2026</span> · Fontes: WhatsApp Natalício · Dep. Zona Sul · Luciano · Silva JJ Laminados</div>
+  <div>v13.5 · <span>18/06/2026</span> · Fontes: WhatsApp Natalício · Dep. Zona Sul · Luciano · Silva JJ Laminados</div>
 </div>
 
 <script>
@@ -2187,17 +2187,41 @@ async function carregarMidiasObra() {
     });
     if (!resp.ok) return;
     var files = await resp.json();
-    // Ordena cronologicamente pelo timestamp no nome do arquivo
     files = files.filter(function(f){ return f.name && f.name.indexOf("_") > 0; });
+    // Ordena cronologicamente pelo timestamp no nome do arquivo
     files.sort(function(a,b){
       var ta = parseInt(a.name.split("_")[0]) || 0;
       var tb = parseInt(b.name.split("_")[0]) || 0;
       return ta - tb;
     });
+    if (!files.length) { gallery.innerHTML = ""; return; }
+
+    // Gera signed URLs em lote (bucket privado)
+    var paths = files.map(function(f){ return f.name; });
+    var signResp = await fetch(SUPABASE_URL + "/storage/v1/object/sign/" + BUCKET, {
+      method: "POST",
+      headers: {
+        "Authorization": "Bearer " + SUPABASE_KEY,
+        "apikey": SUPABASE_KEY,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ expiresIn: 86400, paths: paths })
+    });
+    var signed = signResp.ok ? await signResp.json() : [];
+    // Mapeia path -> signedURL
+    var urlMap = {};
+    signed.forEach(function(s){
+      if (s.signedURL || s.signedUrl) {
+        var key = (s.path || "").replace(/^\//, "");
+        urlMap[key] = SUPABASE_URL + "/storage/v1" + (s.signedURL || s.signedUrl);
+      }
+    });
+
     gallery.innerHTML = "";
     files.forEach(function(f) {
       var ts = parseInt(f.name.split("_")[0]) || Date.now();
-      var url = SUPABASE_URL + "/storage/v1/object/public/" + BUCKET + "/" + f.name;
+      var url = urlMap[f.name];
+      if (!url) return;
       var ext = (f.name.split(".").pop() || "").toLowerCase();
       var isVideo = ["mp4","mov","webm","m4v","3gp","avi"].indexOf(ext) >= 0;
       var card = document.createElement("div");
