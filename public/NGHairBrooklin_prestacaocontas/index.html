@@ -131,7 +131,7 @@
 
 <!-- CAPA -->
 <div class="cover">
-  <div class="cover-eyebrow">Prestação de Contas · Obra Comercial · v13.3</div>
+  <div class="cover-eyebrow">Prestação de Contas · Obra Comercial · v13.4</div>
   <h1>Reforma <em>NGHair</em><br>Unidade Brooklin</h1>
   <div class="cover-subtitle">Rua Barão do Triunfo, 1455 — Brooklin Paulista, São Paulo, SP</div>
   <div class="cover-meta">
@@ -144,7 +144,7 @@
 </div>
 <div class="status-bar">
   <div class="status-dot"></div>
-  OBRA EM ANDAMENTO — Atualizado em 18/06/2026 · v13.3
+  OBRA EM ANDAMENTO — Atualizado em 18/06/2026 · v13.4
 </div>
 
 <div class="container">
@@ -1708,7 +1708,20 @@
       <h2 class="section-title">Fotos e Vídeos da Obra</h2>
       <a href="#sec-resumo" style="margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.08em;color:var(--gold);text-decoration:none;border:1px solid var(--gold-lt);border-radius:20px;padding:4px 12px;background:var(--bg-card);white-space:nowrap;transition:background .15s,color .15s" onmouseover="this.style.background='var(--gold)';this.style.color='#fff'" onmouseout="this.style.background='var(--bg-card)';this.style.color='var(--gold)'">↑ Resumo</a>
     </div>
-    <div class="comp-grid">
+        <!-- UPLOAD DE FOTOS/VÍDEOS DA OBRA -->
+    <div style="background:var(--bg-card);border:1px dashed var(--gold-lt);border-radius:8px;padding:24px;margin-bottom:24px;text-align:center">
+      <div style="font-size:14px;color:var(--ink-soft);margin-bottom:14px">Adicione fotos e vídeos do andamento da obra direto do seu celular</div>
+      <label for="mediaUpload" style="display:inline-flex;align-items:center;gap:10px;font-family:'JetBrains Mono',monospace;font-size:13px;letter-spacing:.04em;color:#fff;background:var(--gold);border-radius:24px;padding:13px 28px;cursor:pointer;transition:opacity .15s" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
+        📷 Enviar foto ou vídeo
+      </label>
+      <input id="mediaUpload" type="file" accept="image/*,video/*" multiple capture="environment" style="display:none" onchange="handleMediaUpload(event)">
+      <div id="uploadStatus" style="margin-top:14px;font-size:12px;color:var(--ink-muted);min-height:18px"></div>
+    </div>
+
+    <!-- Galeria dinâmica (mídias enviadas pelos usuários, ordem cronológica) -->
+    <div id="mediaGallery" class="comp-grid" style="margin-bottom:24px"></div>
+
+<div class="comp-grid">
       <!-- Para adicionar VÍDEO: <div class="comp-card" onclick="showVideo('iN')"><video data-vid="iN" ... ></video></div> -->
       <!-- Para adicionar FOTO: <div class="comp-card" onclick="showImg('iN')"><img class="comp-img" data-img="iN" ...></div> -->
       <div class="comp-card" onclick="showImg('i175')">
@@ -1838,7 +1851,7 @@
 
 <div class="footer">
   <div>NGHair · Unidade Brooklin · Rua Barão do Triunfo, 1455 · São Paulo, SP</div>
-  <div>v13.3 · <span>18/06/2026</span> · Fontes: WhatsApp Natalício · Dep. Zona Sul · Luciano · Silva JJ Laminados</div>
+  <div>v13.4 · <span>18/06/2026</span> · Fontes: WhatsApp Natalício · Dep. Zona Sul · Luciano · Silva JJ Laminados</div>
 </div>
 
 <script>
@@ -2111,6 +2124,120 @@ function showTab(id) {
   document.getElementById(id).classList.add('active');
   event.target.classList.add('active');
 }
+
+// ═══════════ UPLOAD DE FOTOS/VÍDEOS VIA SUPABASE STORAGE ═══════════
+const SUPABASE_URL = "https://uwcjtomxzlmqsffjqxlg.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV3Y2p0b214emxtcXNmZmpxeGxnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUxNDQzMDAsImV4cCI6MjA5MDcyMDMwMH0.jenx3s-QBjQJ7S-lldjrmkJvUdKRJL-v1tKRdZCX1q8";
+const BUCKET = "obra-nghair";
+
+function fmtData(ts) {
+  var d = new Date(ts);
+  return ("0"+d.getDate()).slice(-2) + "/" + ("0"+(d.getMonth()+1)).slice(-2) + "/" + d.getFullYear() +
+         " · " + ("0"+d.getHours()).slice(-2) + ":" + ("0"+d.getMinutes()).slice(-2);
+}
+
+async function handleMediaUpload(event) {
+  var files = Array.from(event.target.files || []);
+  if (!files.length) return;
+  var status = document.getElementById("uploadStatus");
+  var enviados = 0;
+
+  for (var i = 0; i < files.length; i++) {
+    var file = files[i];
+    status.textContent = "Enviando " + (i+1) + " de " + files.length + "...";
+    // Nome com timestamp para ordem cronológica
+    var ts = file.lastModified || Date.now();
+    var ext = (file.name.split(".").pop() || "jpg").toLowerCase();
+    var path = ts + "_" + Math.random().toString(36).slice(2,8) + "." + ext;
+    try {
+      var resp = await fetch(SUPABASE_URL + "/storage/v1/object/" + BUCKET + "/" + path, {
+        method: "POST",
+        headers: {
+          "Authorization": "Bearer " + SUPABASE_KEY,
+          "apikey": SUPABASE_KEY,
+          "Content-Type": file.type || "application/octet-stream",
+          "x-upsert": "true"
+        },
+        body: file
+      });
+      if (resp.ok) { enviados++; }
+      else { console.error("Falha upload", await resp.text()); }
+    } catch (e) { console.error(e); }
+  }
+
+  status.textContent = enviados + " arquivo(s) enviado(s) com sucesso! Atualizando galeria...";
+  event.target.value = "";
+  await carregarMidiasObra();
+  status.textContent = enviados + " arquivo(s) enviado(s) ✓";
+  setTimeout(function(){ status.textContent = ""; }, 4000);
+}
+
+async function carregarMidiasObra() {
+  var gallery = document.getElementById("mediaGallery");
+  if (!gallery) return;
+  try {
+    var resp = await fetch(SUPABASE_URL + "/storage/v1/object/list/" + BUCKET, {
+      method: "POST",
+      headers: {
+        "Authorization": "Bearer " + SUPABASE_KEY,
+        "apikey": SUPABASE_KEY,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ limit: 500, sortBy: { column: "name", order: "asc" } })
+    });
+    if (!resp.ok) return;
+    var files = await resp.json();
+    // Ordena cronologicamente pelo timestamp no nome do arquivo
+    files = files.filter(function(f){ return f.name && f.name.indexOf("_") > 0; });
+    files.sort(function(a,b){
+      var ta = parseInt(a.name.split("_")[0]) || 0;
+      var tb = parseInt(b.name.split("_")[0]) || 0;
+      return ta - tb;
+    });
+    gallery.innerHTML = "";
+    files.forEach(function(f) {
+      var ts = parseInt(f.name.split("_")[0]) || Date.now();
+      var url = SUPABASE_URL + "/storage/v1/object/public/" + BUCKET + "/" + f.name;
+      var ext = (f.name.split(".").pop() || "").toLowerCase();
+      var isVideo = ["mp4","mov","webm","m4v","3gp","avi"].indexOf(ext) >= 0;
+      var card = document.createElement("div");
+      card.className = "comp-card";
+      if (isVideo) {
+        card.onclick = function(u){ return function(){ openVideoUrl(u); }; }(url);
+        card.innerHTML = '<div style="position:relative"><video class="comp-img" src="' + url + '#t=0.1" preload="metadata" style="background:#000"></video>' +
+          '<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none"><div style="width:48px;height:48px;border-radius:50%;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;font-size:20px;color:#fff">▶</div></div></div>' +
+          '<div class="comp-info"><strong>Vídeo da obra</strong><span>' + fmtData(ts) + '</span></div>';
+      } else {
+        card.onclick = function(u){ return function(){ openLBsrc(u); }; }(url);
+        card.innerHTML = '<img loading="lazy" decoding="async" class="comp-img" src="' + url + '" alt="Foto da obra">' +
+          '<div class="comp-info"><strong>Foto da obra</strong><span>' + fmtData(ts) + '</span></div>';
+      }
+      gallery.appendChild(card);
+    });
+  } catch (e) { console.error("Erro ao carregar mídias:", e); }
+}
+
+function openVideoUrl(url) {
+  var lb = document.getElementById("lightbox");
+  var img = document.getElementById("lb-img");
+  if (img) img.style.display = "none";
+  var vid = document.getElementById("lb-video");
+  if (!vid) {
+    vid = document.createElement("video");
+    vid.id = "lb-video";
+    vid.controls = true;
+    vid.style.cssText = "max-width:92vw;max-height:92vh;border-radius:8px";
+    img.parentNode.appendChild(vid);
+  }
+  vid.src = url;
+  vid.style.display = "block";
+  vid.play();
+  lb.classList.add("active");
+}
+
+// Carrega as mídias da obra ao abrir a página
+document.addEventListener("DOMContentLoaded", carregarMidiasObra);
+
 </script>
 </body>
 </html>
