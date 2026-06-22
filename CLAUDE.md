@@ -91,8 +91,12 @@ baixar os anexos para `NGHairBrooklin_prestacaocontas/notas-fiscais/pendentes/` 
 - `.claude/skills/nghair-prestacao/references/fornecedores.md` — dados de todos os fornecedores e placar financeiro.
 - `.claude/skills/nghair-prestacao/references/git-deploy.md` — workflow de commit/push/deploy.
 
-## Segurança (IMPORTANTE)
+## Segurança
 
-O token do GitHub e as credenciais do Supabase estão em texto no repositório (`.env`, skill).
-Antes de uso prolongado no Claude Code, migrar para `gh auth login` (GitHub) e variáveis de
-ambiente locais (Supabase), removendo os segredos do código versionado.
+- **GitHub:** autenticação via `gh auth login` (GitHub CLI). O token `ghp_...` antigo foi
+  removido do código e **deve ser revogado** em github.com/settings/tokens (ainda consta no
+  histórico do git). NUNCA reintroduzir token em texto/URL.
+- **Supabase:** o `.env` (não versionado a partir de agora; ver `.gitignore`) traz apenas a
+  chave `anon`/publishable, que é **pública por design** (prefixo `VITE_` → vai no bundle do
+  navegador). Não há `service_role` no repo. A proteção real é o **RLS** das tabelas e do
+  bucket `obra-nghair`, não esconder a chave anon. O build no CI usa `secrets.VITE_*`.

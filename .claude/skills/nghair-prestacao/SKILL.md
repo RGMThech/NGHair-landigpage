@@ -14,7 +14,7 @@ Mantém um documento HTML único e premium consolidando todos os gastos da refor
 - **Documento principal:** `/mnt/user-data/outputs/prestacao-contas-nghair-brooklin.html`
 - **Repositório GitHub:** `https://github.com/mellrodrigo/NGHair-landigpage` (privado)
 - **Pasta no repo:** `NGHairBrooklin_prestacaocontas/prestacao-contas-nghair-brooklin.html`
-- **Token GitHub (escopo repo):** `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` (usuário `mellrodrigo`)
+- **Autenticação Git:** via GitHub CLI (`gh auth login`, usuário `mellrodrigo`). NÃO usar token em texto/URL. Ver `references/git-deploy.md`.
 
 ## Dados do projeto
 

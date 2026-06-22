@@ -2,15 +2,17 @@
 
 ## Workflow de commit (executar após CADA alteração)
 
+> **Autenticação:** o Git autentica via `gh` (GitHub CLI). Rode `gh auth login` uma vez
+> (GitHub.com → HTTPS → web browser). NUNCA coloque token em URL nem em arquivo versionado.
+
 ```bash
-cd /home/claude/NGHair-landigpage   # clonar se não existir (ver abaixo)
-TOKEN="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"
+cd NGHair-landigpage   # clonar se não existir (ver abaixo)
 
 # 1. Puxar antes para evitar rejeição (workflows fazem commits automáticos)
-git pull "https://mellrodrigo:${TOKEN}@github.com/mellrodrigo/NGHair-landigpage.git" main --no-rebase -q
+git pull origin main --no-rebase -q
 
-# 2. Copiar o HTML atualizado para a pasta do repo
-cp /mnt/user-data/outputs/prestacao-contas-nghair-brooklin.html NGHairBrooklin_prestacaocontas/prestacao-contas-nghair-brooklin.html
+# 2. Copiar o HTML atualizado para a pasta do repo (se editando fora do repo)
+cp prestacao-contas-nghair-brooklin.html NGHairBrooklin_prestacaocontas/prestacao-contas-nghair-brooklin.html
 
 # 3. Gerar os arquivos public/ NO MESMO COMMIT (evita deploy duplicado)
 python3 scripts/sync-nghair-prestacao.py
@@ -18,13 +20,12 @@ python3 scripts/sync-nghair-prestacao.py
 # 4. Stage + commit + push
 git add NGHairBrooklin_prestacaocontas/prestacao-contas-nghair-brooklin.html public/
 git commit -m "vX.Y — descrição da mudança"
-git push "https://mellrodrigo:${TOKEN}@github.com/mellrodrigo/NGHair-landigpage.git" main
+git push origin main
 ```
 
 ### Clonar o repo (primeira vez na sessão)
 ```bash
-cd /home/claude
-git clone "https://mellrodrigo:${TOKEN}@github.com/mellrodrigo/NGHair-landigpage.git"
+gh repo clone mellrodrigo/NGHair-landigpage
 cd NGHair-landigpage
 git config user.name "Rodrigo Mello"
 git config user.email "mellrodrigo@users.noreply.github.com"
