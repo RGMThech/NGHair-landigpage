@@ -36,19 +36,20 @@ Campos:
 - **valor** — com `-` no lugar da vírgula dos centavos
 - **documento** — tipo + número (`nfce-XXXX`, `nfe-XXXX`, `pix`, `orcamento-XXXX`)
 
-## Integração com o Gmail
+## Integração com o Gmail (via Claude Code)
 
-A ideia é, futuramente, automatizar a leitura dos e-mails com notas fiscais
-(a partir de 25/05/2026) e depositar os anexos diretamente em `pendentes/`.
+A automação da leitura dos e-mails com notas fiscais (a partir de 25/05/2026) é
+feita no **Claude Code**. O fluxo:
 
-Essa automação funciona melhor no **Claude Code**, onde é possível:
-- Conectar a conta Gmail via API (com autorização OAuth)
-- Filtrar e-mails por remetente, assunto e data
-- Baixar os anexos (PDF/JPG) automaticamente para esta pasta
-- Acionar o fluxo de lançamento na prestação de contas
+1. Conectar a conta Gmail no Claude Code (MCP do Gmail ou Gmail API com OAuth).
+2. Buscar e-mails desde 25/05/2026 com os termos de nota fiscal/comprovante.
+3. Filtrar apenas notas do endereço da obra (Barão do Triunfo, 1455).
+4. Comparar com `processadas/` e fornecedores já lançados para não duplicar.
+5. Baixar os anexos para `pendentes/` no padrão de nome combinado.
+6. Lançar cada nota no HTML da prestação de contas.
+7. Mover o arquivo de `pendentes/` para `processadas/`.
 
-Enquanto isso, os arquivos podem ser adicionados manualmente nesta pasta
-ou enviados direto na conversa com o assistente.
+As instruções completas para o Claude Code estão no `CLAUDE.md` da raiz do repositório.
 
 ## Fornecedores já catalogados
 

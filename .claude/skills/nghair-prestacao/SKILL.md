@@ -68,8 +68,11 @@ Leia conforme a necessidade:
 - `references/fornecedores.md` — dados consolidados de todos os fornecedores já lançados, valores, e o placar financeiro atual. Consulte para não duplicar e para manter o total correto.
 - `references/git-deploy.md` — workflow exato de commit/push, geração dos arquivos public/, deploy único na Hostinger, commits de referência bons.
 
-## Estado atual (referência v11.4)
+## Estado atual (v13.8)
 
-- **Total geral:** R$ 75.208,27
-- **Seções:** Resumo Financeiro, Mão de Obra, Dep. Zona Sul, Piso Laminado, Gesso Bispo, Caçambas, Van De Velde, Santil, Registros Fotográficos, Comprovantes, Observações
-- **Pendências conhecidas:** relançar gastos Leroy Merlin (usuário vai enviar notas escaneadas); valor do orçamento Luciano/Resina (piso superior); modelo final piso laminado térreo (Silva).
+- **Total geral (pago):** R$ 117.434,10
+- **Benfeitorias:** R$ 67.308,30 (~60%)
+- **Mão de obra Natalício:** R$ 30.236,28 pago (orçado R$ 44.100; saldo R$ 13.863,72)
+- **Seções:** Resumo, Benfeitorias, Mão de Obra, Dep. Zona Sul (7 pedidos), Piso Laminado, Gesso Bispo, Caçambas (3), Van De Velde/Móveis e Equipamentos (Ikesaki + purificador), Santil (3), Nicom, Tenfer (5), Leroy Merlin (7), Ar-Condicionado (aparelhos + Maicon + fotos), MinasMov, Andra, Eletro Paris, Tallis, Fotos e Vídeos da Obra, Comprovantes, Observações.
+- **Recursos novos:** navegação por âncoras (cards clicáveis + botões ↑ Resumo); upload de fotos/vídeos da obra via Supabase Storage (bucket obra-nghair, signed URLs).
+- **Pendências:** piso laminado térreo (Silva/JJ ~R$9.820 não lançado); piso resina superior (Luciano); saldo mão de obra R$ 13.863,72; instalação AC Maicon (previsto R$4.736).
