@@ -17,6 +17,15 @@ dist-ssr
 .env.*
 !.env.example
 
+# Credenciais OAuth do Gmail (NUNCA versionar)
+**/credentials.json
+**/token.json
+.gmail/
+
+# Python
+__pycache__/
+*.pyc
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
