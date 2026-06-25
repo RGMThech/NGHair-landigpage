@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import Index from "./pages/Index.tsx";
 import Admin from "./pages/Admin.tsx";
+import Login from "./pages/Login.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import EurofarmaLogin from "./pages/empresas/EurofarmaLogin.tsx";
 import EurofarmaChangePassword from "./pages/empresas/EurofarmaChangePassword.tsx";
@@ -29,6 +30,7 @@ const AppRoutes = () => {
     <Routes>
       <Route path="/" element={<Index />} />
       <Route path="/admin" element={<Admin />} />
+      <Route path="/login" element={<Login />} />
       <Route path="/loja" element={<Loja />} />
       <Route path="/loja/:handle" element={<ProductDetail />} />
       <Route path="/empresas/eurofarma" element={<EurofarmaLogin />} />
