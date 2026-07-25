@@ -150,6 +150,8 @@ const AdminPanel = () => {
     return value;
   };
 
+  const getCell = (row: unknown[], columnIndex: number) => (columnIndex >= 0 ? row[columnIndex] : null);
+
   const handleEurofarmaUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -211,14 +213,14 @@ const AdminPanel = () => {
         if (re == null || String(re).trim() === "") continue;
         entries.push({
           month_ref: monthRef,
-          data: parseExcelDate(r[cols.data]),
-          hora: parseTime(r[cols.hora]),
-          profissional: r[cols.profissional] ? String(r[cols.profissional]).trim() : null,
-          servico: r[cols.servico] ? String(r[cols.servico]).trim() : null,
-          cliente: r[cols.cliente] ? String(r[cols.cliente]).trim() : null,
+          data: parseExcelDate(getCell(r, cols.data)),
+          hora: parseTime(getCell(r, cols.hora)),
+          profissional: getCell(r, cols.profissional) ? String(getCell(r, cols.profissional)).trim() : null,
+          servico: getCell(r, cols.servico) ? String(getCell(r, cols.servico)).trim() : null,
+          cliente: getCell(r, cols.cliente) ? String(getCell(r, cols.cliente)).trim() : null,
           re: String(re).trim(),
-          valor: parseMoney(r[cols.valor], rowNumber),
-          rubrica: r[cols.rubrica] ? String(r[cols.rubrica]).trim() : null,
+          valor: parseMoney(getCell(r, cols.valor), rowNumber),
+          rubrica: getCell(r, cols.rubrica) ? String(getCell(r, cols.rubrica)).trim() : null,
         });
       }
 
