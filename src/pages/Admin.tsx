@@ -65,6 +65,25 @@ const AdminPanel = () => {
   });
   const [eurofarmaMonths, setEurofarmaMonths] = useState<{ month_ref: string; count: number }[]>([]);
 
+  const getErrorMessage = (err: unknown) => {
+    if (err instanceof Error) return err.message;
+    if (typeof err === "object" && err !== null) {
+      const supabaseError = err as { message?: unknown; details?: unknown; hint?: unknown; code?: unknown };
+      const parts = [supabaseError.message, supabaseError.details, supabaseError.hint, supabaseError.code]
+        .filter((part): part is string => typeof part === "string" && part.trim().length > 0);
+      if (parts.length > 0) return parts.join(" · ");
+      return JSON.stringify(err);
+    }
+    return String(err || "Erro desconhecido");
+  };
+
+  const normalizeHeader = (value: unknown) =>
+    String(value ?? "")
+      .trim()
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "");
+
   const fetchEurofarmaMonths = async () => {
     const { data } = await supabase.from("eurofarma_entries").select("month_ref");
     if (!data) return;
@@ -109,6 +128,28 @@ const AdminPanel = () => {
     return String(v).trim().slice(0, 5);
   };
 
+  const parseMoney = (v: unknown, rowNumber: number): number | null => {
+    if (v == null || v === "") return null;
+    if (typeof v === "number") {
+      if (Number.isFinite(v)) return v;
+      throw new Error(`Valor inválido na linha ${rowNumber}`);
+    }
+
+    const original = String(v).trim();
+    if (!original) return null;
+    const cleaned = original.replace(/[^0-9,.-]/g, "");
+    const normalized = cleaned.includes(",")
+      ? cleaned.replace(/\./g, "").replace(",", ".")
+      : cleaned;
+    const value = Number(normalized);
+
+    if (!Number.isFinite(value)) {
+      throw new Error(`Valor inválido na linha ${rowNumber}: ${original}`);
+    }
+
+    return value;
+  };
+
   const handleEurofarmaUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -128,30 +169,44 @@ const AdminPanel = () => {
       // Find header row containing "Data" and "RE"
       let headerIdx = -1;
       for (let i = 0; i < Math.min(rows.length, 30); i++) {
-        const row = rows[i].map((c) => String(c ?? "").trim().toLowerCase());
+        const row = rows[i].map(normalizeHeader);
         if (row.includes("data") && row.includes("re")) {
           headerIdx = i;
           break;
         }
       }
       if (headerIdx === -1) throw new Error("Cabeçalho não encontrado");
-      const headers = rows[headerIdx].map((c) => String(c ?? "").trim().toLowerCase());
-      const idx = (name: string) => headers.indexOf(name.toLowerCase());
+      const headers = rows[headerIdx].map(normalizeHeader);
+      const idx = (...names: string[]) => headers.findIndex((header) => names.map(normalizeHeader).includes(header));
       const cols = {
         data: idx("data"),
         hora: idx("hora"),
         profissional: idx("profissional"),
-        servico: idx("serviço") !== -1 ? idx("serviço") : idx("servico"),
+        servico: idx("serviço", "servico"),
         cliente: idx("cliente"),
         re: idx("re"),
         valor: idx("valor"),
         rubrica: idx("rubrica"),
       };
 
+      const requiredColumns = [
+        ["Data", cols.data],
+        ["RE", cols.re],
+        ["Valor", cols.valor],
+        ["Rubrica", cols.rubrica],
+      ] as const;
+      const missingColumns = requiredColumns
+        .filter(([, columnIndex]) => columnIndex === -1)
+        .map(([label]) => label);
+      if (missingColumns.length > 0) {
+        throw new Error(`Colunas obrigatórias não encontradas: ${missingColumns.join(", ")}`);
+      }
+
       const entries = [];
       for (let i = headerIdx + 1; i < rows.length; i++) {
         const r = rows[i];
         if (!r || r.every((c) => c == null || c === "")) continue;
+        const rowNumber = i + 1;
         const re = r[cols.re];
         if (re == null || String(re).trim() === "") continue;
         entries.push({
@@ -162,16 +217,18 @@ const AdminPanel = () => {
           servico: r[cols.servico] ? String(r[cols.servico]).trim() : null,
           cliente: r[cols.cliente] ? String(r[cols.cliente]).trim() : null,
           re: String(re).trim(),
-          valor:
-            r[cols.valor] != null && r[cols.valor] !== ""
-              ? Number(String(r[cols.valor]).replace(",", "."))
-              : null,
+          valor: parseMoney(r[cols.valor], rowNumber),
           rubrica: r[cols.rubrica] ? String(r[cols.rubrica]).trim() : null,
         });
       }
 
+      if (entries.length === 0) {
+        throw new Error("Nenhum lançamento encontrado na planilha");
+      }
+
       // Replace existing month
-      await supabase.from("eurofarma_entries").delete().eq("month_ref", monthRef);
+      const { error: deleteError } = await supabase.from("eurofarma_entries").delete().eq("month_ref", monthRef);
+      if (deleteError) throw deleteError;
 
       // Insert in chunks
       const chunk = 500;
@@ -184,7 +241,7 @@ const AdminPanel = () => {
       toast({ title: "Importação concluída", description: `${entries.length} lançamentos importados para ${monthRef}.` });
       fetchEurofarmaMonths();
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Erro desconhecido";
+      const msg = getErrorMessage(err);
       toast({ title: "Erro na importação", description: msg, variant: "destructive" });
     } finally {
       setEurofarmaUploading(false);
@@ -194,7 +251,11 @@ const AdminPanel = () => {
 
   const deleteEurofarmaMonth = async (month: string) => {
     if (!confirm(`Remover todos os lançamentos de ${month}?`)) return;
-    await supabase.from("eurofarma_entries").delete().eq("month_ref", month);
+    const { error } = await supabase.from("eurofarma_entries").delete().eq("month_ref", month);
+    if (error) {
+      toast({ title: "Erro ao remover mês", description: getErrorMessage(error), variant: "destructive" });
+      return;
+    }
     toast({ title: "Mês removido" });
     fetchEurofarmaMonths();
   };
@@ -424,22 +485,56 @@ const AdminPanel = () => {
 };
 
 const Admin = () => {
-  const [session, setSession] = useState<boolean | null>(null);
+  const [access, setAccess] = useState<"loading" | "signedOut" | "admin" | "notAdmin">("loading");
+
+  const checkAdminAccess = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      setAccess("signedOut");
+      return;
+    }
+
+    const { data, error } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", session.user.id)
+      .eq("role", "admin")
+      .maybeSingle();
+
+    setAccess(!error && data?.role === "admin" ? "admin" : "notAdmin");
+  };
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(!!session);
+      if (!session) {
+        setAccess("signedOut");
+        return;
+      }
+      checkAdminAccess();
     });
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(!!session);
-    });
+    checkAdminAccess();
 
     return () => subscription.unsubscribe();
   }, []);
 
-  if (session === null) return null;
-  if (!session) return <AdminLogin onLogin={() => setSession(true)} />;
+  if (access === "loading") return null;
+  if (access === "signedOut") return <AdminLogin onLogin={checkAdminAccess} />;
+  if (access === "notAdmin") {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background p-4">
+        <div className="w-full max-w-md space-y-4 p-8 border rounded-2xl bg-card shadow-lg text-center">
+          <h1 className="font-display text-2xl font-medium text-foreground">Acesso não autorizado</h1>
+          <p className="text-sm text-muted-foreground">
+            Seu usuário está autenticado, mas não possui permissão de administração para importar planilhas.
+          </p>
+          <Button onClick={() => supabase.auth.signOut()} variant="outline" className="w-full">
+            Sair
+          </Button>
+        </div>
+      </div>
+    );
+  }
   return <AdminPanel />;
 };
 
