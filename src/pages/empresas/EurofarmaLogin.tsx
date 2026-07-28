@@ -21,8 +21,8 @@ const EurofarmaLogin = () => {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      if (data.session) navigate("/empresas/eurofarma/portal");
+    supabase.auth.getUser().then(({ data, error }) => {
+      if (!error && data.user) navigate("/empresas/eurofarma/portal", { replace: true });
     });
   }, [navigate]);
 
