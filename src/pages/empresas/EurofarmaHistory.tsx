@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { ArrowLeft, Calendar } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useEurofarmaAuth } from "@/hooks/useEurofarmaAuth";
 import {
   Table,
   TableBody,
@@ -37,6 +38,7 @@ const formatMonth = (m: string) => {
 
 const EurofarmaHistory = () => {
   const navigate = useNavigate();
+  const { userId, checking } = useEurofarmaAuth();
   const [params, setParams] = useSearchParams();
   const selectedMonth = params.get("mes");
   const [months, setMonths] = useState<string[]>([]);
@@ -44,12 +46,8 @@ const EurofarmaHistory = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!userId) return;
     (async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        navigate("/empresas/eurofarma");
-        return;
-      }
       const { data } = await supabase
         .from("eurofarma_entries")
         .select("month_ref")
@@ -58,7 +56,7 @@ const EurofarmaHistory = () => {
       setMonths(unique);
       setLoading(false);
     })();
-  }, [navigate]);
+  }, [navigate, userId]);
 
   useEffect(() => {
     if (!selectedMonth) {
