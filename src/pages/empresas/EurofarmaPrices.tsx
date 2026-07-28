@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import { eurofarmaPrices } from "@/lib/eurofarma-prices";
+import { useEurofarmaAuth } from "@/hooks/useEurofarmaAuth";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
@@ -9,6 +10,8 @@ const fmt = (n: number) =>
   n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
 const EurofarmaPrices = () => {
+  const { userId, checking } = useEurofarmaAuth();
+  if (checking || !userId) return null;
   return (
     <main className="min-h-screen bg-background">
       <header className="border-b border-border">

@@ -17,8 +17,11 @@ const EurofarmaChangePassword = () => {
   const [acceptedTerms, setAcceptedTerms] = useState(false);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      if (!data.session) navigate("/empresas/eurofarma");
+    supabase.auth.getUser().then(async ({ data, error }) => {
+      if (error || !data.user) {
+        await supabase.auth.signOut({ scope: "local" }).catch(() => undefined);
+        navigate("/empresas/eurofarma", { replace: true });
+      }
     });
   }, [navigate]);
 

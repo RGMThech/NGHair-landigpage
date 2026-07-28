@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { useEurofarmaAuth, eurofarmaSignOut } from "@/hooks/useEurofarmaAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -32,6 +33,7 @@ type Profile = {
 
 const EurofarmaProfile = () => {
   const navigate = useNavigate();
+  const { userId, checking } = useEurofarmaAuth();
   const fileRef = useRef<HTMLInputElement>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [saving, setSaving] = useState(false);
@@ -41,20 +43,16 @@ const EurofarmaProfile = () => {
   const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
+    if (!userId) return;
     (async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        navigate("/empresas/eurofarma");
-        return;
-      }
       const { data } = await supabase
         .from("eurofarma_profiles")
         .select("user_id, re, full_name, personal_email, phone, birth_date, avatar_url")
-        .eq("user_id", session.user.id)
+        .eq("user_id", userId)
         .maybeSingle();
       if (data) setProfile(data as Profile);
     })();
-  }, [navigate]);
+  }, [navigate, userId]);
 
   const handleAvatar = async (file: File) => {
     if (!profile) return;
@@ -129,10 +127,12 @@ const EurofarmaProfile = () => {
       toast({ title: "Erro ao excluir", description: error.message, variant: "destructive" });
       return;
     }
-    await supabase.auth.signOut();
+    await eurofarmaSignOut();
     toast({ title: "Perfil excluído", description: "Seus dados foram removidos." });
     navigate("/empresas/eurofarma");
   };
+
+  if (checking || !userId) return null;
 
   return (
     <main className="min-h-screen bg-background">

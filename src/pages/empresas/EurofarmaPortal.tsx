@@ -1,27 +1,25 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { useEurofarmaAuth, eurofarmaSignOut } from "@/hooks/useEurofarmaAuth";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { LogOut, Table as TableIcon, History, User } from "lucide-react";
 
 const EurofarmaPortal = () => {
   const navigate = useNavigate();
+  const { userId, checking } = useEurofarmaAuth();
   const [re, setRe] = useState<string>("");
   const [fullName, setFullName] = useState<string>("");
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
 
   useEffect(() => {
+    if (!userId) return;
     (async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        navigate("/empresas/eurofarma");
-        return;
-      }
       const { data: profile } = await supabase
         .from("eurofarma_profiles")
         .select("re, must_change_password, full_name, avatar_url")
-        .eq("user_id", session.user.id)
+        .eq("user_id", userId)
         .maybeSingle();
       if (profile?.must_change_password) {
         navigate("/empresas/eurofarma/trocar-senha");
@@ -33,12 +31,14 @@ const EurofarmaPortal = () => {
         setAvatarUrl(profile.avatar_url ?? null);
       }
     })();
-  }, [navigate]);
+  }, [navigate, userId]);
 
   const logout = async () => {
-    await supabase.auth.signOut();
+    await eurofarmaSignOut();
     window.location.href = "https://www.nghair.com.br";
   };
+
+  if (checking || !userId) return null;
 
   return (
     <main className="min-h-screen bg-background">
