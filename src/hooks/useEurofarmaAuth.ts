@@ -24,6 +24,17 @@ export function useEurofarmaAuth() {
     };
 
     (async () => {
+      // 1) checagem local imediata: sem token, redireciona na hora
+      const { data: sessionData } = await supabase.auth.getSession();
+      if (!active) return;
+      if (!sessionData.session) {
+        await reject();
+        return;
+      }
+      // libera a tela com o token local...
+      setUserId(sessionData.session.user.id);
+      setChecking(false);
+      // ...e valida no servidor logo em seguida (token revogado/expirado cai fora)
       const { data, error } = await supabase.auth.getUser();
       if (!active) return;
       if (error || !data.user) {
@@ -31,7 +42,6 @@ export function useEurofarmaAuth() {
         return;
       }
       setUserId(data.user.id);
-      setChecking(false);
     })();
 
     const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
