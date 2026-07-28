@@ -132,6 +132,8 @@ const EurofarmaProfile = () => {
     navigate("/empresas/eurofarma");
   };
 
+  if (checking || !userId) return null;
+
   return (
     <main className="min-h-screen bg-background">
       <header className="border-b border-border">
