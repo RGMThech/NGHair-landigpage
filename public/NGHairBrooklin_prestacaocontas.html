@@ -4,6 +4,33 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Prestação de Contas — Reforma NGHair Brooklin</title>
+<script>
+(function(){
+  var KEY='ngh_prest_auth_v1';
+  var PASS='rodrigomello$$';
+  if(sessionStorage.getItem(KEY)==='1')return;
+  document.documentElement.style.visibility='hidden';
+  document.addEventListener('DOMContentLoaded',function(){
+    var ov=document.createElement('div');
+    ov.style.cssText='position:fixed;inset:0;background:#1a1a1a;color:#fff;z-index:99999;display:flex;align-items:center;justify-content:center;font-family:Inter,sans-serif;visibility:visible;';
+    ov.innerHTML='<form id="pwF" style="background:#222;padding:36px 32px;border-radius:12px;max-width:360px;width:90%;border:1px solid #333;">'
+      +'<div style="font-family:JetBrains Mono,monospace;font-size:11px;letter-spacing:.18em;color:#b8965a;text-transform:uppercase;margin-bottom:12px;">Acesso restrito</div>'
+      +'<h2 style="font-family:DM Serif Display,serif;font-weight:400;font-size:22px;margin-bottom:18px;">Prestação de Contas</h2>'
+      +'<input id="pwI" type="password" placeholder="Digite a senha" autofocus style="width:100%;padding:12px 14px;border-radius:8px;border:1px solid #444;background:#111;color:#fff;font-size:14px;margin-bottom:12px;outline:none;">'
+      +'<div id="pwE" style="color:#e57373;font-size:12px;min-height:16px;margin-bottom:10px;"></div>'
+      +'<button type="submit" style="width:100%;padding:12px;border:0;border-radius:8px;background:#b8965a;color:#1a1a1a;font-weight:600;cursor:pointer;font-size:14px;">Entrar</button>'
+      +'</form>';
+    document.body.appendChild(ov);
+    document.documentElement.style.visibility='visible';
+    document.getElementById('pwF').addEventListener('submit',function(e){
+      e.preventDefault();
+      if(document.getElementById('pwI').value===PASS){sessionStorage.setItem(KEY,'1');ov.remove();}
+      else{document.getElementById('pwE').textContent='Senha incorreta';}
+    });
+  });
+})();
+</script>
+
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -131,7 +158,7 @@
 
 <!-- CAPA -->
 <div class="cover">
-  <div class="cover-eyebrow">Prestação de Contas · Obra Comercial · v13.9</div>
+  <div class="cover-eyebrow">Prestação de Contas · Obra Comercial · v13.10</div>
   <h1>Reforma <em>NGHair</em><br>Unidade Brooklin</h1>
   <div class="cover-subtitle">Rua Barão do Triunfo, 1455 — Brooklin Paulista, São Paulo, SP</div>
   <div class="cover-meta">
@@ -144,7 +171,7 @@
 </div>
 <div class="status-bar">
   <div class="status-dot"></div>
-  OBRA EM ANDAMENTO — Atualizado em 22/06/2026 · v13.9
+  OBRA EM ANDAMENTO — Atualizado em 28/07/2026 · v13.10
 </div>
 
 <div class="container">
@@ -1936,7 +1963,7 @@
 
 <div class="footer">
   <div>NGHair · Unidade Brooklin · Rua Barão do Triunfo, 1455 · São Paulo, SP</div>
-  <div>v13.9 · <span>22/06/2026</span> · Fontes: WhatsApp Natalício · Dep. Zona Sul · Luciano · Silva JJ Laminados</div>
+  <div>v13.10 · <span>28/07/2026</span> · Fontes: WhatsApp Natalício · Dep. Zona Sul · Luciano · Silva JJ Laminados</div>
 </div>
 
 <script>
