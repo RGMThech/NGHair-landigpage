@@ -3,6 +3,12 @@ import { toast } from "sonner";
 
 import heroImage from "@/assets/hero-salon.jpg";
 import { reportConversion } from "@/lib/gtag";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const HeroSection = () => {
   return (
