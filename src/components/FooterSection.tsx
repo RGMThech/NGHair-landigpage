@@ -12,14 +12,28 @@ const FooterSection = () => {
             </p>
             <p className="font-body text-xs text-cream/40 mt-2">CNPJ: 21.819.799/0001-12</p>
             
-            {/* 
-              <div className="flex gap-4 mt-6">
-              <a href="https://www.instagram.com/nghair01/" className="text-cream/50 hover:text-accent transition-colors" aria-label="Instagram">
-                <Instagram className="h-5 w-5" />
+            <div className="mt-6 space-y-2">
+              <a
+                href="https://www.instagram.com/nghair.campobelo"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 font-body text-sm text-cream/60 hover:text-accent transition-colors"
+                aria-label="Instagram NGHair Campo Belo"
+              >
+                <Instagram className="h-4 w-4" />
+                @nghair.campobelo
+              </a>
+              <a
+                href="https://www.instagram.com/nghair.brooklin"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 font-body text-sm text-cream/60 hover:text-accent transition-colors"
+                aria-label="Instagram NGHair Brooklin"
+              >
+                <Instagram className="h-4 w-4" />
+                @nghair.brooklin
               </a>
             </div>
-            */}
-
           </div>
           <div>
             <h4 className="font-display text-base font-medium text-cream mb-4">Contato</h4>

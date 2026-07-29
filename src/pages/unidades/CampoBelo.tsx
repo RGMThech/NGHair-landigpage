@@ -17,6 +17,7 @@ const data: UnidadeData = {
     { dia: "Domingo", horario: "Fechado" },
   ],
   agendamentoUrl: "/agendamento",
+  instagram: "https://www.instagram.com/nghair.campobelo",
   fotos: [
     { url: heroSalon, alt: "Interior do salão Campo Belo" },
     { url: galleryNails, alt: "Manicure" },

@@ -1,4 +1,4 @@
-import { MapPin, Phone, Clock, Navigation, Car, Footprints, FileText } from "lucide-react";
+import { MapPin, Phone, Clock, Navigation, Car, Footprints, FileText, Instagram } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import FooterSection from "@/components/FooterSection";
 import WhatsAppFloat from "@/components/WhatsAppFloat";
@@ -84,7 +84,7 @@ const UnidadePage = ({ unidade }: { unidade: UnidadeData }) => {
                 </div>
               </div>
 
-              <div className="flex items-start gap-4">
+              <div className="flex items-start gap-4 mb-6">
                 <div className="p-3 rounded-full bg-primary/10">
                   <Clock className="h-5 w-5 text-primary" />
                 </div>
@@ -98,6 +98,25 @@ const UnidadePage = ({ unidade }: { unidade: UnidadeData }) => {
                   ))}
                 </div>
               </div>
+
+              {unidade.instagram && (
+                <div className="flex items-start gap-4">
+                  <div className="p-3 rounded-full bg-primary/10">
+                    <Instagram className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <p className="font-body text-xs uppercase tracking-widest text-muted-foreground mb-1">Instagram</p>
+                    <a
+                      href={unidade.instagram}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-display text-xl text-foreground hover:text-primary transition-colors"
+                    >
+                      @{unidade.instagram.split("/").filter(Boolean).pop()}
+                    </a>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Como chegar */}

@@ -17,6 +17,7 @@ const data: UnidadeData = {
     { dia: "Domingo", horario: "Fechado" },
   ],
   agendamentoUrl: "/agendamento",
+  instagram: "https://www.instagram.com/nghair.brooklin",
   fotos: [
     { url: heroSalon, alt: "Interior do salão Brooklin" },
     { url: galleryNails, alt: "Manicure" },
