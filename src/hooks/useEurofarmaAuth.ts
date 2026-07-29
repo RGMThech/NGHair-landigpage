@@ -2,6 +2,9 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 
+/** Evita que o guard redirecione para o login enquanto o logout leva para o site. */
+let signingOut = false;
+
 /**
  * Guard de autenticação do portal Eurofarma.
  * Valida a sessão no servidor (getUser) — getSession sozinho aceita
@@ -16,6 +19,7 @@ export function useEurofarmaAuth() {
     let active = true;
 
     const reject = async () => {
+      if (signingOut) return;
       await supabase.auth.signOut({ scope: "local" }).catch(() => undefined);
       if (!active) return;
       setUserId(null);
