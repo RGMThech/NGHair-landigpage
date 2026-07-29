@@ -4,7 +4,6 @@ import { Link } from "react-router-dom";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { reportConversion } from "@/lib/gtag";
 import { CartDrawer } from "@/components/CartDrawer";
 
 const links = [
