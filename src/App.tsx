@@ -19,6 +19,7 @@ import Convenios from "./pages/empresas/Convenios.tsx";
 import CampoBelo from "./pages/unidades/CampoBelo.tsx";
 import Brooklin from "./pages/unidades/Brooklin.tsx";
 import Loja from "./pages/Loja.tsx";
+import Agendamento from "./pages/Agendamento.tsx";
 import ProductDetail from "./pages/ProductDetail.tsx";
 import { useCartSync } from "./hooks/useCartSync";
 
@@ -32,6 +33,7 @@ const AppRoutes = () => {
       <Route path="/admin" element={<Admin />} />
       <Route path="/login" element={<Login />} />
       <Route path="/loja" element={<Loja />} />
+      <Route path="/agendamento" element={<Agendamento />} />
       <Route path="/loja/:handle" element={<ProductDetail />} />
       <Route path="/empresas/eurofarma" element={<EurofarmaLogin />} />
       <Route path="/empresas/eurofarma/trocar-senha" element={<EurofarmaChangePassword />} />
