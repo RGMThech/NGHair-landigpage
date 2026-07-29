@@ -58,6 +58,13 @@ export function useEurofarmaAuth() {
 }
 
 export async function eurofarmaSignOut() {
+  signingOut = true;
   await supabase.auth.signOut().catch(() => undefined);
   await supabase.auth.signOut({ scope: "local" }).catch(() => undefined);
+}
+
+/** Sai do portal e volta para a raiz do site institucional. */
+export async function eurofarmaLogout() {
+  await eurofarmaSignOut();
+  window.location.replace("https://www.nghair.com.br");
 }
