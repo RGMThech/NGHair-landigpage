@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { useEurofarmaAuth, eurofarmaSignOut } from "@/hooks/useEurofarmaAuth";
+import { useEurofarmaAuth, eurofarmaLogout } from "@/hooks/useEurofarmaAuth";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { LogOut, Table as TableIcon, History, User } from "lucide-react";
@@ -33,9 +33,8 @@ const EurofarmaPortal = () => {
     })();
   }, [navigate, userId]);
 
-  const logout = async () => {
-    await eurofarmaSignOut();
-    window.location.href = "https://www.nghair.com.br";
+  const logout = () => {
+    void eurofarmaLogout();
   };
 
   if (checking || !userId) return null;
