@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useEurofarmaAuth, eurofarmaLogout } from "@/hooks/useEurofarmaAuth";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { LogOut, Table as TableIcon, History, User } from "lucide-react";
+import { LogOut, Table as TableIcon, History, User, BarChart3 } from "lucide-react";
 
 const EurofarmaPortal = () => {
   const navigate = useNavigate();
@@ -12,6 +12,7 @@ const EurofarmaPortal = () => {
   const [re, setRe] = useState<string>("");
   const [fullName, setFullName] = useState<string>("");
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [canDashboard, setCanDashboard] = useState(false);
 
   useEffect(() => {
     if (!userId) return;
@@ -30,6 +31,10 @@ const EurofarmaPortal = () => {
         setFullName(profile.full_name ?? "");
         setAvatarUrl(profile.avatar_url ?? null);
       }
+      const { data: can } = await supabase.rpc("can_access_eurofarma_dashboard", {
+        _user_id: userId,
+      });
+      setCanDashboard(Boolean(can));
     })();
   }, [navigate, userId]);
 
@@ -107,6 +112,19 @@ const EurofarmaPortal = () => {
               Atualize foto, telefone, data de nascimento e email pessoal.
             </p>
           </Link>
+
+          {canDashboard && (
+            <Link
+              to="/empresas/eurofarma/dashboard"
+              className="group border border-border rounded-2xl p-8 bg-card hover:border-primary transition-all"
+            >
+              <BarChart3 className="h-8 w-8 text-primary mb-4" />
+              <h2 className="font-display text-2xl mb-2">Dashboard</h2>
+              <p className="text-sm text-muted-foreground">
+                Visão consolidada dos serviços utilizados pelas colaboradoras e gestão de acessos.
+              </p>
+            </Link>
+          )}
         </div>
       </section>
     </main>
