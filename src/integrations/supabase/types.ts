@@ -101,6 +101,30 @@ export type Database = {
         }
         Relationships: []
       }
+      eurofarma_dashboard_access: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          note: string | null
+          re: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          note?: string | null
+          re: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          note?: string | null
+          re?: string
+        }
+        Relationships: []
+      }
       eurofarma_entries: {
         Row: {
           cliente: string | null
@@ -325,6 +349,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      can_access_eurofarma_dashboard: {
+        Args: { _user_id: string }
+        Returns: boolean
+      }
       delete_email: {
         Args: { message_id: number; queue_name: string }
         Returns: boolean
@@ -333,6 +361,18 @@ export type Database = {
       enqueue_email: {
         Args: { payload: Json; queue_name: string }
         Returns: number
+      }
+      eurofarma_dashboard_entries: {
+        Args: never
+        Returns: {
+          data: string
+          month_ref: string
+          profissional: string
+          re: string
+          rubrica: string
+          servico: string
+          valor: number
+        }[]
       }
       has_role: {
         Args: {
