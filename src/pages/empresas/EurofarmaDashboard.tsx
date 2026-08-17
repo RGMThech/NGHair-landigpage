@@ -464,6 +464,7 @@ const EurofarmaDashboard = () => {
                 <TableHeader>
                   <TableRow>
                     <TableHead>RE</TableHead>
+                    <TableHead>Colaborador</TableHead>
                     <TableHead className="text-right">Atendimentos</TableHead>
                     <TableHead className="text-right">Valor total</TableHead>
                   </TableRow>
@@ -472,6 +473,7 @@ const EurofarmaDashboard = () => {
                   {byRe.map((r) => (
                     <TableRow key={r.name}>
                       <TableCell>{r.name}</TableCell>
+                      <TableCell>{nameByRe.get(normalizeRe(r.name)) ?? "-"}</TableCell>
                       <TableCell className="text-right">{r.qtd}</TableCell>
                       <TableCell className="text-right">{brl(r.total)}</TableCell>
                     </TableRow>
