@@ -270,6 +270,98 @@ const EurofarmaDashboard = () => {
           </div>
         ) : (
           <>
+            <div className="border border-border rounded-2xl bg-card p-6 mb-8">
+              <div className="flex flex-wrap items-end gap-4">
+                <div>
+                  <p className="text-xs uppercase tracking-widest text-muted-foreground mb-2">
+                    Filtrar por
+                  </p>
+                  <div className="flex gap-2">
+                    {([
+                      { id: "todos", label: "Tudo" },
+                      { id: "mes", label: "Mês" },
+                      { id: "periodo", label: "Período" },
+                    ] as const).map((o) => (
+                      <Button
+                        key={o.id}
+                        size="sm"
+                        variant={filterMode === o.id ? "default" : "outline"}
+                        onClick={() => setFilterMode(o.id)}
+                      >
+                        {o.label}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+
+                {filterMode === "mes" && (
+                  <div>
+                    <p className="text-xs uppercase tracking-widest text-muted-foreground mb-2">
+                      Mês
+                    </p>
+                    <Select value={filterMonth} onValueChange={setFilterMonth}>
+                      <SelectTrigger className="w-[180px]">
+                        <SelectValue placeholder="Todos os meses" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {availableMonths.map((m) => (
+                          <SelectItem key={m} value={m}>
+                            {monthLabel(m)}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+
+                {filterMode === "periodo" && (
+                  <>
+                    <div>
+                      <p className="text-xs uppercase tracking-widest text-muted-foreground mb-2">
+                        De
+                      </p>
+                      <Input
+                        type="date"
+                        value={dateFrom}
+                        onChange={(e) => setDateFrom(e.target.value)}
+                        className="w-[170px]"
+                      />
+                    </div>
+                    <div>
+                      <p className="text-xs uppercase tracking-widest text-muted-foreground mb-2">
+                        Até
+                      </p>
+                      <Input
+                        type="date"
+                        value={dateTo}
+                        onChange={(e) => setDateTo(e.target.value)}
+                        className="w-[170px]"
+                      />
+                    </div>
+                  </>
+                )}
+
+                {filterMode !== "todos" && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setFilterMode("todos");
+                      setFilterMonth("");
+                      setDateFrom("");
+                      setDateTo("");
+                    }}
+                  >
+                    Limpar filtro
+                  </Button>
+                )}
+
+                <p className="text-sm text-muted-foreground ml-auto">
+                  {filteredRows.length} de {rows.length} lançamentos
+                </p>
+              </div>
+            </div>
+
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-12">
               {[
                 { label: "Valor total dos serviços", value: brl(totals.total) },
