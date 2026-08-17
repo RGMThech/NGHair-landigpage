@@ -33,6 +33,7 @@ type Row = {
   data: string | null;
   profissional: string | null;
   servico: string | null;
+  cliente: string | null;
   re: string;
   valor: number | null;
   rubrica: string | null;
@@ -52,6 +53,9 @@ const monthLabel = (m: string) => {
 
 const brl = (v: number) =>
   v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+
+const normalizeRe = (re: string | null) =>
+  (re ?? "").trim().replace(/^0+/, "") || "0";
 
 const colaboradorValue = (r: Row) => {
   const valor = Number(r.valor) || 0;
@@ -76,6 +80,10 @@ const EurofarmaDashboard = () => {
   const [newNote, setNewNote] = useState("");
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [filterMode, setFilterMode] = useState<"todos" | "mes" | "periodo">("todos");
+  const [filterMonth, setFilterMonth] = useState<string>("");
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
 
   const loadAccess = async () => {
     const { data } = await supabase
@@ -104,23 +112,62 @@ const EurofarmaDashboard = () => {
     })();
   }, [userId]);
 
+  const availableMonths = useMemo(
+    () => Array.from(new Set(rows.map((r) => r.month_ref))).sort().reverse(),
+    [rows],
+  );
+
+  const filteredRows = useMemo(() => {
+    if (filterMode === "mes") {
+      return filterMonth ? rows.filter((r) => r.month_ref === filterMonth) : rows;
+    }
+    if (filterMode === "periodo") {
+      if (!dateFrom && !dateTo) return rows;
+      return rows.filter((r) => {
+        if (!r.data) return false;
+        if (dateFrom && r.data < dateFrom) return false;
+        if (dateTo && r.data > dateTo) return false;
+        return true;
+      });
+    }
+    return rows;
+  }, [rows, filterMode, filterMonth, dateFrom, dateTo]);
+
+  const nameByRe = useMemo(() => {
+    const counts = new Map<string, Map<string, number>>();
+    rows.forEach((r) => {
+      const nome = (r.cliente ?? "").trim();
+      if (!nome) return;
+      const key = normalizeRe(r.re);
+      const inner = counts.get(key) ?? new Map<string, number>();
+      inner.set(nome, (inner.get(nome) ?? 0) + 1);
+      counts.set(key, inner);
+    });
+    const out = new Map<string, string>();
+    counts.forEach((inner, key) => {
+      const best = Array.from(inner.entries()).sort((a, b) => b[1] - a[1])[0];
+      if (best) out.set(key, best[0]);
+    });
+    return out;
+  }, [rows]);
+
   const totals = useMemo(() => {
-    const total = rows.reduce((a, r) => a + (Number(r.valor) || 0), 0);
-    const colab = rows.reduce((a, r) => a + colaboradorValue(r), 0);
-    const res = new Set(rows.map((r) => (r.re ?? "").trim().replace(/^0+/, "") || "0"));
+    const total = filteredRows.reduce((a, r) => a + (Number(r.valor) || 0), 0);
+    const colab = filteredRows.reduce((a, r) => a + colaboradorValue(r), 0);
+    const res = new Set(filteredRows.map((r) => normalizeRe(r.re)));
     return {
       total,
       colab,
       empresa: total - colab,
-      atendimentos: rows.length,
+      atendimentos: filteredRows.length,
       colaboradoras: res.size,
-      ticket: rows.length ? total / rows.length : 0,
+      ticket: filteredRows.length ? total / filteredRows.length : 0,
     };
-  }, [rows]);
+  }, [filteredRows]);
 
   const byMonth = useMemo(() => {
     const map = new Map<string, { mes: string; total: number; colaborador: number }>();
-    rows.forEach((r) => {
+    filteredRows.forEach((r) => {
       const cur = map.get(r.month_ref) ?? {
         mes: monthLabel(r.month_ref),
         total: 0,
@@ -133,11 +180,11 @@ const EurofarmaDashboard = () => {
     return Array.from(map.entries())
       .sort((a, b) => a[0].localeCompare(b[0]))
       .map(([, v]) => v);
-  }, [rows]);
+  }, [filteredRows]);
 
   const topList = (key: "servico" | "profissional" | "re") =>
     Object.entries(
-      rows.reduce<Record<string, { total: number; qtd: number }>>((acc, r) => {
+      filteredRows.reduce<Record<string, { total: number; qtd: number }>>((acc, r) => {
         const k = (r[key] ?? "").toString().trim() || "Não informado";
         acc[k] = acc[k] ?? { total: 0, qtd: 0 };
         acc[k].total += Number(r.valor) || 0;
@@ -148,9 +195,9 @@ const EurofarmaDashboard = () => {
       .map(([name, v]) => ({ name, ...v }))
       .sort((a, b) => b.total - a.total);
 
-  const byServico = useMemo(() => topList("servico"), [rows]);
-  const byProfissional = useMemo(() => topList("profissional"), [rows]);
-  const byRe = useMemo(() => topList("re"), [rows]);
+  const byServico = useMemo(() => topList("servico"), [filteredRows]);
+  const byProfissional = useMemo(() => topList("profissional"), [filteredRows]);
+  const byRe = useMemo(() => topList("re"), [filteredRows]);
 
   const addAccess = async () => {
     const re = newRe.trim();
