@@ -15,6 +15,7 @@ import EurofarmaHistory from "./pages/empresas/EurofarmaHistory.tsx";
 import EurofarmaForgotPassword from "./pages/empresas/EurofarmaForgotPassword.tsx";
 import EurofarmaResetPassword from "./pages/empresas/EurofarmaResetPassword.tsx";
 import EurofarmaProfile from "./pages/empresas/EurofarmaProfile.tsx";
+import EurofarmaDashboard from "./pages/empresas/EurofarmaDashboard.tsx";
 import Convenios from "./pages/empresas/Convenios.tsx";
 import CampoBelo from "./pages/unidades/CampoBelo.tsx";
 import Brooklin from "./pages/unidades/Brooklin.tsx";
@@ -43,6 +44,7 @@ const AppRoutes = () => {
       <Route path="/empresas/eurofarma/perfil" element={<EurofarmaProfile />} />
       <Route path="/empresas/eurofarma/precos" element={<EurofarmaPrices />} />
       <Route path="/empresas/eurofarma/historico" element={<EurofarmaHistory />} />
+      <Route path="/empresas/eurofarma/dashboard" element={<EurofarmaDashboard />} />
       <Route path="/empresas/convenios" element={<Convenios />} />
       <Route path="/unidades/campo-belo" element={<CampoBelo />} />
       <Route path="/unidades/brooklin" element={<Brooklin />} />
