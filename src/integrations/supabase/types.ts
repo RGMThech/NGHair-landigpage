@@ -365,6 +365,7 @@ export type Database = {
       eurofarma_dashboard_entries: {
         Args: never
         Returns: {
+          cliente: string
           data: string
           month_ref: string
           profissional: string
