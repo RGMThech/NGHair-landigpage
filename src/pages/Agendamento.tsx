@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { CalendarCheck, MapPin, Clock } from "lucide-react";
+import { CalendarCheck, MapPin } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import FooterSection from "@/components/FooterSection";
 import WhatsAppFloat from "@/components/WhatsAppFloat";
@@ -8,6 +8,9 @@ import { reportConversion } from "@/lib/gtag";
 const TRINKS_CAMPO_BELO =
   "https://www.trinks.com/nghaircampobelo/framebusca?rwg_token=AE37R_hFrCkB3xGrGpHrhZJ2eYyHY54URcGROVZMFpIubfjPV5MXtUaNLhW9chlpNtXLG97m0fFlkkv84R9PNn-IV-NI0eGIDg%3D%3D";
 
+const TRINKS_BROOKLIN =
+  "https://www.trinks.com/nghair-brooklin/framebusca?rwg_token=AE37R_jZNpOA2foFoXNI3n_oNR5n52hXMTJ004S-gWOQ8QqlC9HKjY0IaQTfb7Y9OCGX2SppOzzVC1rswtjXLL5wgjlBPlXb1g%3D%3D";
+
 type Unidade = "campo-belo" | "brooklin";
 
 const Agendamento = () => {
@@ -15,7 +18,7 @@ const Agendamento = () => {
 
   const selecionar = (u: Unidade) => {
     setUnidade(u);
-    if (u === "campo-belo") reportConversion();
+    reportConversion();
   };
 
   return (
@@ -55,7 +58,7 @@ const Agendamento = () => {
                 id: "brooklin" as Unidade,
                 nome: "Brooklin",
                 endereco: "Rua Barão do Triunfo, 1455",
-                status: "Em breve disponível para agendamento online",
+                status: "Agendamento online disponível",
               },
             ].map((u) => (
               <button
@@ -111,26 +114,17 @@ const Agendamento = () => {
             )}
 
             {unidade === "brooklin" && (
-              <div className="bg-card border border-border rounded-2xl p-10 text-center shadow-sm">
-                <div className="mx-auto mb-5 w-fit p-4 rounded-full bg-accent/10">
-                  <Clock className="h-7 w-7 text-accent" />
-                </div>
-                <h2 className="font-display text-3xl text-foreground mb-3">
-                  Em breve <span className="italic text-primary">disponível</span>
-                </h2>
-                <p className="font-body text-muted-foreground max-w-md mx-auto">
-                  O agendamento online da unidade Brooklin estará disponível em breve.
-                  Enquanto isso, fale com a gente pelo WhatsApp para marcar seu horário.
-                </p>
-                <a
-                  href="https://wa.me/5511947962201?text=Olá! Gostaria de agendar um horário na unidade Brooklin"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={reportConversion}
-                  className="mt-7 inline-block rounded-full bg-whatsapp px-8 py-3 font-body text-xs font-semibold text-cream uppercase tracking-wider transition-transform hover:scale-105"
-                >
-                  Agendar pelo WhatsApp
-                </a>
+              <div className="rounded-2xl overflow-hidden border border-border shadow-lg bg-card">
+                <iframe
+                  title="Agendamento NGHair Brooklin"
+                  src={TRINKS_BROOKLIN}
+                  width="100%"
+                  height="900"
+                  style={{ border: 0, minHeight: 900 }}
+                  loading="lazy"
+                  allowFullScreen
+                  referrerPolicy="no-referrer-when-downgrade"
+                />
               </div>
             )}
           </div>
