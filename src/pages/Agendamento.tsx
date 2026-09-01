@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { CalendarCheck, MapPin, Clock } from "lucide-react";
+import { CalendarCheck, MapPin } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import FooterSection from "@/components/FooterSection";
 import WhatsAppFloat from "@/components/WhatsAppFloat";
