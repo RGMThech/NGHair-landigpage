@@ -18,7 +18,7 @@ const Agendamento = () => {
 
   const selecionar = (u: Unidade) => {
     setUnidade(u);
-    if (u === "campo-belo") reportConversion();
+    reportConversion();
   };
 
   return (
