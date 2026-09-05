@@ -1,4 +1,4 @@
-import { MapPin, Phone, Clock, Instagram, Building2 } from "lucide-react";
+import { MapPin, Phone, Clock, Instagram, Building2, Linkedin } from "lucide-react";
 
 const FooterSection = () => {
   return (
@@ -32,6 +32,16 @@ const FooterSection = () => {
               >
                 <Instagram className="h-4 w-4" />
                 @nghair.brooklin
+              </a>
+              <a
+                href="https://www.linkedin.com/company/nghair"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 font-body text-sm text-cream/60 hover:text-accent transition-colors"
+                aria-label="LinkedIn NGHair"
+              >
+                <Linkedin className="h-4 w-4" />
+                NGHair
               </a>
             </div>
           </div>
