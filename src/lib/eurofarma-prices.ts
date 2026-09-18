@@ -35,7 +35,7 @@ export const eurofarmaPrices: PriceItem[] = [
   { name: "Costas M", full: 110, collaborator: 55 },
   { name: "Braços M", full: 66, collaborator: 33 },
   { name: "Rosto F", full: 99, collaborator: 49.5 },
-  { name: "Design de sobrancelha", full: 68, collaborator: 34 },
+  /* { name: "Design de sobrancelha", full: 68, collaborator: 34 }, */
   { name: "Corte Máquina Masculino", full: 80, collaborator: 40 },
   { name: "Corte Feminino Franja", full: 64, collaborator: 32 },
   { name: "Prancha (adicional, qualquer tamanho)", full: 50, collaborator: 25 },
