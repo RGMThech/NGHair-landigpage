@@ -344,6 +344,69 @@ export type Database = {
         }
         Relationships: []
       }
+      vertice_authorized_emails: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          email: string
+          full_name: string | null
+          id: string
+          note: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          email: string
+          full_name?: string | null
+          id?: string
+          note?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          email?: string
+          full_name?: string | null
+          id?: string
+          note?: string | null
+        }
+        Relationships: []
+      }
+      vertice_profiles: {
+        Row: {
+          accepted_terms: boolean
+          avatar_url: string | null
+          created_at: string
+          email: string
+          full_name: string | null
+          id: string
+          phone: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          accepted_terms?: boolean
+          avatar_url?: string | null
+          created_at?: string
+          email: string
+          full_name?: string | null
+          id?: string
+          phone?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          accepted_terms?: boolean
+          avatar_url?: string | null
+          created_at?: string
+          email?: string
+          full_name?: string | null
+          id?: string
+          phone?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -382,6 +445,8 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_vertice_admin: { Args: { _user_id: string }; Returns: boolean }
+      is_vertice_authorized: { Args: { email: string }; Returns: boolean }
       move_to_dlq: {
         Args: {
           dlq_name: string
