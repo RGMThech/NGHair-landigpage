@@ -17,6 +17,11 @@ import EurofarmaResetPassword from "./pages/empresas/EurofarmaResetPassword.tsx"
 import EurofarmaProfile from "./pages/empresas/EurofarmaProfile.tsx";
 import EurofarmaDashboard from "./pages/empresas/EurofarmaDashboard.tsx";
 import Convenios from "./pages/empresas/Convenios.tsx";
+import VerticeLogin from "./pages/empresas/VerticeLogin.tsx";
+import VerticePortal from "./pages/empresas/VerticePortal.tsx";
+import VerticePrices from "./pages/empresas/VerticePrices.tsx";
+import VerticeProfile from "./pages/empresas/VerticeProfile.tsx";
+import VerticePromocoes from "./pages/empresas/VerticePromocoes.tsx";
 import CampoBelo from "./pages/unidades/CampoBelo.tsx";
 import Brooklin from "./pages/unidades/Brooklin.tsx";
 import Loja from "./pages/Loja.tsx";
@@ -46,6 +51,11 @@ const AppRoutes = () => {
       <Route path="/empresas/eurofarma/historico" element={<EurofarmaHistory />} />
       <Route path="/empresas/eurofarma/dashboard" element={<EurofarmaDashboard />} />
       <Route path="/empresas/convenios" element={<Convenios />} />
+      <Route path="/empresas/vertice" element={<VerticeLogin />} />
+      <Route path="/empresas/vertice/portal" element={<VerticePortal />} />
+      <Route path="/empresas/vertice/precos" element={<VerticePrices />} />
+      <Route path="/empresas/vertice/perfil" element={<VerticeProfile />} />
+      <Route path="/empresas/vertice/promocoes" element={<VerticePromocoes />} />
       <Route path="/unidades/campo-belo" element={<CampoBelo />} />
       <Route path="/unidades/brooklin" element={<Brooklin />} />
       {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

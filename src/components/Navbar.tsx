@@ -89,8 +89,11 @@ const Navbar = () => {
                 <Link to="/empresas/eurofarma">Eurofarma</Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <Link to="/empresas/convenios">Convênios Corporativos</Link>
-              </DropdownMenuItem>
+                  <Link to="/empresas/convenios">Convênios Corporativos</Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/empresas/vertice">Vértice</Link>
+                </DropdownMenuItem>
               <DropdownMenuItem asChild>
                 <a
                   href="https://www.nghair.com.br/controleEsmaltes"
@@ -177,6 +180,13 @@ const Navbar = () => {
             className="font-body text-sm uppercase tracking-widest text-foreground/70 hover:text-primary pl-3"
           >
             Convênios Corporativos
+          </Link>
+          <Link
+            to="/empresas/vertice"
+            onClick={() => setOpen(false)}
+            className="font-body text-sm uppercase tracking-widest text-foreground/70 hover:text-primary pl-3"
+          >
+            Vértice
           </Link>
           <a
             href="https://www.nghair.com.br/controleEsmaltes"
