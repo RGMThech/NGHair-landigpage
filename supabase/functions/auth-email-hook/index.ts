@@ -3,6 +3,29 @@ import { renderAsync } from 'npm:@react-email/components@0.0.22'
 import { parseEmailWebhookPayload } from 'npm:@lovable.dev/email-js'
 import { WebhookError, verifyWebhookRequest } from 'npm:@lovable.dev/webhooks-js'
 import { createClient } from 'npm:@supabase/supabase-js@2'
+import { SMTPClient } from 'https://deno.land/x/denomailer@1.6.0/mod.ts'
+
+// Envio direto via SMTP da Hostinger (provedor do cliente)
+const SMTP_HOST = 'smtp.hostinger.com'
+const SMTP_PORT = 465
+const SMTP_USER = 'contato@nghair.com.br'
+const SMTP_FROM = 'NGHair <contato@nghair.com.br>'
+
+async function sendSmtpEmail(to: string, subject: string, html: string, text: string) {
+  const client = new SMTPClient({
+    connection: {
+      hostname: SMTP_HOST,
+      port: SMTP_PORT,
+      tls: true,
+      auth: { username: SMTP_USER, password: Deno.env.get('SMTP_PASSWORD')! },
+    },
+  })
+  try {
+    await client.send({ from: SMTP_FROM, to, subject, content: text || 'auto', html })
+  } finally {
+    await client.close()
+  }
+}
 import { SignupEmail } from '../_shared/email-templates/signup.tsx'
 import { InviteEmail } from '../_shared/email-templates/invite.tsx'
 import { MagicLinkEmail } from '../_shared/email-templates/magic-link.tsx'
