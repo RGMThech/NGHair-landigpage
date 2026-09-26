@@ -19,6 +19,7 @@ interface SignupEmailProps {
   siteUrl: string
   recipient: string
   confirmationUrl: string
+  token?: string
 }
 
 export const SignupEmail = ({
@@ -26,34 +27,34 @@ export const SignupEmail = ({
   siteUrl,
   recipient,
   confirmationUrl,
+  token,
 }: SignupEmailProps) => (
-  <Html lang="en" dir="ltr">
+  <Html lang="pt-BR" dir="ltr">
     <Head>
       <style>{darkModeCss}</style>
     </Head>
-    <Preview>Confirm your email for {siteName}</Preview>
+    <Preview>Seu código de acesso: {token ?? ''}</Preview>
     <Body style={main}>
       <Container style={container}>
-        <Heading style={h1}>Confirm your email</Heading>
+        <Heading style={h1}>Seu código de acesso</Heading>
         <Text style={text}>
-          Thanks for signing up for{' '}
+          Olá! Use o código abaixo para entrar no portal{' '}
           <Link href={siteUrl} style={link}>
-            <strong>{siteName}</strong>
-          </Link>
-          !
+            <strong>NGHair</strong>
+          </Link>{' '}
+          ({recipient}):
         </Text>
-        <Text style={text}>
-          Please confirm your email address (
-          <Link href={`mailto:${recipient}`} style={link}>
-            {recipient}
-          </Link>
-          ) by clicking the button below:
-        </Text>
+        {token && (
+          <Text style={{ fontSize: '32px', fontWeight: 'bold', letterSpacing: '8px', color: '#000000', margin: '0 0 25px' }}>
+            {token}
+          </Text>
+        )}
+        <Text style={text}>Ou, se preferir, clique no botão:</Text>
         <Button className="dm-btn" style={button} href={confirmationUrl}>
-          Verify Email
+          Entrar
         </Button>
         <Text style={footer}>
-          If you didn't create an account, you can safely ignore this email.
+          Se você não solicitou este código, ignore este email.
         </Text>
       </Container>
     </Body>

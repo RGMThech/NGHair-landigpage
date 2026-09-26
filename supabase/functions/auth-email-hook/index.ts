@@ -17,9 +17,9 @@ const corsHeaders = {
 }
 
 const EMAIL_SUBJECTS: Record<string, string> = {
-  signup: 'Confirm your email',
+  signup: 'Seu código de acesso NGHair',
   invite: "You've been invited",
-  magiclink: 'Your login link',
+  magiclink: 'Seu código de acesso NGHair',
   recovery: 'Reset your password',
   email_change: 'Confirm your new email',
   reauthentication: 'Your verification code',

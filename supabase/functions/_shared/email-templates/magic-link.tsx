@@ -16,29 +16,36 @@ import {
 interface MagicLinkEmailProps {
   siteName: string
   confirmationUrl: string
+  token?: string
 }
 
 export const MagicLinkEmail = ({
   siteName,
   confirmationUrl,
+  token,
 }: MagicLinkEmailProps) => (
-  <Html lang="en" dir="ltr">
+  <Html lang="pt-BR" dir="ltr">
     <Head>
       <style>{darkModeCss}</style>
     </Head>
-    <Preview>Your login link for {siteName}</Preview>
+    <Preview>Seu código de acesso: {token ?? ''}</Preview>
     <Body style={main}>
       <Container style={container}>
-        <Heading style={h1}>Your login link</Heading>
+        <Heading style={h1}>Seu código de acesso</Heading>
         <Text style={text}>
-          Click the button below to log in to {siteName}. This link will expire
-          shortly.
+          Use o código abaixo para entrar no portal NGHair. Ele expira em breve.
         </Text>
+        {token && (
+          <Text style={{ fontSize: '32px', fontWeight: 'bold', letterSpacing: '8px', color: '#000000', margin: '0 0 25px' }}>
+            {token}
+          </Text>
+        )}
+        <Text style={text}>Ou, se preferir, clique no botão:</Text>
         <Button className="dm-btn" style={button} href={confirmationUrl}>
-          Log In
+          Entrar
         </Button>
         <Text style={footer}>
-          If you didn't request this link, you can safely ignore this email.
+          Se você não solicitou este código, ignore este email.
         </Text>
       </Container>
     </Body>
