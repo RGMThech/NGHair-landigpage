@@ -85,24 +85,15 @@ const Navbar = () => {
               Empresas <ChevronDown className="h-3 w-3" />
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
-            <DropdownMenuItem asChild>
+              <DropdownMenuItem asChild>
                 <Link to="/empresas/eurofarma">Eurofarma</Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                  <Link to="/empresas/convenios">Convênios Corporativos</Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
                   <Link to="/empresas/vertice">Vértice</Link>
                 </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <a
-                  href="https://www.nghair.com.br/controleEsmaltes"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  Administração
-                </a>
-              </DropdownMenuItem>
+                  <Link to="/empresas/convenios">Convênios Corporativos</Link>
+                </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
           <CartDrawer
