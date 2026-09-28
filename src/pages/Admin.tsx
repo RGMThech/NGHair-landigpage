@@ -262,6 +262,99 @@ const AdminPanel = () => {
     fetchEurofarmaMonths();
   };
 
+  const [verticeUploading, setVerticeUploading] = useState(false);
+  const [verticeMonthRef, setVerticeMonthRef] = useState<string>(() => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+  });
+  const [verticeMonths, setVerticeMonths] = useState<{ month_ref: string; count: number }[]>([]);
+
+  const fetchVerticeMonths = async () => {
+    const { data } = await supabase.from("vertice_entries").select("month_ref");
+    if (!data) return;
+    const counts = data.reduce<Record<string, number>>((acc, r) => {
+      acc[r.month_ref] = (acc[r.month_ref] || 0) + 1;
+      return acc;
+    }, {});
+    setVerticeMonths(
+      Object.entries(counts)
+        .map(([month_ref, count]) => ({ month_ref, count }))
+        .sort((a, b) => b.month_ref.localeCompare(a.month_ref)),
+    );
+  };
+
+  const handleVerticeUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!/^\d{4}-\d{2}$/.test(verticeMonthRef)) {
+      toast({ title: "Mês inválido", description: "Use formato AAAA-MM", variant: "destructive" });
+      return;
+    }
+    setVerticeUploading(true);
+    try {
+      const wb = XLSX.read(await file.arrayBuffer(), { cellDates: true });
+      const ws = wb.Sheets[wb.SheetNames.find((n) => /lancamentos/i.test(normalizeHeader(n))) ?? wb.SheetNames[0]];
+      const rows: unknown[][] = XLSX.utils.sheet_to_json(ws, { header: 1, raw: true });
+      let headerIdx = -1;
+      for (let i = 0; i < Math.min(rows.length, 30); i++) {
+        const row = (rows[i] ?? []).map(normalizeHeader);
+        if (row.includes("data") && (row.includes("email") || row.includes("e-mail"))) { headerIdx = i; break; }
+      }
+      if (headerIdx === -1) throw new Error("Cabeçalho não encontrado (precisa das colunas Data e Email)");
+      const headers = rows[headerIdx].map(normalizeHeader);
+      const idx = (...names: string[]) => headers.findIndex((h) => names.map(normalizeHeader).includes(h));
+      const cols = {
+        data: idx("data"), hora: idx("hora"), profissional: idx("profissional"),
+        servico: idx("serviço", "servico"), cliente: idx("cliente", "nome"),
+        email: idx("email", "e-mail"), valor: idx("valor"),
+      };
+      if (cols.valor === -1) throw new Error("Coluna obrigatória não encontrada: Valor");
+      const txt = (r: unknown[], c: number) => { const v = getCell(r, c); return v ? String(v).trim() : null; };
+      const entries = [];
+      for (let i = headerIdx + 1; i < rows.length; i++) {
+        const r = rows[i];
+        if (!r || r.every((c) => c == null || c === "")) continue;
+        const email = txt(r, cols.email)?.toLowerCase();
+        if (!email) continue;
+        entries.push({
+          month_ref: verticeMonthRef,
+          data: parseExcelDate(getCell(r, cols.data)),
+          hora: parseTime(getCell(r, cols.hora)),
+          profissional: txt(r, cols.profissional),
+          servico: txt(r, cols.servico),
+          cliente: txt(r, cols.cliente),
+          email,
+          valor: parseMoney(getCell(r, cols.valor), i + 1),
+        });
+      }
+      if (entries.length === 0) throw new Error("Nenhum lançamento encontrado na planilha");
+      const { error: delErr } = await supabase.from("vertice_entries").delete().eq("month_ref", verticeMonthRef);
+      if (delErr) throw delErr;
+      for (let i = 0; i < entries.length; i += 500) {
+        const { error } = await supabase.from("vertice_entries").insert(entries.slice(i, i + 500));
+        if (error) throw error;
+      }
+      toast({ title: "Importação Vértice concluída", description: `${entries.length} lançamentos importados para ${verticeMonthRef}.` });
+      fetchVerticeMonths();
+    } catch (err: unknown) {
+      toast({ title: "Erro na importação", description: getErrorMessage(err), variant: "destructive" });
+    } finally {
+      setVerticeUploading(false);
+      e.target.value = "";
+    }
+  };
+
+  const deleteVerticeMonth = async (month: string) => {
+    if (!confirm(`Remover todos os lançamentos Vértice de ${month}?`)) return;
+    const { error } = await supabase.from("vertice_entries").delete().eq("month_ref", month);
+    if (error) {
+      toast({ title: "Erro ao remover mês", description: getErrorMessage(error), variant: "destructive" });
+      return;
+    }
+    toast({ title: "Mês removido" });
+    fetchVerticeMonths();
+  };
+
   const fetchImages = async () => {
     const { data } = await supabase
       .from("gallery_images")
@@ -273,6 +366,7 @@ const AdminPanel = () => {
   useEffect(() => {
     fetchImages();
     fetchEurofarmaMonths();
+    fetchVerticeMonths();
   }, []);
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -474,6 +568,62 @@ const AdminPanel = () => {
                     size="icon"
                     onClick={() => deleteEurofarmaMonth(m.month_ref)}
                   >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="mt-16">
+          <h2 className="font-display text-2xl font-medium text-foreground mb-4">
+            Lançamentos Vértice
+          </h2>
+          <div className="border-2 border-dashed border-border rounded-2xl p-6 mb-6 bg-card">
+            <div className="flex flex-col sm:flex-row gap-4 items-end">
+              <div className="space-y-2">
+                <Label>Mês de referência (AAAA-MM)</Label>
+                <Input
+                  value={verticeMonthRef}
+                  onChange={(e) => setVerticeMonthRef(e.target.value)}
+                  placeholder="2026-04"
+                  className="w-40"
+                />
+              </div>
+              <div>
+                <Label
+                  htmlFor="vertice-upload"
+                  className="inline-flex items-center gap-2 cursor-pointer px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+                >
+                  <FileSpreadsheet className="h-4 w-4" />
+                  {verticeUploading ? "Importando..." : "Importar planilha Vértice"}
+                </Label>
+                <input
+                  id="vertice-upload"
+                  type="file"
+                  accept=".xlsx,.xls"
+                  onChange={handleVerticeUpload}
+                  disabled={verticeUploading}
+                  className="hidden"
+                />
+              </div>
+            </div>
+            <p className="text-xs text-muted-foreground mt-3">
+              Colunas: Data, Email e Valor (obrigatórias); Hora, Profissional, Serviço e Cliente (opcionais).
+              Reimportar o mesmo mês substitui os lançamentos anteriores.
+            </p>
+          </div>
+
+          {verticeMonths.length > 0 && (
+            <div className="space-y-2">
+              {verticeMonths.map((m) => (
+                <div key={m.month_ref} className="flex items-center justify-between border rounded-lg px-4 py-3 bg-card">
+                  <div>
+                    <p className="font-medium">{m.month_ref}</p>
+                    <p className="text-xs text-muted-foreground">{m.count} lançamentos</p>
+                  </div>
+                  <Button variant="ghost" size="icon" onClick={() => deleteVerticeMonth(m.month_ref)}>
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
