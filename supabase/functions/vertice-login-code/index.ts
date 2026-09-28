@@ -1,6 +1,13 @@
 import { createClient } from "npm:@supabase/supabase-js@2.95.0";
-import { corsHeaders } from "npm:@supabase/supabase-js@2.95.0/cors";
 import { SMTPClient } from "https://deno.land/x/denomailer@1.6.0/mod.ts";
+
+// CORS inline: a página chama esta função direto do navegador (nghair.com.br).
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version, x-region",
+};
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_ROLE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
