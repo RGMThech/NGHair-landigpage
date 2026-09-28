@@ -166,28 +166,19 @@ const Navbar = () => {
             Eurofarma
           </Link>
           <Link
-            to="/empresas/convenios"
-            onClick={() => setOpen(false)}
-            className="font-body text-sm uppercase tracking-widest text-foreground/70 hover:text-primary pl-3"
-          >
-            Convênios Corporativos
-          </Link>
-          <Link
             to="/empresas/vertice"
             onClick={() => setOpen(false)}
             className="font-body text-sm uppercase tracking-widest text-foreground/70 hover:text-primary pl-3"
           >
             Vértice
           </Link>
-          <a
-            href="https://www.nghair.com.br/controleEsmaltes"
-            target="_blank"
-            rel="noopener noreferrer"
+          <Link
+            to="/empresas/convenios"
             onClick={() => setOpen(false)}
             className="font-body text-sm uppercase tracking-widest text-foreground/70 hover:text-primary pl-3"
           >
-            Administração
-          </a>
+            Convênios Corporativos
+          </Link>
           <Link
             to="/agendamento"
             onClick={() => setOpen(false)}
