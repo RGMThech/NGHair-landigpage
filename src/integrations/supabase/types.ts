@@ -371,6 +371,45 @@ export type Database = {
         }
         Relationships: []
       }
+      vertice_entries: {
+        Row: {
+          cliente: string | null
+          created_at: string
+          data: string | null
+          email: string
+          hora: string | null
+          id: string
+          month_ref: string
+          profissional: string | null
+          servico: string | null
+          valor: number | null
+        }
+        Insert: {
+          cliente?: string | null
+          created_at?: string
+          data?: string | null
+          email: string
+          hora?: string | null
+          id?: string
+          month_ref: string
+          profissional?: string | null
+          servico?: string | null
+          valor?: number | null
+        }
+        Update: {
+          cliente?: string | null
+          created_at?: string
+          data?: string | null
+          email?: string
+          hora?: string | null
+          id?: string
+          month_ref?: string
+          profissional?: string | null
+          servico?: string | null
+          valor?: number | null
+        }
+        Relationships: []
+      }
       vertice_login_codes: {
         Row: {
           attempts: number
