@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
-  LogOut, Table as TableIcon, User, Gift, MapPin, Plus, Trash2, ShieldCheck,
+  LogOut, Table as TableIcon, User, Gift, MapPin, Plus, Trash2, ShieldCheck, Receipt,
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
@@ -168,6 +168,17 @@ const VerticePortal = () => {
             <h2 className="font-display text-2xl mb-2">Promoções</h2>
             <p className="text-sm text-muted-foreground">
               Acompanhe as promoções e ofertas exclusivas para colaboradores Vértice.
+            </p>
+          </Link>
+
+          <Link
+            to="/empresas/vertice/servicos"
+            className="group border border-border rounded-2xl p-8 bg-card hover:border-primary transition-all"
+          >
+            <Receipt className="h-8 w-8 text-primary mb-4" />
+            <h2 className="font-display text-2xl mb-2">Serviços utilizados</h2>
+            <p className="text-sm text-muted-foreground">
+              Consulte mês a mês os serviços que você utilizou.
             </p>
           </Link>
 
