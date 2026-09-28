@@ -5,3 +5,5 @@ project_id = "uwcjtomxzlmqsffjqxlg"
     verify_jwt = false
   [functions.process-email-queue]
     verify_jwt = true
+  [functions.vertice-login-code]
+    verify_jwt = false

@@ -1,11 +1,30 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { FunctionsHttpError } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/hooks/use-toast";
 import { Mail, KeyRound, ArrowLeft } from "lucide-react";
+
+type LoginCodeResponse = { ok?: boolean; error?: string; token_hash?: string };
+
+/** Chama a edge function e devolve a mensagem de erro do corpo mesmo em respostas não-2xx. */
+async function callLoginCode(
+  body: Record<string, string>,
+): Promise<{ data: LoginCodeResponse | null; error: string | null }> {
+  const { data, error } = await supabase.functions.invoke<LoginCodeResponse>("vertice-login-code", { body });
+  if (data?.error === "not_authorized") {
+    data.error = "Seu email não está na lista de acesso. Contate o administrador.";
+  }
+  if (!error) return { data, error: null };
+  if (error instanceof FunctionsHttpError) {
+    const payload = (await error.context.json().catch(() => null)) as LoginCodeResponse | null;
+    if (payload?.error) return { data: payload, error: null };
+  }
+  return { data: null, error: "Falha de comunicação com o servidor. Tente novamente." };
+}
 
 const VerticeLogin = () => {
   const navigate = useNavigate();
@@ -31,6 +50,12 @@ const VerticeLogin = () => {
     return () => clearTimeout(t);
   }, [resendTimer]);
 
+  /** Envia o código pela edge function vertice-login-code (SMTP Hostinger). */
+  const requestCode = async (cleanEmail: string): Promise<string | null> => {
+    const { data, error } = await callLoginCode({ action: "request", email: cleanEmail });
+    return data?.error ?? error;
+  };
+
   const handleSendCode = async (e: React.FormEvent) => {
     e.preventDefault();
     const cleanEmail = email.trim().toLowerCase();
@@ -39,35 +64,16 @@ const VerticeLogin = () => {
       return;
     }
     setLoading(true);
-
-    const { data: authorized } = await supabase.rpc("is_vertice_authorized", { email: cleanEmail });
-    if (!authorized) {
-      setLoading(false);
-      toast({
-        title: "Email não autorizado",
-        description: "Seu email não está na lista de acesso. Contate o administrador.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    const { error } = await supabase.auth.signInWithOtp({
-      email: cleanEmail,
-      options: {
-        shouldCreateUser: true,
-        emailRedirectTo: `${window.location.origin}/empresas/vertice/portal`,
-      },
-    });
-
+    const errorMsg = await requestCode(cleanEmail);
     setLoading(false);
-    if (error) {
-      toast({ title: "Erro ao enviar código", description: error.message, variant: "destructive" });
+    if (errorMsg) {
+      toast({ title: "Não foi possível enviar o código", description: errorMsg, variant: "destructive" });
       return;
     }
 
     setStep(2);
     setResendTimer(60);
-    toast({ title: "Código enviado!", description: "Verifique seu email e digite o código recebido." });
+    toast({ title: "Código enviado!", description: "Verifique seu email (e a caixa de spam) e digite o código." });
   };
 
   const handleVerifyCode = async (e: React.FormEvent) => {
@@ -79,15 +85,28 @@ const VerticeLogin = () => {
     }
     setLoading(true);
 
-    const { data, error } = await supabase.auth.verifyOtp({
+    const { data, error } = await callLoginCode({
+      action: "verify",
       email: email.trim().toLowerCase(),
-      token: cleanCode,
-      type: "email",
+      code: cleanCode,
     });
+    if (!data?.token_hash) {
+      setLoading(false);
+      toast({
+        title: "Código inválido",
+        description: data?.error ?? error ?? "O código está incorreto ou expirou.",
+        variant: "destructive",
+      });
+      return;
+    }
 
+    const { data: session, error: otpError } = await supabase.auth.verifyOtp({
+      token_hash: data.token_hash,
+      type: "magiclink",
+    });
     setLoading(false);
-    if (error || !data.session) {
-      toast({ title: "Código inválido", description: "O código está incorreto ou expirou.", variant: "destructive" });
+    if (otpError || !session.session) {
+      toast({ title: "Erro ao entrar", description: "Tente novamente.", variant: "destructive" });
       return;
     }
 
@@ -97,13 +116,10 @@ const VerticeLogin = () => {
   const handleResend = async () => {
     if (resendTimer > 0) return;
     setLoading(true);
-    const { error } = await supabase.auth.signInWithOtp({
-      email: email.trim().toLowerCase(),
-      options: { shouldCreateUser: true, emailRedirectTo: `${window.location.origin}/empresas/vertice/portal` },
-    });
+    const errorMsg = await requestCode(email.trim().toLowerCase());
     setLoading(false);
-    if (error) {
-      toast({ title: "Erro ao reenviar", description: error.message, variant: "destructive" });
+    if (errorMsg) {
+      toast({ title: "Erro ao reenviar", description: errorMsg, variant: "destructive" });
       return;
     }
     setResendTimer(60);
