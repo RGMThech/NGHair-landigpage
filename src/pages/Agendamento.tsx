@@ -91,6 +91,22 @@ const Agendamento = () => {
 
           {/* Resultado */}
           <div className="mt-10">
+            {unidade !== null && (
+              <div className="mb-6 flex flex-col items-center gap-3 text-center">
+                <a
+                  href={unidade === "campo-belo" ? TRINKS_CAMPO_BELO : TRINKS_BROOKLIN}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={reportConversion}
+                  className="rounded-full bg-primary px-8 py-3 font-body text-xs font-semibold uppercase tracking-wider text-primary-foreground transition-transform hover:scale-[1.02]"
+                >
+                  Abrir agendamento em nova aba
+                </a>
+                <p className="font-body text-xs text-muted-foreground max-w-md">
+                  Se aparecer erro de verificação ("Max challenge attempts exceeded") abaixo, use o botão acima — o agendamento abre direto no Trinks.
+                </p>
+              </div>
+            )}
             {unidade === null && (
               <div className="text-center font-body text-sm text-muted-foreground flex items-center justify-center gap-2">
                 <CalendarCheck className="h-4 w-4 text-primary" />
