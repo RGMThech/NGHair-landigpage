@@ -22,6 +22,7 @@ import VerticePortal from "./pages/empresas/VerticePortal.tsx";
 import VerticePrices from "./pages/empresas/VerticePrices.tsx";
 import VerticeProfile from "./pages/empresas/VerticeProfile.tsx";
 import VerticePromocoes from "./pages/empresas/VerticePromocoes.tsx";
+import VerticeHistory from "./pages/empresas/VerticeHistory.tsx";
 import CampoBelo from "./pages/unidades/CampoBelo.tsx";
 import Brooklin from "./pages/unidades/Brooklin.tsx";
 import Loja from "./pages/Loja.tsx";
@@ -56,6 +57,7 @@ const AppRoutes = () => {
       <Route path="/empresas/vertice/precos" element={<VerticePrices />} />
       <Route path="/empresas/vertice/perfil" element={<VerticeProfile />} />
       <Route path="/empresas/vertice/promocoes" element={<VerticePromocoes />} />
+      <Route path="/empresas/vertice/servicos" element={<VerticeHistory />} />
       <Route path="/unidades/campo-belo" element={<CampoBelo />} />
       <Route path="/unidades/brooklin" element={<Brooklin />} />
       {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
