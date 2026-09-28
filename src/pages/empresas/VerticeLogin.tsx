@@ -19,11 +19,26 @@ async function callLoginCode(
     data.error = "Seu email não está na lista de acesso. Contate o administrador.";
   }
   if (!error) return { data, error: null };
+  console.error("vertice-login-code falhou", error);
+
+  // Detalhe técnico (status HTTP + mensagem do gateway) para facilitar o diagnóstico.
+  let detail = error.message;
   if (error instanceof FunctionsHttpError) {
-    const payload = (await error.context.json().catch(() => null)) as LoginCodeResponse | null;
-    if (payload?.error) return { data: payload, error: null };
+    const res = error.context as Response;
+    const payload = (await res.clone().json().catch(() => null)) as
+      | (LoginCodeResponse & { message?: string; msg?: string; code?: string })
+      | null;
+    if (payload?.error) {
+      if (payload.error === "not_authorized") {
+        payload.error = "Seu email não está na lista de acesso. Contate o administrador.";
+      }
+      return { data: payload, error: null };
+    }
+    const text = payload?.message ?? payload?.msg ?? payload?.code ?? (await res.text().catch(() => ""));
+    detail = `HTTP ${res.status}${text ? `: ${text}` : ""}`;
+    if (res.status === 404) detail += " (função vertice-login-code não publicada)";
   }
-  return { data: null, error: "Falha de comunicação com o servidor. Tente novamente." };
+  return { data: null, error: `Falha de comunicação com o servidor (${detail}).` };
 }
 
 const VerticeLogin = () => {
