@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { z } from "zod";
-import { ArrowLeft, Check, Clock, Loader2, Scissors, User } from "lucide-react";
+import { ArrowLeft, Check, ChevronLeft, ChevronRight, Clock, Loader2, Scissors, User } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { reportConversion } from "@/lib/gtag";
 
@@ -22,11 +22,6 @@ const schema = z.object({
   email: z.string().trim().max(150),
 }).refine((v) => v.nome.length >= 3 || v.telefone.replace(/\D/g, "").length >= 8 || emailOk(v.email), "Informe ao menos 3 letras do nome, o telefone ou o e-mail");
 
-const nextDays = () =>
-  Array.from({ length: 14 }, (_, i) => {
-    const d = new Date(); d.setDate(d.getDate() + i);
-    return d;
-  }).filter((d) => d.getDay() !== 0 && d.getDay() !== 1);
 const iso = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 
 const steps = ["Serviço", "Profissional", "Horário", "Seus dados"];
@@ -48,10 +43,25 @@ export default function BookingFlow({ unidade, nomeUnidade, fallbackUrl }: { uni
   const [cliente, setCliente] = useState<Cliente | null>(null);
   const [telOk, setTelOk] = useState(false);
   const [telAtualizado, setTelAtualizado] = useState(false);
+  const [mesOffset, setMesOffset] = useState(0); // 0 = mês corrente, 1 = mês seguinte
+  const hoje = useMemo(() => { const d = new Date(); d.setHours(0, 0, 0, 0); return d; }, []);
+  const mesExibido = useMemo(() => { const d = new Date(); d.setDate(1); d.setMonth(d.getMonth() + mesOffset); return d; }, [mesOffset]);
+  const semanas = useMemo(() => {
+    const inicio = new Date(mesExibido);
+    inicio.setDate(1 - mesExibido.getDay());
+    return Array.from({ length: 6 }, (_, w) =>
+      Array.from({ length: 7 }, (_, i) => {
+        const d = new Date(inicio);
+        d.setDate(inicio.getDate() + w * 7 + i);
+        return d;
+      })
+    );
+  }, [mesExibido]);
+  const mesLabel = mesExibido.toLocaleDateString("pt-BR", { month: "long", year: "numeric" });
+  const diaHabil = (d: Date) => d >= hoje && d.getDay() !== 0 && d.getDay() !== 1;
   const [aberta, setAberta] = useState<string | null>(null);
   const [erro, setErro] = useState("");
   const [feito, setFeito] = useState(false);
-  const dias = useMemo(nextDays, []);
 
   const run = async <T,>(fn: () => Promise<T>) => {
     setLoading(true); setErro("");
@@ -80,7 +90,7 @@ export default function BookingFlow({ unidade, nomeUnidade, fallbackUrl }: { uni
       setProfs(executores.sort((a, b) => Number(casa(b.funcao ?? "", s.categoria)) - Number(casa(a.funcao ?? "", s.categoria))));
     });
   };
-  const escolherProf = (p: Prof | null) => { setProf(p); setStep(2); setData(""); setHorarios([]); };
+  const escolherProf = (p: Prof | null) => { setProf(p); setStep(2); setData(""); setSlot(null); setHorarios([]); setMesOffset(0); };
   const escolherData = (d: string) => {
     setData(d); setSlot(null);
     run(async () => {
@@ -248,14 +258,36 @@ export default function BookingFlow({ unidade, nomeUnidade, fallbackUrl }: { uni
 
       {step === 2 && (
         <div>
-          <div className="flex gap-2 overflow-x-auto pb-2 mb-6">
-            {dias.map((d) => (
-              <button key={iso(d)} onClick={() => escolherData(iso(d))}
-                className={`shrink-0 w-16 rounded-xl border py-3 text-center transition ${data === iso(d) ? "bg-primary text-primary-foreground border-primary" : "bg-card border-border hover:border-primary"}`}>
-                <p className="font-body text-[10px] uppercase tracking-widest">{d.toLocaleDateString("pt-BR", { weekday: "short" }).replace(".", "")}</p>
-                <p className="font-display text-xl">{d.getDate()}</p>
+          <div className="max-w-sm mx-auto mb-6">
+            <div className="flex items-center justify-between mb-3">
+              <button onClick={() => setMesOffset(0)} disabled={mesOffset === 0} aria-label="Mês anterior"
+                className="h-9 w-9 rounded-full border border-border bg-card flex items-center justify-center text-muted-foreground transition hover:border-primary hover:text-primary disabled:opacity-30 disabled:hover:border-border disabled:hover:text-muted-foreground">
+                <ChevronLeft className="h-4 w-4" />
               </button>
-            ))}
+              <p className="font-display text-lg text-foreground capitalize">{mesLabel}</p>
+              <button onClick={() => setMesOffset(1)} disabled={mesOffset === 1} aria-label="Próximo mês"
+                className="h-9 w-9 rounded-full border border-border bg-card flex items-center justify-center text-muted-foreground transition hover:border-primary hover:text-primary disabled:opacity-30 disabled:hover:border-border disabled:hover:text-muted-foreground">
+                <ChevronRight className="h-4 w-4" />
+              </button>
+            </div>
+            <div className="grid grid-cols-7 gap-1 mb-1">
+              {["dom", "seg", "ter", "qua", "qui", "sex", "sáb"].map((l, i) => (
+                <span key={i} className="text-center font-body text-[10px] uppercase tracking-widest text-muted-foreground py-1">{l}</span>
+              ))}
+            </div>
+            <div className="grid grid-cols-7 gap-1">
+              {semanas.flat().map((d, i) => {
+                const fora = d.getMonth() !== mesExibido.getMonth();
+                const habil = !fora && diaHabil(d);
+                const sel = data === iso(d);
+                return (
+                  <button key={i} disabled={!habil} onClick={() => escolherData(iso(d))}
+                    className={`h-10 rounded-lg font-body text-sm transition ${sel ? "bg-primary text-primary-foreground" : habil ? "bg-card border border-border hover:border-primary hover:text-primary" : "text-muted-foreground/40"}`}>
+                    {d.getDate()}
+                  </button>
+                );
+              })}
+            </div>
           </div>
           {!loading && data && (horarios.length === 0
             ? <p className="font-body text-sm text-muted-foreground text-center py-6">Sem horários livres neste dia. Escolha outra data.</p>
