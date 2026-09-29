@@ -68,6 +68,17 @@ Deno.serve(async (req) => {
           id: c.id, nome: c.nome, telefone: mask((c.telefones ?? [])[0]),
         })) });
       }
+      case "atualizarTelefone": {
+        const clienteId = Number(body.clienteId);
+        const tel = clean(body.telefone, 20).replace(/\D/g, "");
+        if (!clienteId) return json({ error: "cliente_obrigatorio" }, 400);
+        if (tel.length < 10 || tel.length > 11) return json({ error: "telefone_invalido" }, 400);
+        const ddd = tel.slice(0, 2), numero = tel.slice(2);
+        await trinks(`/clientes/${clienteId}`, estab, { method: "PUT", body: JSON.stringify({
+          telefones: [{ ddd, numero, tipoId: 1 }],
+        }) });
+        return json({ ok: true });
+      }
       case "agendar": {
         const clienteId = Number(body.clienteId);
         if (!clienteId) return json({ error: "cliente_obrigatorio" }, 400);

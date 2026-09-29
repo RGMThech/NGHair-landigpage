@@ -43,6 +43,9 @@ export default function BookingFlow({ unidade, nomeUnidade, fallbackUrl }: { uni
   const [form, setForm] = useState({ nome: "", telefone: "" });
   const [clientes, setClientes] = useState<Cliente[] | null>(null);
   const [cliente, setCliente] = useState<Cliente | null>(null);
+  const [telOk, setTelOk] = useState(false);
+  const [novoTel, setNovoTel] = useState("");
+  const [editTel, setEditTel] = useState(false);
   const [aberta, setAberta] = useState<string | null>(null);
   const [erro, setErro] = useState("");
   const [feito, setFeito] = useState(false);
@@ -73,7 +76,7 @@ export default function BookingFlow({ unidade, nomeUnidade, fallbackUrl }: { uni
   const buscar = async () => {
     const r = schema.safeParse(form);
     if (!r.success) return setErro(r.error.issues[0].message);
-    setLoading(true); setErro(""); setCliente(null); setClientes(null);
+    setLoading(true); setErro(""); setCliente(null); setClientes(null); setTelOk(false); setEditTel(false); setNovoTel("");
     try {
       const d = await call({ action: "buscarCliente", unidade, nome: form.nome.trim(), telefone: form.telefone.trim() });
       const list: Cliente[] = d.clientes ?? [];
@@ -83,8 +86,19 @@ export default function BookingFlow({ unidade, nomeUnidade, fallbackUrl }: { uni
     } catch { setErro("Não conseguimos buscar seu cadastro agora. Tente novamente."); }
     finally { setLoading(false); }
   };
+  const salvarTelefone = async () => {
+    const tel = novoTel.replace(/\D/g, "");
+    if (tel.length < 10 || tel.length > 11) return setErro("Informe o telefone com DDD (ex.: 11 99999-9999).");
+    setLoading(true); setErro("");
+    try {
+      await call({ action: "atualizarTelefone", unidade, clienteId: cliente!.id, telefone: tel });
+      setTelOk(true); setEditTel(false);
+    } catch { setErro("Não conseguimos atualizar o telefone agora. Tente novamente."); }
+    finally { setLoading(false); }
+  };
   const confirmar = async () => {
     if (!cliente) return setErro("Selecione seu cadastro para continuar.");
+    if (!telOk) return setErro("Confirme ou atualize seu telefone para continuar.");
     setLoading(true); setErro("");
     try {
       await call({ action: "agendar", unidade, clienteId: cliente.id, servicoId: servico!.id, profissionalId: slot!.profissionalId, data, hora: slot!.hora, duracao: servico!.duracao });
@@ -221,17 +235,55 @@ export default function BookingFlow({ unidade, nomeUnidade, fallbackUrl }: { uni
             <div className="space-y-2">
               <p className="font-body text-xs uppercase tracking-widest text-muted-foreground">Confirme que é você</p>
               {clientes.map((c) => (
-                <button key={c.id} onClick={() => setCliente(c)}
+                <button key={c.id} onClick={() => { setCliente(c); setTelOk(false); setEditTel(false); setNovoTel(""); }}
                   className={`w-full text-left rounded-xl border px-4 py-3 font-body text-sm transition ${cliente?.id === c.id ? "border-primary bg-primary/5" : "border-border bg-card hover:border-primary"}`}>
                   <span className="flex items-center gap-2">{cliente?.id === c.id && <Check className="h-4 w-4 text-primary" />}<strong>{c.nome}</strong></span>
                   {c.telefone && <span className="block text-xs text-muted-foreground">{c.telefone}</span>}
                 </button>
               ))}
-              <button onClick={() => { setClientes(null); setCliente(null); }} className="font-body text-xs text-muted-foreground underline">Não sou eu, buscar novamente</button>
+              <button onClick={() => { setClientes(null); setCliente(null); setTelOk(false); }} className="font-body text-xs text-muted-foreground underline">Não sou eu, buscar novamente</button>
             </div>
           )}
+          {cliente && !telOk && (
+            <div className="rounded-xl border border-border bg-muted/50 p-4 space-y-3">
+              <p className="font-body text-sm text-foreground">
+                Seu telefone cadastrado é <strong>{cliente.telefone || "não informado"}</strong>. Ele está correto?
+              </p>
+              {!editTel && (
+                <div className="flex gap-2">
+                  <button onClick={() => setTelOk(true)}
+                    className="flex-1 rounded-full bg-primary px-4 py-2.5 font-body text-xs font-semibold uppercase tracking-wider text-primary-foreground">
+                    Sim, está correto
+                  </button>
+                  <button onClick={() => setEditTel(true)}
+                    className="flex-1 rounded-full border border-primary px-4 py-2.5 font-body text-xs font-semibold uppercase tracking-wider text-primary">
+                    Atualizar
+                  </button>
+                </div>
+              )}
+              {editTel && (
+                <div className="space-y-2">
+                  <input value={novoTel} onChange={(e) => setNovoTel(e.target.value)}
+                    placeholder="Novo telefone com DDD" inputMode="tel"
+                    className="w-full rounded-xl border border-input bg-card px-4 py-3 font-body text-sm outline-none focus:border-primary" />
+                  <div className="flex gap-2">
+                    <button onClick={salvarTelefone} disabled={loading}
+                      className="flex-1 rounded-full bg-primary px-4 py-2.5 font-body text-xs font-semibold uppercase tracking-wider text-primary-foreground disabled:opacity-60">
+                      {loading ? "Salvando..." : "Salvar telefone"}
+                    </button>
+                    <button onClick={() => setEditTel(false)} className="font-body text-xs text-muted-foreground underline">Cancelar</button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+          {cliente && telOk && (
+            <p className="font-body text-sm text-foreground flex items-center gap-2">
+              <Check className="h-4 w-4 text-primary" /> Telefone confirmado{editTel ? " e atualizado" : ""}.
+            </p>
+          )}
           {erro && <p className="font-body text-sm text-destructive">{erro}</p>}
-          {cliente && (
+          {cliente && telOk && (
             <button onClick={confirmar} disabled={loading}
               className="w-full rounded-full bg-primary px-8 py-3 font-body text-xs font-semibold uppercase tracking-wider text-primary-foreground disabled:opacity-60">
               {loading ? "Confirmando..." : "Confirmar agendamento"}
