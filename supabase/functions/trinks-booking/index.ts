@@ -22,9 +22,13 @@ async function trinks(path: string, estab: string, init: RequestInit = {}) {
 }
 const list = (d: any) => (Array.isArray(d) ? d : d?.data ?? d?.items ?? []);
 const clean = (s: unknown, n: number) => String(s ?? "").trim().slice(0, n);
-const digits = (t: any) => `${t?.ddd ?? ""}${t?.numero ?? ""}`.replace(/\D/g, "");
+const digits = (t: any) => {
+  const value = `${t?.ddi ?? ""}${t?.ddd ?? ""}${t?.numero ?? ""}`.replace(/\D/g, "");
+  return value.startsWith("55") && value.length >= 12 ? value.slice(2) : value;
+};
 const formatPhone = (value: string) => {
-  const tel = value.replace(/\D/g, "");
+  const raw = value.replace(/\D/g, "");
+  const tel = raw.startsWith("55") && raw.length >= 12 ? raw.slice(2) : raw;
   const ddd = tel.slice(0, 2), numero = tel.slice(2);
   if (tel.length < 10) return "";
   return `(${ddd}) ${numero.length === 9 ? numero.slice(0, 5) + "-" + numero.slice(5) : numero.slice(0, 4) + "-" + numero.slice(4)}`;
