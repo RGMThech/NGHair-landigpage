@@ -94,7 +94,7 @@ export default function BookingFlow({ unidade, nomeUnidade, fallbackUrl }: { uni
     if (!r.success) return setErro(r.error.issues[0].message);
     setLoading(true); setErro(""); setCliente(null); setClientes(null); setTelOk(false); setTelAtualizado(false);
     try {
-      const d = await call({ action: "buscarCliente", unidade, nome: form.nome.trim(), telefone: form.telefone.trim() });
+      const d = await call({ action: "buscarCliente", unidade, nome: form.nome.trim(), telefone: form.telefone.trim(), email: form.email.trim() });
       const list: Cliente[] = d.clientes ?? [];
       setClientes(list);
       if (list.length === 1) setCliente(list[0]);
@@ -110,7 +110,7 @@ export default function BookingFlow({ unidade, nomeUnidade, fallbackUrl }: { uni
       if (!d?.cliente) throw new Error("cadastro_nao_encontrado");
       const completo: Cliente = d.cliente;
       setCliente(completo);
-      setForm({ nome: completo.nome, telefone: completo.telefone || "" });
+      setForm({ nome: completo.nome, telefone: completo.telefone || "", email: completo.email || "" });
     } catch { setErro("Não conseguimos carregar os dados deste cadastro. Tente novamente."); }
     finally { setLoading(false); }
   };
