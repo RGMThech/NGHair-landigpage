@@ -117,33 +117,38 @@ export default function BookingFlow({ unidade, nomeUnidade, fallbackUrl }: { uni
   const criarCadastro = async () => {
     const tel = form.telefone.replace(/\D/g, "");
     const nome = form.nome.trim().replace(/\s+/g, " ");
+    const email = form.email.trim();
     if (nome.length < 5 || !nome.includes(" ")) return setErro("Para criar o cadastro, informe nome e sobrenome.");
     if (tel.length < 10 || tel.length > 11) return setErro("Informe o telefone com DDD (ex.: 11 99999-9999).");
+    if (email && !emailOk(email)) return setErro("Informe um e-mail válido ou deixe em branco.");
     setLoading(true); setErro("");
     try {
-      const d = await call({ action: "criarCliente", unidade, nome, telefone: tel });
+      const d = await call({ action: "criarCliente", unidade, nome, telefone: tel, email });
       if (d?.error === "ja_existe") { setNaoEncontrado(false); return setErro("Já existe um cadastro com este telefone. Busque apenas pelo telefone."); }
+      if (d?.error === "email_ja_existe") { setNaoEncontrado(false); return setErro("Já existe um cadastro com este e-mail. Busque apenas pelo e-mail."); }
       if (!d?.ok || !d.cliente) throw new Error(d?.error || "falha");
       setCliente(d.cliente); setClientes([d.cliente]); setNaoEncontrado(false);
       setTelOk(true); setTelAtualizado(true);
-      setForm({ nome: d.cliente.nome, telefone: d.cliente.telefone });
+      setForm({ nome: d.cliente.nome, telefone: d.cliente.telefone, email: d.cliente.email || email });
     } catch { setErro("Não conseguimos criar seu cadastro agora. Tente novamente."); }
     finally { setLoading(false); }
   };
   const salvarCadastro = async () => {
     const tel = form.telefone.replace(/\D/g, "");
     const nome = form.nome.trim();
+    const email = form.email.trim();
     if (nome.length < 3) return setErro("Informe o nome completo ou com pelo menos 3 caracteres.");
     if (tel.length < 10 || tel.length > 11) return setErro("Informe o telefone com DDD (ex.: 11 99999-9999).");
+    if (email && !emailOk(email)) return setErro("Informe um e-mail válido ou deixe em branco.");
     setLoading(true); setErro("");
     try {
-      const d = await call({ action: "atualizarCliente", unidade, clienteId: cliente?.id, nome, telefone: tel });
+      const d = await call({ action: "atualizarCliente", unidade, clienteId: cliente?.id, nome, telefone: tel, email });
       if (!d?.ok || !d.cliente) throw new Error(d?.error || "falha");
       setCliente(d.cliente); setTelAtualizado(true); setTelOk(true);
-      setForm({ nome: d.cliente.nome, telefone: d.cliente.telefone || form.telefone });
+      setForm({ nome: d.cliente.nome, telefone: d.cliente.telefone || form.telefone, email: d.cliente.email || email });
     } catch (e) {
       const m = (e as Error).message;
-      setErro(m === "nome_nao_gravado" ? "O salão não aceitou a alteração do nome. Tente novamente." : m === "nao_gravado" ? "O telefone não foi gravado no salão. Tente novamente." : "Não conseguimos atualizar o cadastro agora. Tente novamente.");
+      setErro(m === "nome_nao_gravado" ? "O salão não aceitou a alteração do nome. Tente novamente." : m === "email_nao_gravado" ? "O e-mail não foi gravado no salão. Tente novamente." : m === "nao_gravado" ? "O telefone não foi gravado no salão. Tente novamente." : "Não conseguimos atualizar o cadastro agora. Tente novamente.");
     }
     finally { setLoading(false); }
   };
