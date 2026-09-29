@@ -75,8 +75,17 @@ Deno.serve(async (req) => {
         if (tel.length < 10 || tel.length > 11) return json({ error: "telefone_invalido" }, 400);
         const ddd = tel.slice(0, 2), numero = tel.slice(2);
         const digits = (t: any) => `${t?.ddd ?? ""}${t?.numero ?? ""}`.replace(/\D/g, "");
+        // Telefone placeholder (11) 90000-0000: remover sempre que estiver no cadastro.
+        const PLACEHOLDER = "11900000000";
+        const removerPlaceholder = async (telefones: any[]) => {
+          for (const t of telefones) {
+            if (digits(t) === PLACEHOLDER)
+              await trinks(`/clientes/${clienteId}/telefones/${t.id}`, estab, { method: "DELETE" });
+          }
+        };
         // PUT /clientes/{id} NÃO aceita telefones — usar a rota própria de telefones.
         const atuais = list(await trinks(`/clientes/${clienteId}/telefones`, estab));
+        await removerPlaceholder(atuais);
         if (!atuais.some((t: any) => digits(t).endsWith(tel) || tel.endsWith(digits(t)) && digits(t).length >= 8)) {
           await trinks(`/clientes/${clienteId}/telefones`, estab, { method: "POST", body: JSON.stringify({
             ddi: "55", ddd, numero, tipoId: numero.length === 9 ? 3 : 1,
