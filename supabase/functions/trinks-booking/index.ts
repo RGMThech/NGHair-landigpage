@@ -23,7 +23,7 @@ async function trinks(path: string, estab: string, init: RequestInit = {}) {
 const list = (d: any) => (Array.isArray(d) ? d : d?.data ?? d?.items ?? []);
 const clean = (s: unknown, n: number) => String(s ?? "").trim().slice(0, n);
 const digits = (t: any) => {
-  const value = `${t?.ddi ?? ""}${t?.ddd ?? ""}${t?.numero ?? ""}`.replace(/\D/g, "");
+  const value = `${t?.ddi ?? ""}${t?.ddd ?? ""}${t?.numero ?? t?.telefone ?? ""}`.replace(/\D/g, "");
   return value.startsWith("55") && value.length >= 12 ? value.slice(2) : value;
 };
 const formatPhone = (value: string) => {
