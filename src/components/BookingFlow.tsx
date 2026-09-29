@@ -96,7 +96,17 @@ export default function BookingFlow({ unidade, nomeUnidade, fallbackUrl }: { uni
     run(async () => {
       const hs = (await call({ action: "horarios", unidade, servicoId: servico!.id, profissionalId: prof?.id, data: d })).horarios ?? [];
       // "Sem preferência": só horários de profissionais aptos (manicure/cabeleireiro)
-      setHorarios(prof ? hs : hs.filter((h) => profs.some((p) => p.id === h.profissionalId)));
+      let lista = prof ? hs : hs.filter((h) => profs.some((p) => p.id === h.profissionalId));
+      // No dia de hoje, esconde horários que já passaram (tolerância de 5 min dentro do slot atual)
+      if (d === iso(hoje)) {
+        const agora = new Date();
+        const limite = agora.getHours() * 60 + agora.getMinutes() - 5;
+        lista = lista.filter((h) => {
+          const [hh, mm] = h.hora.split(":").map(Number);
+          return hh * 60 + mm > limite;
+        });
+      }
+      setHorarios(lista);
     });
   };
   const buscar = async () => {
