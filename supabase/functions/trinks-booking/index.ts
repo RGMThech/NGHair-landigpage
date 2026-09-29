@@ -39,7 +39,7 @@ Deno.serve(async (req) => {
         })) });
       }
       case "profissionais": {
-        const d = await trinks(`/profissionais?servicoId=${Number(body.servicoId)}`, estab);
+        const d = await trinks(`/servicos/${Number(body.servicoId)}/profissionais`, estab);
         return json({ profissionais: list(d).map((p: any) => ({ id: p.id, nome: p.apelido || p.nome, funcao: p.funcao ?? "" })) });
       }
       case "horarios": {
