@@ -165,7 +165,8 @@ export default function BookingFlow({ unidade, nomeUnidade, fallbackUrl }: { uni
       const d = await call({ action: "atualizarCliente", unidade, clienteId: cliente?.id, nome, telefone: tel, email });
       if (!d?.ok || !d.cliente) throw new Error(d?.error || "falha");
       setCliente(d.cliente); setTelAtualizado(true); setTelOk(true);
-      setForm({ nome: d.cliente.nome, telefone: d.cliente.telefone || form.telefone, email: d.cliente.email || email });
+      setForm({ nome: d.cliente.nome, telefone: d.cliente.telefone || form.telefone, email: d.cliente.email || "" });
+      if (d.aviso === "dados_bloqueados") setErro("Telefone salvo. O nome/e-mail deste cadastro só pode ser alterado pela própria cliente no app Trinks — mantivemos os dados atuais e você já pode confirmar o agendamento.");
     } catch (e) {
       const m = (e as Error).message;
       setErro(m === "nome_nao_gravado" ? "O salão não aceitou a alteração do nome. Tente novamente." : m === "email_nao_gravado" ? "O e-mail não foi gravado no salão. Tente novamente." : m === "nao_gravado" ? "O telefone não foi gravado no salão. Tente novamente." : "Não conseguimos atualizar o cadastro agora. Tente novamente.");
