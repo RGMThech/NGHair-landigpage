@@ -292,6 +292,15 @@ export default function BookingFlow({ unidade, nomeUnidade, fallbackUrl }: { uni
               {loading ? "Buscando..." : "Localizar meu cadastro"}
             </button>
           )}
+          {naoEncontrado && !cliente && (
+            <div className="rounded-xl border border-border bg-muted/50 p-4 space-y-3">
+              <p className="font-body text-sm text-foreground">Primeira vez no salão? Preencha acima seu nome completo e telefone com DDD e crie seu cadastro.</p>
+              <button onClick={criarCadastro} disabled={loading}
+                className="w-full rounded-full bg-primary px-4 py-2.5 font-body text-xs font-semibold uppercase tracking-wider text-primary-foreground disabled:opacity-60">
+                {loading ? "Criando..." : "Criar meu cadastro"}
+              </button>
+            </div>
+          )}
           {!!clientes?.length && (
             <div className="space-y-2">
               <p className="font-body text-xs uppercase tracking-widest text-muted-foreground">Confirme que é você</p>
