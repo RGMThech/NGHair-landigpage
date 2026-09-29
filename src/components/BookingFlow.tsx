@@ -276,19 +276,19 @@ export default function BookingFlow({ unidade, nomeUnidade, fallbackUrl }: { uni
             <strong>{servico?.nome}</strong> com {slot.nome}<br />
             {new Date(data + "T12:00").toLocaleDateString("pt-BR", { weekday: "long", day: "2-digit", month: "long" })} às {slot.hora}
           </div>
-          <p className="font-body text-sm text-muted-foreground">Informe seu nome (pode ser parcial) ou seu telefone para localizarmos seu cadastro.</p>
-          {(["nome", "telefone"] as const).map((k) => (
+          <p className="font-body text-sm text-muted-foreground">Informe seu nome (pode ser parcial), seu telefone ou seu e-mail para localizarmos seu cadastro.</p>
+          {(["nome", "telefone", "email"] as const).map((k) => (
             <label key={k} className="block space-y-1">
-              {cliente && <span className="font-body text-xs text-muted-foreground">{{ nome: "Nome", telefone: "Telefone" }[k]}</span>}
+              {cliente && <span className="font-body text-xs text-muted-foreground">{{ nome: "Nome", telefone: "Telefone", email: "E-mail" }[k]}</span>}
               <input value={form[k]} onChange={(e) => {
                 setForm({ ...form, [k]: e.target.value });
                 if (cliente) { setTelOk(false); setTelAtualizado(false); }
                 else { setClientes(null); }
               }}
                 disabled={k === "nome" && cliente?.nomeProtegido}
-                placeholder={{ nome: "Nome", telefone: "Telefone com DDD" }[k]}
-                inputMode={k === "telefone" ? "tel" : undefined}
-                autoComplete={k === "telefone" ? "tel" : "name"}
+                placeholder={{ nome: "Nome", telefone: "Telefone com DDD", email: "E-mail (opcional)" }[k]}
+                inputMode={k === "telefone" ? "tel" : k === "email" ? "email" : undefined}
+                autoComplete={k === "telefone" ? "tel" : k === "email" ? "email" : "name"}
                 className="w-full rounded-xl border border-input bg-card px-4 py-3 font-body text-sm outline-none focus:border-primary disabled:opacity-70" />
             </label>
           ))}
