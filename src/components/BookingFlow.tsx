@@ -69,7 +69,7 @@ export default function BookingFlow({ unidade, nomeUnidade, fallbackUrl }: { uni
     setServico(s); setStep(1);
     run(async () => {
       const bruto: Prof[] = (await call({ action: "profissionais", unidade, servicoId: s.id })).profissionais ?? [];
-      const executores = bruto.filter((p) => !/recepção|recepcao|gerente/i.test(p.funcao ?? ""));
+      const executores = bruto.filter((p) => /manicure|cabeleireir/i.test(p.funcao ?? ""));
       const casa = (f: string, c: string) => {
         const fu = f.toLowerCase(), ca = c.toLowerCase();
         if (/manicure|unha|podolog/.test(ca)) return /manicure/.test(fu);
@@ -82,7 +82,11 @@ export default function BookingFlow({ unidade, nomeUnidade, fallbackUrl }: { uni
   const escolherProf = (p: Prof | null) => { setProf(p); setStep(2); setData(""); setHorarios([]); };
   const escolherData = (d: string) => {
     setData(d); setSlot(null);
-    run(async () => setHorarios((await call({ action: "horarios", unidade, servicoId: servico!.id, profissionalId: prof?.id, data: d })).horarios ?? []));
+    run(async () => {
+      const hs = (await call({ action: "horarios", unidade, servicoId: servico!.id, profissionalId: prof?.id, data: d })).horarios ?? [];
+      // "Sem preferência": só horários de profissionais aptos (manicure/cabeleireiro)
+      setHorarios(prof ? hs : hs.filter((h) => profs.some((p) => p.id === h.profissionalId)));
+    });
   };
   const buscar = async () => {
     const r = schema.safeParse(form);
