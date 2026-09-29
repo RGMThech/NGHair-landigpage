@@ -69,7 +69,7 @@ export default function BookingFlow({ unidade, nomeUnidade, fallbackUrl }: { uni
     setServico(s); setStep(1);
     run(async () => {
       const bruto: Prof[] = (await call({ action: "profissionais", unidade, servicoId: s.id })).profissionais ?? [];
-      const executores = bruto.filter((p) => !/recepção|recepcao|gerente/i.test(p.funcao ?? ""));
+      const executores = bruto.filter((p) => /manicure|cabeleireir/i.test(p.funcao ?? ""));
       const casa = (f: string, c: string) => {
         const fu = f.toLowerCase(), ca = c.toLowerCase();
         if (/manicure|unha|podolog/.test(ca)) return /manicure/.test(fu);
