@@ -14,11 +14,11 @@ const call = async (body: Record<string, unknown>) => {
   return data;
 };
 
+type Cliente = { id: number; nome: string; telefone: string };
 const schema = z.object({
-  nome: z.string().trim().min(2, "Informe seu nome").max(100),
-  telefone: z.string().trim().regex(/^\D*(\d\D*){10,11}$/, "WhatsApp com DDD"),
-  email: z.string().trim().email("E-mail inválido").max(255).or(z.literal("")),
-});
+  nome: z.string().trim().max(100),
+  telefone: z.string().trim().max(20),
+}).refine((v) => v.nome.length >= 3 || v.telefone.replace(/\D/g, "").length >= 8, "Informe ao menos 3 letras do nome ou o telefone");
 
 const nextDays = () =>
   Array.from({ length: 14 }, (_, i) => {
@@ -40,7 +40,10 @@ export default function BookingFlow({ unidade, nomeUnidade, fallbackUrl }: { uni
   const [prof, setProf] = useState<Prof | null>(null); // null = sem preferência
   const [data, setData] = useState<string>("");
   const [slot, setSlot] = useState<Horario | null>(null);
-  const [form, setForm] = useState({ nome: "", telefone: "", email: "" });
+  const [form, setForm] = useState({ nome: "", telefone: "" });
+  const [clientes, setClientes] = useState<Cliente[] | null>(null);
+  const [cliente, setCliente] = useState<Cliente | null>(null);
+  const [aberta, setAberta] = useState<string | null>(null);
   const [erro, setErro] = useState("");
   const [feito, setFeito] = useState(false);
   const dias = useMemo(nextDays, []);
@@ -53,7 +56,7 @@ export default function BookingFlow({ unidade, nomeUnidade, fallbackUrl }: { uni
   };
 
   useEffect(() => {
-    setStep(0); setServico(null); setProf(null); setSlot(null); setFeito(false); setIndisponivel(false);
+    setStep(0); setServico(null); setProf(null); setSlot(null); setFeito(false); setIndisponivel(false); setAberta(null);
     run(async () => setServicos((await call({ action: "servicos", unidade })).servicos ?? []));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [unidade]);
@@ -67,12 +70,24 @@ export default function BookingFlow({ unidade, nomeUnidade, fallbackUrl }: { uni
     setData(d); setSlot(null);
     run(async () => setHorarios((await call({ action: "horarios", unidade, servicoId: servico!.id, profissionalId: prof?.id, data: d })).horarios ?? []));
   };
-  const confirmar = async () => {
+  const buscar = async () => {
     const r = schema.safeParse(form);
     if (!r.success) return setErro(r.error.issues[0].message);
+    setLoading(true); setErro(""); setCliente(null); setClientes(null);
+    try {
+      const d = await call({ action: "buscarCliente", unidade, nome: form.nome.trim(), telefone: form.telefone.trim() });
+      const list: Cliente[] = d.clientes ?? [];
+      setClientes(list);
+      if (list.length === 1) setCliente(list[0]);
+      if (!list.length) setErro("Não encontramos seu cadastro. Confira os dados ou fale conosco pelo WhatsApp.");
+    } catch { setErro("Não conseguimos buscar seu cadastro agora. Tente novamente."); }
+    finally { setLoading(false); }
+  };
+  const confirmar = async () => {
+    if (!cliente) return setErro("Selecione seu cadastro para continuar.");
     setLoading(true); setErro("");
     try {
-      await call({ action: "agendar", unidade, servicoId: servico!.id, profissionalId: slot!.profissionalId, data, hora: slot!.hora, duracao: servico!.duracao, ...r.data });
+      await call({ action: "agendar", unidade, clienteId: cliente.id, servicoId: servico!.id, profissionalId: slot!.profissionalId, data, hora: slot!.hora, duracao: servico!.duracao });
       reportConversion(); setFeito(true);
     } catch { setErro("Não conseguimos confirmar agora. Tente outro horário ou agende pelo link abaixo."); }
     finally { setLoading(false); }

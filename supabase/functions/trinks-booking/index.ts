@@ -53,18 +53,24 @@ Deno.serve(async (req) => {
           horarios.push({ profissionalId: p.id, nome: p.apelido || p.nome, hora: String(h).slice(0, 5) });
         return json({ horarios });
       }
+      case "buscarCliente": {
+        const nome = clean(body.nome, 100), tel = clean(body.telefone, 20).replace(/\D/g, "");
+        if (nome.length < 3 && tel.length < 8) return json({ error: "dados_invalidos" }, 400);
+        const q = new URLSearchParams({ pageSize: "20" });
+        if (tel) q.set("telefone", tel);
+        if (nome) q.set("nome", nome);
+        const found = list(await trinks(`/clientes?${q}`, estab));
+        const mask = (t: any) => {
+          const n = `${t?.ddd ?? ""}${t?.numero ?? ""}`.replace(/\D/g, "");
+          return n.length >= 4 ? `(••) •••••-${n.slice(-4)}` : "";
+        };
+        return json({ clientes: found.slice(0, 10).map((c: any) => ({
+          id: c.id, nome: c.nome, telefone: mask((c.telefones ?? [])[0]),
+        })) });
+      }
       case "agendar": {
-        const nome = clean(body.nome, 100), tel = clean(body.telefone, 20).replace(/\D/g, ""), email = clean(body.email, 255);
-        if (nome.length < 2 || tel.length < 10) return json({ error: "dados_invalidos" }, 400);
-        const found = list(await trinks(`/clientes?telefone=${tel}`, estab));
-        let clienteId = found[0]?.id;
-        if (!clienteId) {
-          const c = await trinks("/clientes", estab, { method: "POST", body: JSON.stringify({
-            nome, email: email || undefined,
-            telefones: [{ ddd: tel.slice(0, 2), numero: tel.slice(2), tipoId: 3 }],
-          }) });
-          clienteId = c.id;
-        }
+        const clienteId = Number(body.clienteId);
+        if (!clienteId) return json({ error: "cliente_obrigatorio" }, 400);
         const ag = await trinks("/agendamentos", estab, { method: "POST", body: JSON.stringify({
           servicoId: Number(body.servicoId), clienteId, profissionalId: Number(body.profissionalId),
           dataHoraInicio: `${clean(body.data, 10)}T${clean(body.hora, 5)}:00`,
