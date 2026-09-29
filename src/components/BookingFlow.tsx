@@ -14,11 +14,13 @@ const call = async (body: Record<string, unknown>) => {
   return data;
 };
 
-type Cliente = { id: number; nome: string; telefone: string; nomeProtegido?: boolean };
+type Cliente = { id: number; nome: string; telefone: string; email?: string; nomeProtegido?: boolean };
+const emailOk = (e: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e.trim());
 const schema = z.object({
   nome: z.string().trim().max(100),
   telefone: z.string().trim().max(20),
-}).refine((v) => v.nome.length >= 3 || v.telefone.replace(/\D/g, "").length >= 8, "Informe ao menos 3 letras do nome ou o telefone");
+  email: z.string().trim().max(150),
+}).refine((v) => v.nome.length >= 3 || v.telefone.replace(/\D/g, "").length >= 8 || emailOk(v.email), "Informe ao menos 3 letras do nome, o telefone ou o e-mail");
 
 const nextDays = () =>
   Array.from({ length: 14 }, (_, i) => {
@@ -40,7 +42,7 @@ export default function BookingFlow({ unidade, nomeUnidade, fallbackUrl }: { uni
   const [prof, setProf] = useState<Prof | null>(null); // null = sem preferência
   const [data, setData] = useState<string>("");
   const [slot, setSlot] = useState<Horario | null>(null);
-  const [form, setForm] = useState({ nome: "", telefone: "" });
+  const [form, setForm] = useState({ nome: "", telefone: "", email: "" });
   const [clientes, setClientes] = useState<Cliente[] | null>(null);
   const [naoEncontrado, setNaoEncontrado] = useState(false);
   const [cliente, setCliente] = useState<Cliente | null>(null);
