@@ -112,11 +112,15 @@ Deno.serve(async (req) => {
         const nomeFinal = hasEmployeeCode(nomeAtual) ? nomeAtual : nomeSolicitado || nomeAtual;
         if (nomeFinal.length < 3) return json({ error: "nome_invalido" }, 400);
         if (!hasEmployeeCode(nomeAtual) && nomeFinal !== nomeAtual) {
-          // PUT exige o objeto completo; enviar o cadastro atual com o novo nome.
-          const { telefones: _t, id: _i, ...resto } = clienteAtual ?? {};
+          // EditClientRequest aceita SOMENTE estes campos (additionalProperties: false).
+          const c0 = clienteAtual ?? {};
           await trinks(`/clientes/${clienteId}`, estab, {
             method: "PUT",
-            body: JSON.stringify({ ...resto, nome: nomeFinal }),
+            body: JSON.stringify({
+              nome: nomeFinal, email: c0.email ?? null, cpf: c0.cpf ?? null,
+              genero: c0.genero ?? null, observacoes: c0.observacoes ?? null,
+              codigoExterno: c0.codigoExterno ?? null,
+            }),
           });
           const conf = await trinks(`/clientes/${clienteId}`, estab);
           if (clean(conf?.nome, 100) !== nomeFinal) {
