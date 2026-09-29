@@ -62,7 +62,6 @@ export default function BookingFlow({ unidade, nomeUnidade, fallbackUrl }: { uni
   const [aberta, setAberta] = useState<string | null>(null);
   const [erro, setErro] = useState("");
   const [feito, setFeito] = useState(false);
-  const dias = useMemo(nextDays, []);
 
   const run = async <T,>(fn: () => Promise<T>) => {
     setLoading(true); setErro("");
