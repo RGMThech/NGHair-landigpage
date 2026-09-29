@@ -76,7 +76,7 @@ export default function BookingFlow({ unidade, nomeUnidade, fallbackUrl }: { uni
   const buscar = async () => {
     const r = schema.safeParse(form);
     if (!r.success) return setErro(r.error.issues[0].message);
-    setLoading(true); setErro(""); setCliente(null); setClientes(null);
+    setLoading(true); setErro(""); setCliente(null); setClientes(null); setTelOk(false); setEditTel(false); setNovoTel("");
     try {
       const d = await call({ action: "buscarCliente", unidade, nome: form.nome.trim(), telefone: form.telefone.trim() });
       const list: Cliente[] = d.clientes ?? [];
@@ -86,8 +86,19 @@ export default function BookingFlow({ unidade, nomeUnidade, fallbackUrl }: { uni
     } catch { setErro("Não conseguimos buscar seu cadastro agora. Tente novamente."); }
     finally { setLoading(false); }
   };
+  const salvarTelefone = async () => {
+    const tel = novoTel.replace(/\D/g, "");
+    if (tel.length < 10 || tel.length > 11) return setErro("Informe o telefone com DDD (ex.: 11 99999-9999).");
+    setLoading(true); setErro("");
+    try {
+      await call({ action: "atualizarTelefone", unidade, clienteId: cliente!.id, telefone: tel });
+      setTelOk(true); setEditTel(false);
+    } catch { setErro("Não conseguimos atualizar o telefone agora. Tente novamente."); }
+    finally { setLoading(false); }
+  };
   const confirmar = async () => {
     if (!cliente) return setErro("Selecione seu cadastro para continuar.");
+    if (!telOk) return setErro("Confirme ou atualize seu telefone para continuar.");
     setLoading(true); setErro("");
     try {
       await call({ action: "agendar", unidade, clienteId: cliente.id, servicoId: servico!.id, profissionalId: slot!.profissionalId, data, hora: slot!.hora, duracao: servico!.duracao });
