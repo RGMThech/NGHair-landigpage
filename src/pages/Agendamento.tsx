@@ -4,6 +4,7 @@ import Navbar from "@/components/Navbar";
 import FooterSection from "@/components/FooterSection";
 import WhatsAppFloat from "@/components/WhatsAppFloat";
 import { reportConversion } from "@/lib/gtag";
+import BookingFlow from "@/components/BookingFlow";
 
 const TRINKS_CAMPO_BELO =
   "https://www.trinks.com/nghaircampobelo/framebusca?rwg_token=AE37R_hFrCkB3xGrGpHrhZJ2eYyHY54URcGROVZMFpIubfjPV5MXtUaNLhW9chlpNtXLG97m0fFlkkv84R9PNn-IV-NI0eGIDg%3D%3D";
@@ -91,57 +92,17 @@ const Agendamento = () => {
 
           {/* Resultado */}
           <div className="mt-10">
-            {unidade !== null && (
-              <div className="mb-6 flex flex-col items-center gap-3 text-center">
-                <a
-                  href={unidade === "campo-belo" ? TRINKS_CAMPO_BELO : TRINKS_BROOKLIN}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={reportConversion}
-                  className="rounded-full bg-primary px-8 py-3 font-body text-xs font-semibold uppercase tracking-wider text-primary-foreground transition-transform hover:scale-[1.02]"
-                >
-                  Abrir agendamento em nova aba
-                </a>
-                <p className="font-body text-xs text-muted-foreground max-w-md">
-                  Se aparecer erro de verificação ("Max challenge attempts exceeded") abaixo, use o botão acima — o agendamento abre direto no Trinks.
-                </p>
-              </div>
-            )}
-            {unidade === null && (
+            {unidade === null ? (
               <div className="text-center font-body text-sm text-muted-foreground flex items-center justify-center gap-2">
                 <CalendarCheck className="h-4 w-4 text-primary" />
                 Selecione uma unidade acima para continuar.
               </div>
-            )}
-
-            {unidade === "campo-belo" && (
-              <div className="rounded-2xl overflow-hidden border border-border shadow-lg bg-card">
-                <iframe
-                  title="Agendamento NGHair Campo Belo"
-                  src={TRINKS_CAMPO_BELO}
-                  width="100%"
-                  height="900"
-                  style={{ border: 0, minHeight: 900 }}
-                  loading="lazy"
-                  allowFullScreen
-                  referrerPolicy="no-referrer-when-downgrade"
-                />
-              </div>
-            )}
-
-            {unidade === "brooklin" && (
-              <div className="rounded-2xl overflow-hidden border border-border shadow-lg bg-card">
-                <iframe
-                  title="Agendamento NGHair Brooklin"
-                  src={TRINKS_BROOKLIN}
-                  width="100%"
-                  height="900"
-                  style={{ border: 0, minHeight: 900 }}
-                  loading="lazy"
-                  allowFullScreen
-                  referrerPolicy="no-referrer-when-downgrade"
-                />
-              </div>
+            ) : (
+              <BookingFlow
+                unidade={unidade}
+                nomeUnidade={unidade === "campo-belo" ? "Campo Belo" : "Brooklin"}
+                fallbackUrl={unidade === "campo-belo" ? TRINKS_CAMPO_BELO : TRINKS_BROOKLIN}
+              />
             )}
           </div>
         </div>
