@@ -14,11 +14,11 @@ const call = async (body: Record<string, unknown>) => {
   return data;
 };
 
+type Cliente = { id: number; nome: string; telefone: string };
 const schema = z.object({
-  nome: z.string().trim().min(2, "Informe seu nome").max(100),
-  telefone: z.string().trim().regex(/^\D*(\d\D*){10,11}$/, "WhatsApp com DDD"),
-  email: z.string().trim().email("E-mail inválido").max(255).or(z.literal("")),
-});
+  nome: z.string().trim().max(100),
+  telefone: z.string().trim().max(20),
+}).refine((v) => v.nome.length >= 3 || v.telefone.replace(/\D/g, "").length >= 8, "Informe ao menos 3 letras do nome ou o telefone");
 
 const nextDays = () =>
   Array.from({ length: 14 }, (_, i) => {
@@ -40,7 +40,10 @@ export default function BookingFlow({ unidade, nomeUnidade, fallbackUrl }: { uni
   const [prof, setProf] = useState<Prof | null>(null); // null = sem preferência
   const [data, setData] = useState<string>("");
   const [slot, setSlot] = useState<Horario | null>(null);
-  const [form, setForm] = useState({ nome: "", telefone: "", email: "" });
+  const [form, setForm] = useState({ nome: "", telefone: "" });
+  const [clientes, setClientes] = useState<Cliente[] | null>(null);
+  const [cliente, setCliente] = useState<Cliente | null>(null);
+  const [aberta, setAberta] = useState<string | null>(null);
   const [erro, setErro] = useState("");
   const [feito, setFeito] = useState(false);
   const dias = useMemo(nextDays, []);
@@ -53,7 +56,7 @@ export default function BookingFlow({ unidade, nomeUnidade, fallbackUrl }: { uni
   };
 
   useEffect(() => {
-    setStep(0); setServico(null); setProf(null); setSlot(null); setFeito(false); setIndisponivel(false);
+    setStep(0); setServico(null); setProf(null); setSlot(null); setFeito(false); setIndisponivel(false); setAberta(null);
     run(async () => setServicos((await call({ action: "servicos", unidade })).servicos ?? []));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [unidade]);
@@ -67,12 +70,24 @@ export default function BookingFlow({ unidade, nomeUnidade, fallbackUrl }: { uni
     setData(d); setSlot(null);
     run(async () => setHorarios((await call({ action: "horarios", unidade, servicoId: servico!.id, profissionalId: prof?.id, data: d })).horarios ?? []));
   };
-  const confirmar = async () => {
+  const buscar = async () => {
     const r = schema.safeParse(form);
     if (!r.success) return setErro(r.error.issues[0].message);
+    setLoading(true); setErro(""); setCliente(null); setClientes(null);
+    try {
+      const d = await call({ action: "buscarCliente", unidade, nome: form.nome.trim(), telefone: form.telefone.trim() });
+      const list: Cliente[] = d.clientes ?? [];
+      setClientes(list);
+      if (list.length === 1) setCliente(list[0]);
+      if (!list.length) setErro("Não encontramos seu cadastro. Confira os dados ou fale conosco pelo WhatsApp.");
+    } catch { setErro("Não conseguimos buscar seu cadastro agora. Tente novamente."); }
+    finally { setLoading(false); }
+  };
+  const confirmar = async () => {
+    if (!cliente) return setErro("Selecione seu cadastro para continuar.");
     setLoading(true); setErro("");
     try {
-      await call({ action: "agendar", unidade, servicoId: servico!.id, profissionalId: slot!.profissionalId, data, hora: slot!.hora, duracao: servico!.duracao, ...r.data });
+      await call({ action: "agendar", unidade, clienteId: cliente.id, servicoId: servico!.id, profissionalId: slot!.profissionalId, data, hora: slot!.hora, duracao: servico!.duracao });
       reportConversion(); setFeito(true);
     } catch { setErro("Não conseguimos confirmar agora. Tente outro horário ou agende pelo link abaixo."); }
     finally { setLoading(false); }
@@ -124,9 +139,13 @@ export default function BookingFlow({ unidade, nomeUnidade, fallbackUrl }: { uni
       {loading && <div className="flex justify-center py-10"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>}
 
       {!loading && step === 0 && Object.entries(grupos).map(([cat, list]) => (
-        <div key={cat} className="mb-8">
-          <p className="font-body text-xs uppercase tracking-[0.3em] text-accent mb-3">{cat}</p>
-          <div className="grid sm:grid-cols-2 gap-3">
+        <div key={cat} className="mb-3">
+          <button onClick={() => setAberta(aberta === cat ? null : cat)}
+            className="w-full flex items-center justify-between rounded-xl border border-border bg-card px-5 py-4 hover:border-primary">
+            <span className="font-body text-xs uppercase tracking-[0.3em] text-accent">{cat}</span>
+            <span className="font-body text-xs text-muted-foreground">{list.length} · {aberta === cat ? "−" : "+"}</span>
+          </button>
+          {aberta === cat && <div className="grid sm:grid-cols-2 gap-3 mt-3">
             {list.map((s) => (
               <button key={s.id} onClick={() => escolherServico(s)} className={card}>
                 <div className="flex items-start gap-3">
@@ -138,7 +157,7 @@ export default function BookingFlow({ unidade, nomeUnidade, fallbackUrl }: { uni
                 </div>
               </button>
             ))}
-          </div>
+          </div>}
         </div>
       ))}
 
@@ -186,16 +205,38 @@ export default function BookingFlow({ unidade, nomeUnidade, fallbackUrl }: { uni
             <strong>{servico?.nome}</strong> com {slot.nome}<br />
             {new Date(data + "T12:00").toLocaleDateString("pt-BR", { weekday: "long", day: "2-digit", month: "long" })} às {slot.hora}
           </div>
-          {(["nome", "telefone", "email"] as const).map((k) => (
-            <input key={k} value={form[k]} onChange={(e) => setForm({ ...form, [k]: e.target.value })}
-              placeholder={{ nome: "Nome completo", telefone: "WhatsApp com DDD", email: "E-mail (opcional)" }[k]}
+          <p className="font-body text-sm text-muted-foreground">Informe seu nome (pode ser parcial) ou seu telefone para localizarmos seu cadastro.</p>
+          {(["nome", "telefone"] as const).map((k) => (
+            <input key={k} value={form[k]} onChange={(e) => { setForm({ ...form, [k]: e.target.value }); setClientes(null); setCliente(null); }}
+              placeholder={{ nome: "Nome", telefone: "Telefone com DDD" }[k]}
               className="w-full rounded-xl border border-input bg-card px-4 py-3 font-body text-sm outline-none focus:border-primary" />
           ))}
+          {!clientes?.length && (
+            <button onClick={buscar} disabled={loading}
+              className="w-full rounded-full border border-primary px-8 py-3 font-body text-xs font-semibold uppercase tracking-wider text-primary disabled:opacity-60">
+              {loading ? "Buscando..." : "Localizar meu cadastro"}
+            </button>
+          )}
+          {!!clientes?.length && (
+            <div className="space-y-2">
+              <p className="font-body text-xs uppercase tracking-widest text-muted-foreground">Confirme que é você</p>
+              {clientes.map((c) => (
+                <button key={c.id} onClick={() => setCliente(c)}
+                  className={`w-full text-left rounded-xl border px-4 py-3 font-body text-sm transition ${cliente?.id === c.id ? "border-primary bg-primary/5" : "border-border bg-card hover:border-primary"}`}>
+                  <span className="flex items-center gap-2">{cliente?.id === c.id && <Check className="h-4 w-4 text-primary" />}<strong>{c.nome}</strong></span>
+                  {c.telefone && <span className="block text-xs text-muted-foreground">{c.telefone}</span>}
+                </button>
+              ))}
+              <button onClick={() => { setClientes(null); setCliente(null); }} className="font-body text-xs text-muted-foreground underline">Não sou eu, buscar novamente</button>
+            </div>
+          )}
           {erro && <p className="font-body text-sm text-destructive">{erro}</p>}
-          <button onClick={confirmar} disabled={loading}
-            className="w-full rounded-full bg-primary px-8 py-3 font-body text-xs font-semibold uppercase tracking-wider text-primary-foreground disabled:opacity-60">
-            {loading ? "Confirmando..." : "Confirmar agendamento"}
-          </button>
+          {cliente && (
+            <button onClick={confirmar} disabled={loading}
+              className="w-full rounded-full bg-primary px-8 py-3 font-body text-xs font-semibold uppercase tracking-wider text-primary-foreground disabled:opacity-60">
+              {loading ? "Confirmando..." : "Confirmar agendamento"}
+            </button>
+          )}
         </div>
       )}
     </div>
