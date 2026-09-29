@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { z } from "zod";
-import { ArrowLeft, Check, Clock, Loader2, Scissors, User } from "lucide-react";
+import { ArrowLeft, Check, ChevronLeft, ChevronRight, Clock, Loader2, Scissors, User } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { reportConversion } from "@/lib/gtag";
 
@@ -22,11 +22,6 @@ const schema = z.object({
   email: z.string().trim().max(150),
 }).refine((v) => v.nome.length >= 3 || v.telefone.replace(/\D/g, "").length >= 8 || emailOk(v.email), "Informe ao menos 3 letras do nome, o telefone ou o e-mail");
 
-const nextDays = () =>
-  Array.from({ length: 14 }, (_, i) => {
-    const d = new Date(); d.setDate(d.getDate() + i);
-    return d;
-  }).filter((d) => d.getDay() !== 0 && d.getDay() !== 1);
 const iso = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 
 const steps = ["Serviço", "Profissional", "Horário", "Seus dados"];
@@ -48,6 +43,22 @@ export default function BookingFlow({ unidade, nomeUnidade, fallbackUrl }: { uni
   const [cliente, setCliente] = useState<Cliente | null>(null);
   const [telOk, setTelOk] = useState(false);
   const [telAtualizado, setTelAtualizado] = useState(false);
+  const [mesOffset, setMesOffset] = useState(0); // 0 = mês corrente, 1 = mês seguinte
+  const hoje = useMemo(() => { const d = new Date(); d.setHours(0, 0, 0, 0); return d; }, []);
+  const mesExibido = useMemo(() => { const d = new Date(); d.setDate(1); d.setMonth(d.getMonth() + mesOffset); return d; }, [mesOffset]);
+  const semanas = useMemo(() => {
+    const inicio = new Date(mesExibido);
+    inicio.setDate(1 - mesExibido.getDay());
+    return Array.from({ length: 6 }, (_, w) =>
+      Array.from({ length: 7 }, (_, i) => {
+        const d = new Date(inicio);
+        d.setDate(inicio.getDate() + w * 7 + i);
+        return d;
+      })
+    );
+  }, [mesExibido]);
+  const mesLabel = mesExibido.toLocaleDateString("pt-BR", { month: "long", year: "numeric" });
+  const diaHabil = (d: Date) => d >= hoje && d.getDay() !== 0 && d.getDay() !== 1;
   const [aberta, setAberta] = useState<string | null>(null);
   const [erro, setErro] = useState("");
   const [feito, setFeito] = useState(false);
@@ -80,7 +91,7 @@ export default function BookingFlow({ unidade, nomeUnidade, fallbackUrl }: { uni
       setProfs(executores.sort((a, b) => Number(casa(b.funcao ?? "", s.categoria)) - Number(casa(a.funcao ?? "", s.categoria))));
     });
   };
-  const escolherProf = (p: Prof | null) => { setProf(p); setStep(2); setData(""); setHorarios([]); };
+  const escolherProf = (p: Prof | null) => { setProf(p); setStep(2); setData(""); setSlot(null); setHorarios([]); setMesOffset(0); };
   const escolherData = (d: string) => {
     setData(d); setSlot(null);
     run(async () => {
