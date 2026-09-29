@@ -112,10 +112,17 @@ Deno.serve(async (req) => {
         const nomeFinal = hasEmployeeCode(nomeAtual) ? nomeAtual : nomeSolicitado || nomeAtual;
         if (nomeFinal.length < 3) return json({ error: "nome_invalido" }, 400);
         if (!hasEmployeeCode(nomeAtual) && nomeFinal !== nomeAtual) {
+          // PUT exige o objeto completo; enviar o cadastro atual com o novo nome.
+          const { telefones: _t, id: _i, ...resto } = clienteAtual ?? {};
           await trinks(`/clientes/${clienteId}`, estab, {
             method: "PUT",
-            body: JSON.stringify({ nome: nomeFinal }),
+            body: JSON.stringify({ ...resto, nome: nomeFinal }),
           });
+          const conf = await trinks(`/clientes/${clienteId}`, estab);
+          if (clean(conf?.nome, 100) !== nomeFinal) {
+            console.error("nome nao gravado", clienteId, conf?.nome);
+            return json({ error: "nome_nao_gravado" });
+          }
         }
         // Telefone placeholder (11) 90000-0000: remover sempre que estiver no cadastro.
         const PLACEHOLDER = "11900000000";
@@ -142,6 +149,28 @@ Deno.serve(async (req) => {
           id: clienteId, nome: c?.nome ?? "",
           telefone: formatPhone(tel), nomeProtegido: hasEmployeeCode(clean(c?.nome, 100)),
         } });
+      }
+      case "criarCliente": {
+        const nome = clean(body.nome, 100);
+        const tel = clean(body.telefone, 20).replace(/\D/g, "");
+        if (nome.length < 5 || !nome.includes(" ")) return json({ error: "nome_invalido" }, 400);
+        if (tel.length < 10 || tel.length > 11) return json({ error: "telefone_invalido" }, 400);
+        const ddd = tel.slice(0, 2), numero = tel.slice(2);
+        // Evita duplicar: se o telefone já existe, devolve esse cadastro.
+        const existentes = list(await trinks(`/clientes?telefone=${tel}&pageSize=5`, estab));
+        if (existentes.length) return json({ error: "ja_existe" });
+        const novo = await trinks("/clientes", estab, { method: "POST", body: JSON.stringify({
+          nome, telefones: [{ ddi: "55", ddd, numero, tipoId: numero.length === 9 ? 3 : 1 }],
+        }) });
+        const id = Number(novo?.id);
+        if (!id) return json({ error: "nao_criado" });
+        const tels = list(await trinks(`/clientes/${id}/telefones`, estab));
+        if (!tels.some((t: any) => digits(t).endsWith(tel))) {
+          await trinks(`/clientes/${id}/telefones`, estab, { method: "POST", body: JSON.stringify({
+            ddi: "55", ddd, numero, tipoId: numero.length === 9 ? 3 : 1,
+          }) });
+        }
+        return json({ ok: true, cliente: { id, nome, telefone: formatPhone(tel), nomeProtegido: false } });
       }
       case "agendar": {
         const clienteId = Number(body.clienteId);
