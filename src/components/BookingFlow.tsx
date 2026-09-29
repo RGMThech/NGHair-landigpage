@@ -43,6 +43,9 @@ export default function BookingFlow({ unidade, nomeUnidade, fallbackUrl }: { uni
   const [form, setForm] = useState({ nome: "", telefone: "" });
   const [clientes, setClientes] = useState<Cliente[] | null>(null);
   const [cliente, setCliente] = useState<Cliente | null>(null);
+  const [telOk, setTelOk] = useState(false);
+  const [novoTel, setNovoTel] = useState("");
+  const [editTel, setEditTel] = useState(false);
   const [aberta, setAberta] = useState<string | null>(null);
   const [erro, setErro] = useState("");
   const [feito, setFeito] = useState(false);
