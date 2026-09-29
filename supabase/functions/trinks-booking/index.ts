@@ -74,10 +74,13 @@ Deno.serve(async (req) => {
       }
       case "buscarCliente": {
         const nome = clean(body.nome, 100), tel = clean(body.telefone, 20).replace(/\D/g, "");
-        if (nome.length < 3 && tel.length < 8) return json({ error: "dados_invalidos" }, 400);
+        const email = clean(body.email, 150).toLowerCase();
+        const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+        if (nome.length < 3 && tel.length < 8 && !emailOk) return json({ error: "dados_invalidos" }, 400);
         const q = new URLSearchParams({ pageSize: "20" });
         if (tel) q.set("telefone", tel);
         if (nome) q.set("nome", nome);
+        if (emailOk) q.set("email", email);
         const found = list(await trinks(`/clientes?${q}`, estab));
         const mask = (t: any) => {
           const n = `${t?.ddd ?? ""}${t?.numero ?? ""}`.replace(/\D/g, "");
@@ -97,27 +100,31 @@ Deno.serve(async (req) => {
         const telefones = list(telefonesData);
         const telefone = telefones.map(digits).find((tel: string) => tel !== "11900000000") ?? "";
         const nome = clean(cliente?.nome, 100);
-        return json({ cliente: { id: clienteId, nome, telefone: formatPhone(telefone), nomeProtegido: hasEmployeeCode(nome) } });
+        return json({ cliente: { id: clienteId, nome, telefone: formatPhone(telefone), email: clean(cliente?.email, 150), nomeProtegido: hasEmployeeCode(nome) } });
       }
       case "atualizarCliente":
       case "atualizarTelefone": {
         const clienteId = Number(body.clienteId);
         const tel = clean(body.telefone, 20).replace(/\D/g, "");
         const nomeSolicitado = clean(body.nome, 100);
+        const emailSolicitado = clean(body.email, 150).toLowerCase();
+        if (emailSolicitado && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailSolicitado)) return json({ error: "email_invalido" }, 400);
         if (!clienteId) return json({ error: "cliente_obrigatorio" }, 400);
         if (tel.length < 10 || tel.length > 11) return json({ error: "telefone_invalido" }, 400);
         const ddd = tel.slice(0, 2), numero = tel.slice(2);
         const clienteAtual = await trinks(`/clientes/${clienteId}`, estab);
         const nomeAtual = clean(clienteAtual?.nome, 100);
+        const emailAtual = clean(clienteAtual?.email, 150).toLowerCase();
         const nomeFinal = hasEmployeeCode(nomeAtual) ? nomeAtual : nomeSolicitado || nomeAtual;
+        const emailFinal = emailSolicitado || emailAtual;
         if (nomeFinal.length < 3) return json({ error: "nome_invalido" }, 400);
-        if (!hasEmployeeCode(nomeAtual) && nomeFinal !== nomeAtual) {
+        if ((!hasEmployeeCode(nomeAtual) && nomeFinal !== nomeAtual) || emailFinal !== emailAtual) {
           // EditClientRequest aceita SOMENTE estes campos (additionalProperties: false).
           const c0 = clienteAtual ?? {};
           await trinks(`/clientes/${clienteId}`, estab, {
             method: "PUT",
             body: JSON.stringify({
-              nome: nomeFinal, email: c0.email ?? null, cpf: c0.cpf ?? null,
+              nome: nomeFinal, email: emailFinal || null, cpf: c0.cpf ?? null,
               genero: c0.genero ?? null, observacoes: c0.observacoes ?? null,
               codigoExterno: c0.codigoExterno ?? null,
             }),
@@ -126,6 +133,10 @@ Deno.serve(async (req) => {
           if (clean(conf?.nome, 100) !== nomeFinal) {
             console.error("nome nao gravado", clienteId, conf?.nome);
             return json({ error: "nome_nao_gravado" });
+          }
+          if (emailFinal && clean(conf?.email, 150).toLowerCase() !== emailFinal) {
+            console.error("email nao gravado", clienteId, conf?.email);
+            return json({ error: "email_nao_gravado" });
           }
         }
         // Telefone placeholder (11) 90000-0000: remover sempre que estiver no cadastro.
@@ -151,20 +162,28 @@ Deno.serve(async (req) => {
         const c = await trinks(`/clientes/${clienteId}`, estab);
         return json({ ok: true, cliente: {
           id: clienteId, nome: c?.nome ?? "",
-          telefone: formatPhone(tel), nomeProtegido: hasEmployeeCode(clean(c?.nome, 100)),
+          telefone: formatPhone(tel), email: clean(c?.email, 150),
+          nomeProtegido: hasEmployeeCode(clean(c?.nome, 100)),
         } });
       }
       case "criarCliente": {
         const nome = clean(body.nome, 100);
         const tel = clean(body.telefone, 20).replace(/\D/g, "");
+        const email = clean(body.email, 150).toLowerCase();
+        if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return json({ error: "email_invalido" }, 400);
         if (nome.length < 5 || !nome.includes(" ")) return json({ error: "nome_invalido" }, 400);
         if (tel.length < 10 || tel.length > 11) return json({ error: "telefone_invalido" }, 400);
         const ddd = tel.slice(0, 2), numero = tel.slice(2);
         // Evita duplicar: se o telefone já existe, devolve esse cadastro.
         const existentes = list(await trinks(`/clientes?telefone=${tel}&pageSize=5`, estab));
         if (existentes.length) return json({ error: "ja_existe" });
+        if (email) {
+          const porEmail = list(await trinks(`/clientes?email=${encodeURIComponent(email)}&pageSize=5`, estab));
+          if (porEmail.length) return json({ error: "email_ja_existe" });
+        }
         const novo = await trinks("/clientes", estab, { method: "POST", body: JSON.stringify({
-          nome, telefones: [{ ddi: "55", ddd, numero, tipoId: numero.length === 9 ? 3 : 1 }],
+          nome, email: email || undefined,
+          telefones: [{ ddi: "55", ddd, numero, tipoId: numero.length === 9 ? 3 : 1 }],
         }) });
         const id = Number(novo?.id);
         if (!id) return json({ error: "nao_criado" });
@@ -174,7 +193,7 @@ Deno.serve(async (req) => {
             ddi: "55", ddd, numero, tipoId: numero.length === 9 ? 3 : 1,
           }) });
         }
-        return json({ ok: true, cliente: { id, nome, telefone: formatPhone(tel), nomeProtegido: false } });
+        return json({ ok: true, cliente: { id, nome, telefone: formatPhone(tel), email, nomeProtegido: false } });
       }
       case "agendar": {
         const clienteId = Number(body.clienteId);
