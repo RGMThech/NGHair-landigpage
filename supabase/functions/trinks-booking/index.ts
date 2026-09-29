@@ -74,10 +74,13 @@ Deno.serve(async (req) => {
       }
       case "buscarCliente": {
         const nome = clean(body.nome, 100), tel = clean(body.telefone, 20).replace(/\D/g, "");
-        if (nome.length < 3 && tel.length < 8) return json({ error: "dados_invalidos" }, 400);
+        const email = clean(body.email, 150).toLowerCase();
+        const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+        if (nome.length < 3 && tel.length < 8 && !emailOk) return json({ error: "dados_invalidos" }, 400);
         const q = new URLSearchParams({ pageSize: "20" });
         if (tel) q.set("telefone", tel);
         if (nome) q.set("nome", nome);
+        if (emailOk) q.set("email", email);
         const found = list(await trinks(`/clientes?${q}`, estab));
         const mask = (t: any) => {
           const n = `${t?.ddd ?? ""}${t?.numero ?? ""}`.replace(/\D/g, "");
@@ -97,7 +100,7 @@ Deno.serve(async (req) => {
         const telefones = list(telefonesData);
         const telefone = telefones.map(digits).find((tel: string) => tel !== "11900000000") ?? "";
         const nome = clean(cliente?.nome, 100);
-        return json({ cliente: { id: clienteId, nome, telefone: formatPhone(telefone), nomeProtegido: hasEmployeeCode(nome) } });
+        return json({ cliente: { id: clienteId, nome, telefone: formatPhone(telefone), email: clean(cliente?.email, 150), nomeProtegido: hasEmployeeCode(nome) } });
       }
       case "atualizarCliente":
       case "atualizarTelefone": {
