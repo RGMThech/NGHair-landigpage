@@ -162,20 +162,28 @@ Deno.serve(async (req) => {
         const c = await trinks(`/clientes/${clienteId}`, estab);
         return json({ ok: true, cliente: {
           id: clienteId, nome: c?.nome ?? "",
-          telefone: formatPhone(tel), nomeProtegido: hasEmployeeCode(clean(c?.nome, 100)),
+          telefone: formatPhone(tel), email: clean(c?.email, 150),
+          nomeProtegido: hasEmployeeCode(clean(c?.nome, 100)),
         } });
       }
       case "criarCliente": {
         const nome = clean(body.nome, 100);
         const tel = clean(body.telefone, 20).replace(/\D/g, "");
+        const email = clean(body.email, 150).toLowerCase();
+        if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return json({ error: "email_invalido" }, 400);
         if (nome.length < 5 || !nome.includes(" ")) return json({ error: "nome_invalido" }, 400);
         if (tel.length < 10 || tel.length > 11) return json({ error: "telefone_invalido" }, 400);
         const ddd = tel.slice(0, 2), numero = tel.slice(2);
         // Evita duplicar: se o telefone já existe, devolve esse cadastro.
         const existentes = list(await trinks(`/clientes?telefone=${tel}&pageSize=5`, estab));
         if (existentes.length) return json({ error: "ja_existe" });
+        if (email) {
+          const porEmail = list(await trinks(`/clientes?email=${encodeURIComponent(email)}&pageSize=5`, estab));
+          if (porEmail.length) return json({ error: "email_ja_existe" });
+        }
         const novo = await trinks("/clientes", estab, { method: "POST", body: JSON.stringify({
-          nome, telefones: [{ ddi: "55", ddd, numero, tipoId: numero.length === 9 ? 3 : 1 }],
+          nome, email: email || undefined,
+          telefones: [{ ddi: "55", ddd, numero, tipoId: numero.length === 9 ? 3 : 1 }],
         }) });
         const id = Number(novo?.id);
         if (!id) return json({ error: "nao_criado" });
