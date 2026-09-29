@@ -45,6 +45,7 @@ export default function BookingFlow({ unidade, nomeUnidade, fallbackUrl }: { uni
   const [cliente, setCliente] = useState<Cliente | null>(null);
   const [telOk, setTelOk] = useState(false);
   const [novoTel, setNovoTel] = useState("");
+  const [telAtualizado, setTelAtualizado] = useState(false);
   const [editTel, setEditTel] = useState(false);
   const [aberta, setAberta] = useState<string | null>(null);
   const [erro, setErro] = useState("");
@@ -91,8 +92,9 @@ export default function BookingFlow({ unidade, nomeUnidade, fallbackUrl }: { uni
     if (tel.length < 10 || tel.length > 11) return setErro("Informe o telefone com DDD (ex.: 11 99999-9999).");
     setLoading(true); setErro("");
     try {
-      await call({ action: "atualizarTelefone", unidade, clienteId: cliente!.id, telefone: tel });
-      setTelOk(true); setEditTel(false);
+      const d = await call({ action: "atualizarTelefone", unidade, clienteId: cliente!.id, telefone: tel });
+      if (!d?.ok || !d.cliente) throw new Error(d?.error || "falha");
+      setCliente(d.cliente); setTelAtualizado(true); setTelOk(true); setEditTel(false);
     } catch { setErro("Não conseguimos atualizar o telefone agora. Tente novamente."); }
     finally { setLoading(false); }
   };
@@ -278,9 +280,13 @@ export default function BookingFlow({ unidade, nomeUnidade, fallbackUrl }: { uni
             </div>
           )}
           {cliente && telOk && (
-            <p className="font-body text-sm text-foreground flex items-center gap-2">
-              <Check className="h-4 w-4 text-primary" /> Telefone confirmado{editTel ? " e atualizado" : ""}.
-            </p>
+            <div className="rounded-xl border border-primary/40 bg-primary/5 p-4 space-y-1">
+              <p className="font-body text-sm text-foreground flex items-center gap-2">
+                <Check className="h-4 w-4 text-primary" /> {telAtualizado ? "Cadastro atualizado no salão:" : "Telefone confirmado:"}
+              </p>
+              <p className="font-body text-sm text-foreground"><strong>{cliente.nome}</strong></p>
+              <p className="font-body text-sm text-muted-foreground">{cliente.telefone || "—"}</p>
+            </div>
           )}
           {erro && <p className="font-body text-sm text-destructive">{erro}</p>}
           {cliente && telOk && (

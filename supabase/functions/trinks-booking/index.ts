@@ -74,10 +74,23 @@ Deno.serve(async (req) => {
         if (!clienteId) return json({ error: "cliente_obrigatorio" }, 400);
         if (tel.length < 10 || tel.length > 11) return json({ error: "telefone_invalido" }, 400);
         const ddd = tel.slice(0, 2), numero = tel.slice(2);
-        await trinks(`/clientes/${clienteId}`, estab, { method: "PUT", body: JSON.stringify({
-          telefones: [{ ddd, numero, tipoId: 1 }],
-        }) });
-        return json({ ok: true });
+        const digits = (t: any) => `${t?.ddd ?? ""}${t?.numero ?? ""}`.replace(/\D/g, "");
+        // PUT /clientes/{id} NÃO aceita telefones — usar a rota própria de telefones.
+        const atuais = list(await trinks(`/clientes/${clienteId}/telefones`, estab));
+        if (!atuais.some((t: any) => digits(t).endsWith(tel) || tel.endsWith(digits(t)) && digits(t).length >= 8)) {
+          await trinks(`/clientes/${clienteId}/telefones`, estab, { method: "POST", body: JSON.stringify({
+            ddi: "55", ddd, numero, tipoId: numero.length === 9 ? 3 : 1,
+          }) });
+        }
+        // Relê do Trinks para confirmar que gravou
+        const depois = list(await trinks(`/clientes/${clienteId}/telefones`, estab));
+        const gravado = depois.some((t: any) => digits(t).endsWith(tel));
+        if (!gravado) { console.error("telefone nao gravado", clienteId, JSON.stringify(depois).slice(0, 300)); return json({ error: "nao_gravado" }); }
+        const c = await trinks(`/clientes/${clienteId}`, estab);
+        return json({ ok: true, cliente: {
+          id: clienteId, nome: c?.nome ?? "",
+          telefone: `(${ddd}) ${numero.length === 9 ? numero.slice(0, 5) + "-" + numero.slice(5) : numero.slice(0, 4) + "-" + numero.slice(4)}`,
+        } });
       }
       case "agendar": {
         const clienteId = Number(body.clienteId);
