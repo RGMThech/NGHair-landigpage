@@ -83,7 +83,7 @@ Deno.serve(async (req) => {
         if (emailOk) q.set("email", email);
         const found = list(await trinks(`/clientes?${q}`, estab));
         const mask = (t: any) => {
-          const n = `${t?.ddd ?? ""}${t?.numero ?? ""}`.replace(/\D/g, "");
+          const n = `${t?.ddd ?? ""}${t?.numero ?? t?.telefone ?? ""}`.replace(/\D/g, "");
           return n.length >= 4 ? `(••) •••••-${n.slice(-4)}` : "";
         };
         return json({ clientes: found.slice(0, 10).map((c: any) => ({
@@ -118,25 +118,26 @@ Deno.serve(async (req) => {
         const nomeFinal = hasEmployeeCode(nomeAtual) ? nomeAtual : nomeSolicitado || nomeAtual;
         const emailFinal = emailSolicitado || emailAtual;
         if (nomeFinal.length < 3) return json({ error: "nome_invalido" }, 400);
+        let aviso: string | null = null;
         if ((!hasEmployeeCode(nomeAtual) && nomeFinal !== nomeAtual) || emailFinal !== emailAtual) {
-          // EditClientRequest aceita SOMENTE estes campos (additionalProperties: false).
+          // PUT /clientes/{id} (EditClientRequest): nome, email, cpf, genero, observacoes, codigoExterno.
+          // Campos omitidos são apagados pelo Trinks, então os demais são reenviados como estão.
           const c0 = clienteAtual ?? {};
           await trinks(`/clientes/${clienteId}`, estab, {
             method: "PUT",
             body: JSON.stringify({
-              nome: nomeFinal, email: emailFinal || null, cpf: c0.cpf ?? null,
+              nome: nomeFinal, email: emailFinal || null, cpf: c0.cpf || null,
               genero: c0.genero ?? null, observacoes: c0.observacoes ?? null,
               codigoExterno: c0.codigoExterno ?? null,
             }),
           });
           const conf = await trinks(`/clientes/${clienteId}`, estab);
-          if (clean(conf?.nome, 100) !== nomeFinal) {
-            console.error("nome nao gravado", clienteId, conf?.nome);
-            return json({ error: "nome_nao_gravado" });
-          }
-          if (emailFinal && clean(conf?.email, 150).toLowerCase() !== emailFinal) {
-            console.error("email nao gravado", clienteId, conf?.email);
-            return json({ error: "email_nao_gravado" });
+          const nomeOk = clean(conf?.nome, 100) === nomeFinal;
+          const emailOk = !emailFinal || clean(conf?.email, 150).toLowerCase() === emailFinal;
+          if (!nomeOk || !emailOk) {
+            // O Trinks responde 204 mas não altera cadastros gerenciados pela própria cliente (conta Trinks).
+            console.error("dados bloqueados pelo Trinks", clienteId, conf?.nome, conf?.email);
+            aviso = "dados_bloqueados";
           }
         }
         // Telefone placeholder (11) 90000-0000: remover sempre que estiver no cadastro.
@@ -160,7 +161,7 @@ Deno.serve(async (req) => {
         const gravado = depois.some((t: any) => digits(t).endsWith(tel));
         if (!gravado) { console.error("telefone nao gravado", clienteId, JSON.stringify(depois).slice(0, 300)); return json({ error: "nao_gravado" }); }
         const c = await trinks(`/clientes/${clienteId}`, estab);
-        return json({ ok: true, cliente: {
+        return json({ ok: true, aviso, cliente: {
           id: clienteId, nome: c?.nome ?? "",
           telefone: formatPhone(tel), email: clean(c?.email, 150),
           nomeProtegido: hasEmployeeCode(clean(c?.nome, 100)),
