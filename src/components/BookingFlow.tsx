@@ -42,6 +42,7 @@ export default function BookingFlow({ unidade, nomeUnidade, fallbackUrl }: { uni
   const [slot, setSlot] = useState<Horario | null>(null);
   const [form, setForm] = useState({ nome: "", telefone: "" });
   const [clientes, setClientes] = useState<Cliente[] | null>(null);
+  const [naoEncontrado, setNaoEncontrado] = useState(false);
   const [cliente, setCliente] = useState<Cliente | null>(null);
   const [telOk, setTelOk] = useState(false);
   const [telAtualizado, setTelAtualizado] = useState(false);
@@ -95,7 +96,8 @@ export default function BookingFlow({ unidade, nomeUnidade, fallbackUrl }: { uni
       const list: Cliente[] = d.clientes ?? [];
       setClientes(list);
       if (list.length === 1) setCliente(list[0]);
-      if (!list.length) setErro("Não encontramos seu cadastro. Confira os dados ou fale conosco pelo WhatsApp.");
+      if (!list.length) { setNaoEncontrado(true); setErro("Não encontramos seu cadastro. Confira os dados ou crie seu cadastro abaixo."); }
+      else setNaoEncontrado(false);
     } catch { setErro("Não conseguimos buscar seu cadastro agora. Tente novamente."); }
     finally { setLoading(false); }
   };
@@ -110,6 +112,22 @@ export default function BookingFlow({ unidade, nomeUnidade, fallbackUrl }: { uni
     } catch { setErro("Não conseguimos carregar os dados deste cadastro. Tente novamente."); }
     finally { setLoading(false); }
   };
+  const criarCadastro = async () => {
+    const tel = form.telefone.replace(/\D/g, "");
+    const nome = form.nome.trim().replace(/\s+/g, " ");
+    if (nome.length < 5 || !nome.includes(" ")) return setErro("Para criar o cadastro, informe nome e sobrenome.");
+    if (tel.length < 10 || tel.length > 11) return setErro("Informe o telefone com DDD (ex.: 11 99999-9999).");
+    setLoading(true); setErro("");
+    try {
+      const d = await call({ action: "criarCliente", unidade, nome, telefone: tel });
+      if (d?.error === "ja_existe") { setNaoEncontrado(false); return setErro("Já existe um cadastro com este telefone. Busque apenas pelo telefone."); }
+      if (!d?.ok || !d.cliente) throw new Error(d?.error || "falha");
+      setCliente(d.cliente); setClientes([d.cliente]); setNaoEncontrado(false);
+      setTelOk(true); setTelAtualizado(true);
+      setForm({ nome: d.cliente.nome, telefone: d.cliente.telefone });
+    } catch { setErro("Não conseguimos criar seu cadastro agora. Tente novamente."); }
+    finally { setLoading(false); }
+  };
   const salvarCadastro = async () => {
     const tel = form.telefone.replace(/\D/g, "");
     const nome = form.nome.trim();
@@ -121,7 +139,10 @@ export default function BookingFlow({ unidade, nomeUnidade, fallbackUrl }: { uni
       if (!d?.ok || !d.cliente) throw new Error(d?.error || "falha");
       setCliente(d.cliente); setTelAtualizado(true); setTelOk(true);
       setForm({ nome: d.cliente.nome, telefone: d.cliente.telefone || form.telefone });
-    } catch { setErro("Não conseguimos atualizar o cadastro agora. Tente novamente."); }
+    } catch (e) {
+      const m = (e as Error).message;
+      setErro(m === "nome_nao_gravado" ? "O salão não aceitou a alteração do nome. Tente novamente." : m === "nao_gravado" ? "O telefone não foi gravado no salão. Tente novamente." : "Não conseguimos atualizar o cadastro agora. Tente novamente.");
+    }
     finally { setLoading(false); }
   };
   const confirmar = async () => {
