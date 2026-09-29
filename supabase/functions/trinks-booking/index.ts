@@ -193,7 +193,7 @@ Deno.serve(async (req) => {
             ddi: "55", ddd, numero, tipoId: numero.length === 9 ? 3 : 1,
           }) });
         }
-        return json({ ok: true, cliente: { id, nome, telefone: formatPhone(tel), nomeProtegido: false } });
+        return json({ ok: true, cliente: { id, nome, telefone: formatPhone(tel), email, nomeProtegido: false } });
       }
       case "agendar": {
         const clienteId = Number(body.clienteId);
