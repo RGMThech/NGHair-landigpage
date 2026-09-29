@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { reportConversion } from "@/lib/gtag";
 
 type Servico = { id: number; nome: string; categoria: string; descricao: string; duracao: number | null };
-type Prof = { id: number; nome: string };
+type Prof = { id: number; nome: string; funcao?: string };
 type Horario = { profissionalId: number; nome: string; hora: string };
 
 const call = async (body: Record<string, unknown>) => {
