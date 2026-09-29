@@ -109,6 +109,7 @@ export default function BookingFlow({ unidade, nomeUnidade, fallbackUrl }: { uni
       const d = await call({ action: "atualizarTelefone", unidade, clienteId: cliente!.id, telefone: tel });
       if (!d?.ok || !d.cliente) throw new Error(d?.error || "falha");
       setCliente(d.cliente); setTelAtualizado(true); setTelOk(true); setEditTel(false);
+      setForm((f) => ({ ...f, telefone: d.cliente.telefone || novoTel }));
     } catch { setErro("Não conseguimos atualizar o telefone agora. Tente novamente."); }
     finally { setLoading(false); }
   };
@@ -252,7 +253,7 @@ export default function BookingFlow({ unidade, nomeUnidade, fallbackUrl }: { uni
             <div className="space-y-2">
               <p className="font-body text-xs uppercase tracking-widest text-muted-foreground">Confirme que é você</p>
               {clientes.map((c) => (
-                <button key={c.id} onClick={() => { setCliente(c); setTelOk(false); setEditTel(false); setNovoTel(""); setTelAtualizado(false); }}
+                <button key={c.id} onClick={() => { setCliente(c); setForm({ nome: c.nome, telefone: c.telefone || "" }); setTelOk(false); setEditTel(false); setNovoTel(c.telefone || ""); setTelAtualizado(false); }}
                   className={`w-full text-left rounded-xl border px-4 py-3 font-body text-sm transition ${cliente?.id === c.id ? "border-primary bg-primary/5" : "border-border bg-card hover:border-primary"}`}>
                   <span className="flex items-center gap-2">{cliente?.id === c.id && <Check className="h-4 w-4 text-primary" />}<strong>{c.nome}</strong></span>
                   {c.telefone && <span className="block text-xs text-muted-foreground">{c.telefone}</span>}
