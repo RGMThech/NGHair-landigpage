@@ -367,7 +367,7 @@ export default function BookingFlow({ unidade, nomeUnidade, fallbackUrl }: { uni
             <div className="rounded-xl border border-border bg-muted/50 p-4 space-y-3">
               <p className="font-body text-sm text-foreground">Confira o nome, o telefone e o e-mail preenchidos acima. Você pode corrigi-los antes de continuar.</p>
               <button onClick={salvarCadastro} disabled={loading}
-                className="w-full rounded-full bg-primary px-4 py-2.5 font-body text-xs font-semibold uppercase tracking-wider text-primary-foreground disabled:opacity-60">
+                className="w-full rounded-full bg-accent px-4 py-2.5 font-body text-xs font-semibold uppercase tracking-wider text-accent-foreground shadow-sm transition hover:opacity-90 disabled:opacity-60">
                 {loading ? "Salvando..." : "Confirmar e salvar dados"}
               </button>
             </div>
