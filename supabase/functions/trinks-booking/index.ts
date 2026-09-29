@@ -107,20 +107,24 @@ Deno.serve(async (req) => {
         const clienteId = Number(body.clienteId);
         const tel = clean(body.telefone, 20).replace(/\D/g, "");
         const nomeSolicitado = clean(body.nome, 100);
+        const emailSolicitado = clean(body.email, 150).toLowerCase();
+        if (emailSolicitado && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailSolicitado)) return json({ error: "email_invalido" }, 400);
         if (!clienteId) return json({ error: "cliente_obrigatorio" }, 400);
         if (tel.length < 10 || tel.length > 11) return json({ error: "telefone_invalido" }, 400);
         const ddd = tel.slice(0, 2), numero = tel.slice(2);
         const clienteAtual = await trinks(`/clientes/${clienteId}`, estab);
         const nomeAtual = clean(clienteAtual?.nome, 100);
+        const emailAtual = clean(clienteAtual?.email, 150).toLowerCase();
         const nomeFinal = hasEmployeeCode(nomeAtual) ? nomeAtual : nomeSolicitado || nomeAtual;
+        const emailFinal = emailSolicitado || emailAtual;
         if (nomeFinal.length < 3) return json({ error: "nome_invalido" }, 400);
-        if (!hasEmployeeCode(nomeAtual) && nomeFinal !== nomeAtual) {
+        if ((!hasEmployeeCode(nomeAtual) && nomeFinal !== nomeAtual) || emailFinal !== emailAtual) {
           // EditClientRequest aceita SOMENTE estes campos (additionalProperties: false).
           const c0 = clienteAtual ?? {};
           await trinks(`/clientes/${clienteId}`, estab, {
             method: "PUT",
             body: JSON.stringify({
-              nome: nomeFinal, email: c0.email ?? null, cpf: c0.cpf ?? null,
+              nome: nomeFinal, email: emailFinal || null, cpf: c0.cpf ?? null,
               genero: c0.genero ?? null, observacoes: c0.observacoes ?? null,
               codigoExterno: c0.codigoExterno ?? null,
             }),
@@ -129,6 +133,10 @@ Deno.serve(async (req) => {
           if (clean(conf?.nome, 100) !== nomeFinal) {
             console.error("nome nao gravado", clienteId, conf?.nome);
             return json({ error: "nome_nao_gravado" });
+          }
+          if (emailFinal && clean(conf?.email, 150).toLowerCase() !== emailFinal) {
+            console.error("email nao gravado", clienteId, conf?.email);
+            return json({ error: "email_nao_gravado" });
           }
         }
         // Telefone placeholder (11) 90000-0000: remover sempre que estiver no cadastro.
