@@ -77,7 +77,7 @@ export default function BookingFlow({ unidade, nomeUnidade, fallbackUrl }: { uni
   const buscar = async () => {
     const r = schema.safeParse(form);
     if (!r.success) return setErro(r.error.issues[0].message);
-    setLoading(true); setErro(""); setCliente(null); setClientes(null); setTelOk(false); setEditTel(false); setNovoTel("");
+    setLoading(true); setErro(""); setCliente(null); setClientes(null); setTelOk(false); setEditTel(false); setNovoTel(""); setTelAtualizado(false);
     try {
       const d = await call({ action: "buscarCliente", unidade, nome: form.nome.trim(), telefone: form.telefone.trim() });
       const list: Cliente[] = d.clientes ?? [];
@@ -237,7 +237,7 @@ export default function BookingFlow({ unidade, nomeUnidade, fallbackUrl }: { uni
             <div className="space-y-2">
               <p className="font-body text-xs uppercase tracking-widest text-muted-foreground">Confirme que é você</p>
               {clientes.map((c) => (
-                <button key={c.id} onClick={() => { setCliente(c); setTelOk(false); setEditTel(false); setNovoTel(""); }}
+                <button key={c.id} onClick={() => { setCliente(c); setTelOk(false); setEditTel(false); setNovoTel(""); setTelAtualizado(false); }}
                   className={`w-full text-left rounded-xl border px-4 py-3 font-body text-sm transition ${cliente?.id === c.id ? "border-primary bg-primary/5" : "border-border bg-card hover:border-primary"}`}>
                   <span className="flex items-center gap-2">{cliente?.id === c.id && <Check className="h-4 w-4 text-primary" />}<strong>{c.nome}</strong></span>
                   {c.telefone && <span className="block text-xs text-muted-foreground">{c.telefone}</span>}
