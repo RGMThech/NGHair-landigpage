@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { reportConversion } from "@/lib/gtag";
 
 type Servico = { id: number; nome: string; categoria: string; descricao: string; duracao: number | null };
-type Prof = { id: number; nome: string };
+type Prof = { id: number; nome: string; funcao?: string };
 type Horario = { profissionalId: number; nome: string; hora: string };
 
 const call = async (body: Record<string, unknown>) => {
@@ -67,7 +67,17 @@ export default function BookingFlow({ unidade, nomeUnidade, fallbackUrl }: { uni
 
   const escolherServico = (s: Servico) => {
     setServico(s); setStep(1);
-    run(async () => setProfs((await call({ action: "profissionais", unidade, servicoId: s.id })).profissionais ?? []));
+    run(async () => {
+      const bruto: Prof[] = (await call({ action: "profissionais", unidade, servicoId: s.id })).profissionais ?? [];
+      const executores = bruto.filter((p) => !/recepção|recepcao|gerente/i.test(p.funcao ?? ""));
+      const casa = (f: string, c: string) => {
+        const fu = f.toLowerCase(), ca = c.toLowerCase();
+        if (/manicure|unha|podolog/.test(ca)) return /manicure/.test(fu);
+        if (/cabel/.test(ca)) return /cabeleireiro/.test(fu);
+        return true;
+      };
+      setProfs(executores.sort((a, b) => Number(casa(b.funcao ?? "", s.categoria)) - Number(casa(a.funcao ?? "", s.categoria))));
+    });
   };
   const escolherProf = (p: Prof | null) => { setProf(p); setStep(2); setData(""); setHorarios([]); };
   const escolherData = (d: string) => {
@@ -186,6 +196,7 @@ export default function BookingFlow({ unidade, nomeUnidade, fallbackUrl }: { uni
           {profs.map((p) => (
             <button key={p.id} onClick={() => escolherProf(p)} className={card}>
               <div className="flex items-center gap-3"><User className="h-4 w-4 text-primary" /><p className="font-display text-lg text-foreground">{p.nome}</p></div>
+              {p.funcao && <p className="font-body text-[11px] text-muted-foreground mt-1 ml-7">{p.funcao}</p>}
             </button>
           ))}
         </div>
