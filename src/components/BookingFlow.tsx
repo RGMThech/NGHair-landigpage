@@ -259,14 +259,36 @@ export default function BookingFlow({ unidade, nomeUnidade, fallbackUrl }: { uni
 
       {step === 2 && (
         <div>
-          <div className="flex gap-2 overflow-x-auto pb-2 mb-6">
-            {dias.map((d) => (
-              <button key={iso(d)} onClick={() => escolherData(iso(d))}
-                className={`shrink-0 w-16 rounded-xl border py-3 text-center transition ${data === iso(d) ? "bg-primary text-primary-foreground border-primary" : "bg-card border-border hover:border-primary"}`}>
-                <p className="font-body text-[10px] uppercase tracking-widest">{d.toLocaleDateString("pt-BR", { weekday: "short" }).replace(".", "")}</p>
-                <p className="font-display text-xl">{d.getDate()}</p>
+          <div className="max-w-sm mx-auto mb-6">
+            <div className="flex items-center justify-between mb-3">
+              <button onClick={() => setMesOffset(0)} disabled={mesOffset === 0} aria-label="Mês anterior"
+                className="h-9 w-9 rounded-full border border-border bg-card flex items-center justify-center text-muted-foreground transition hover:border-primary hover:text-primary disabled:opacity-30 disabled:hover:border-border disabled:hover:text-muted-foreground">
+                <ChevronLeft className="h-4 w-4" />
               </button>
-            ))}
+              <p className="font-display text-lg text-foreground capitalize">{mesLabel}</p>
+              <button onClick={() => setMesOffset(1)} disabled={mesOffset === 1} aria-label="Próximo mês"
+                className="h-9 w-9 rounded-full border border-border bg-card flex items-center justify-center text-muted-foreground transition hover:border-primary hover:text-primary disabled:opacity-30 disabled:hover:border-border disabled:hover:text-muted-foreground">
+                <ChevronRight className="h-4 w-4" />
+              </button>
+            </div>
+            <div className="grid grid-cols-7 gap-1 mb-1">
+              {["dom", "seg", "ter", "qua", "qui", "sex", "sáb"].map((l, i) => (
+                <span key={i} className="text-center font-body text-[10px] uppercase tracking-widest text-muted-foreground py-1">{l}</span>
+              ))}
+            </div>
+            <div className="grid grid-cols-7 gap-1">
+              {semanas.flat().map((d, i) => {
+                const fora = d.getMonth() !== mesExibido.getMonth();
+                const habil = !fora && diaHabil(d);
+                const sel = data === iso(d);
+                return (
+                  <button key={i} disabled={!habil} onClick={() => escolherData(iso(d))}
+                    className={`h-10 rounded-lg font-body text-sm transition ${sel ? "bg-primary text-primary-foreground" : habil ? "bg-card border border-border hover:border-primary hover:text-primary" : "text-muted-foreground/40"}`}>
+                    {d.getDate()}
+                  </button>
+                );
+              })}
+            </div>
           </div>
           {!loading && data && (horarios.length === 0
             ? <p className="font-body text-sm text-muted-foreground text-center py-6">Sem horários livres neste dia. Escolha outra data.</p>
