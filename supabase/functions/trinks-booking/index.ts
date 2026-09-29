@@ -39,8 +39,15 @@ Deno.serve(async (req) => {
         })) });
       }
       case "profissionais": {
-        const d = await trinks(`/servicos/${Number(body.servicoId)}/profissionais`, estab);
-        return json({ profissionais: list(d).map((p: any) => ({ id: p.id, nome: p.apelido || p.nome, funcao: p.funcao ?? "" })) });
+        const sid = Number(body.servicoId);
+        const [autorizados, todos] = await Promise.all([
+          trinks(`/servicos/${sid}/profissionais`, estab),
+          trinks("/profissionais", estab),
+        ]);
+        const ids = new Set(list(autorizados).map((p: any) => p.id));
+        return json({ profissionais: list(todos)
+          .filter((p: any) => ids.has(p.id))
+          .map((p: any) => ({ id: p.id, nome: p.apelido || p.nome, funcao: p.funcao ?? "" })) });
       }
       case "horarios": {
         const data = clean(body.data, 10);
