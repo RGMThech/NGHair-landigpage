@@ -14,7 +14,7 @@ const call = async (body: Record<string, unknown>) => {
   return data;
 };
 
-type Cliente = { id: number; nome: string; telefone: string };
+type Cliente = { id: number; nome: string; telefone: string; nomeProtegido?: boolean };
 const schema = z.object({
   nome: z.string().trim().max(100),
   telefone: z.string().trim().max(20),
@@ -45,6 +45,7 @@ export default function BookingFlow({ unidade, nomeUnidade, fallbackUrl }: { uni
   const [cliente, setCliente] = useState<Cliente | null>(null);
   const [telOk, setTelOk] = useState(false);
   const [novoTel, setNovoTel] = useState("");
+  const [novoNome, setNovoNome] = useState("");
   const [telAtualizado, setTelAtualizado] = useState(false);
   const [editTel, setEditTel] = useState(false);
   const [aberta, setAberta] = useState<string | null>(null);
@@ -101,16 +102,33 @@ export default function BookingFlow({ unidade, nomeUnidade, fallbackUrl }: { uni
     } catch { setErro("Não conseguimos buscar seu cadastro agora. Tente novamente."); }
     finally { setLoading(false); }
   };
-  const salvarTelefone = async () => {
+  const selecionarCliente = async (resultado: Cliente) => {
+    setLoading(true); setErro(""); setTelOk(false); setTelAtualizado(false);
+    try {
+      const d = await call({ action: "obterCliente", unidade, clienteId: resultado.id });
+      if (!d?.cliente) throw new Error("cadastro_nao_encontrado");
+      const completo: Cliente = d.cliente;
+      setCliente(completo);
+      setNovoNome(completo.nome);
+      setNovoTel(completo.telefone || "");
+      setForm({ nome: completo.nome, telefone: completo.telefone || "" });
+      setEditTel(true);
+    } catch { setErro("Não conseguimos carregar os dados deste cadastro. Tente novamente."); }
+    finally { setLoading(false); }
+  };
+  const salvarCadastro = async () => {
     const tel = novoTel.replace(/\D/g, "");
+    const nome = novoNome.trim();
+    if (nome.length < 3) return setErro("Informe o nome completo ou com pelo menos 3 caracteres.");
     if (tel.length < 10 || tel.length > 11) return setErro("Informe o telefone com DDD (ex.: 11 99999-9999).");
     setLoading(true); setErro("");
     try {
-      const d = await call({ action: "atualizarTelefone", unidade, clienteId: cliente!.id, telefone: tel });
+      const d = await call({ action: "atualizarCliente", unidade, clienteId: cliente?.id, nome, telefone: tel });
       if (!d?.ok || !d.cliente) throw new Error(d?.error || "falha");
       setCliente(d.cliente); setTelAtualizado(true); setTelOk(true); setEditTel(false);
-      setForm((f) => ({ ...f, telefone: d.cliente.telefone || novoTel }));
-    } catch { setErro("Não conseguimos atualizar o telefone agora. Tente novamente."); }
+      setNovoNome(d.cliente.nome); setNovoTel(d.cliente.telefone || novoTel);
+      setForm({ nome: d.cliente.nome, telefone: d.cliente.telefone || novoTel });
+    } catch { setErro("Não conseguimos atualizar o cadastro agora. Tente novamente."); }
     finally { setLoading(false); }
   };
   const confirmar = async () => {
@@ -253,7 +271,7 @@ export default function BookingFlow({ unidade, nomeUnidade, fallbackUrl }: { uni
             <div className="space-y-2">
               <p className="font-body text-xs uppercase tracking-widest text-muted-foreground">Confirme que é você</p>
               {clientes.map((c) => (
-                <button key={c.id} onClick={() => { setCliente(c); setForm({ nome: c.nome, telefone: c.telefone || "" }); setTelOk(false); setEditTel(false); setNovoTel(c.telefone || ""); setTelAtualizado(false); }}
+                <button key={c.id} onClick={() => selecionarCliente(c)}
                   className={`w-full text-left rounded-xl border px-4 py-3 font-body text-sm transition ${cliente?.id === c.id ? "border-primary bg-primary/5" : "border-border bg-card hover:border-primary"}`}>
                   <span className="flex items-center gap-2">{cliente?.id === c.id && <Check className="h-4 w-4 text-primary" />}<strong>{c.nome}</strong></span>
                   {c.telefone && <span className="block text-xs text-muted-foreground">{c.telefone}</span>}
@@ -264,33 +282,22 @@ export default function BookingFlow({ unidade, nomeUnidade, fallbackUrl }: { uni
           )}
           {cliente && !telOk && (
             <div className="rounded-xl border border-border bg-muted/50 p-4 space-y-3">
-              <p className="font-body text-sm text-foreground">
-                Seu telefone cadastrado é <strong>{cliente.telefone || "não informado"}</strong>. Ele está correto?
-              </p>
-              {!editTel && (
-                <div className="flex gap-2">
-                  <button onClick={() => setTelOk(true)}
-                    className="flex-1 rounded-full bg-primary px-4 py-2.5 font-body text-xs font-semibold uppercase tracking-wider text-primary-foreground">
-                    Sim, está correto
-                  </button>
-                  <button onClick={() => setEditTel(true)}
-                    className="flex-1 rounded-full border border-primary px-4 py-2.5 font-body text-xs font-semibold uppercase tracking-wider text-primary">
-                    Atualizar
-                  </button>
-                </div>
-              )}
+              <p className="font-body text-sm text-foreground">Confira e atualize seus dados antes de continuar.</p>
               {editTel && (
                 <div className="space-y-2">
+                  <label className="block font-body text-xs text-muted-foreground">Nome</label>
+                  <input value={novoNome} onChange={(e) => setNovoNome(e.target.value)} disabled={cliente.nomeProtegido}
+                    placeholder="Nome" autoComplete="name"
+                    className="w-full rounded-xl border border-input bg-card px-4 py-3 font-body text-sm outline-none focus:border-primary disabled:opacity-70" />
+                  {cliente.nomeProtegido && <p className="font-body text-xs text-muted-foreground">Este nome contém seu código de colaborador e será mantido.</p>}
+                  <label className="block font-body text-xs text-muted-foreground">Telefone</label>
                   <input value={novoTel} onChange={(e) => setNovoTel(e.target.value)}
-                    placeholder="Novo telefone com DDD" inputMode="tel"
+                    placeholder="Telefone com DDD" inputMode="tel" autoComplete="tel"
                     className="w-full rounded-xl border border-input bg-card px-4 py-3 font-body text-sm outline-none focus:border-primary" />
-                  <div className="flex gap-2">
-                    <button onClick={salvarTelefone} disabled={loading}
-                      className="flex-1 rounded-full bg-primary px-4 py-2.5 font-body text-xs font-semibold uppercase tracking-wider text-primary-foreground disabled:opacity-60">
-                      {loading ? "Salvando..." : "Salvar telefone"}
-                    </button>
-                    <button onClick={() => setEditTel(false)} className="font-body text-xs text-muted-foreground underline">Cancelar</button>
-                  </div>
+                  <button onClick={salvarCadastro} disabled={loading}
+                    className="w-full rounded-full bg-primary px-4 py-2.5 font-body text-xs font-semibold uppercase tracking-wider text-primary-foreground disabled:opacity-60">
+                    {loading ? "Salvando..." : "Confirmar e salvar dados"}
+                  </button>
                 </div>
               )}
             </div>
@@ -298,7 +305,7 @@ export default function BookingFlow({ unidade, nomeUnidade, fallbackUrl }: { uni
           {cliente && telOk && (
             <div className="rounded-xl border border-primary/40 bg-primary/5 p-4 space-y-1">
               <p className="font-body text-sm text-foreground flex items-center gap-2">
-                <Check className="h-4 w-4 text-primary" /> {telAtualizado ? "Cadastro atualizado no salão:" : "Telefone confirmado:"}
+                 <Check className="h-4 w-4 text-primary" /> {telAtualizado ? "Cadastro atualizado no salão:" : "Dados confirmados:"}
               </p>
               <p className="font-body text-sm text-foreground"><strong>{cliente.nome}</strong></p>
               <p className="font-body text-sm text-muted-foreground">{cliente.telefone || "—"}</p>

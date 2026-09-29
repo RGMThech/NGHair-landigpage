@@ -22,6 +22,14 @@ async function trinks(path: string, estab: string, init: RequestInit = {}) {
 }
 const list = (d: any) => (Array.isArray(d) ? d : d?.data ?? d?.items ?? []);
 const clean = (s: unknown, n: number) => String(s ?? "").trim().slice(0, n);
+const digits = (t: any) => `${t?.ddd ?? ""}${t?.numero ?? ""}`.replace(/\D/g, "");
+const formatPhone = (value: string) => {
+  const tel = value.replace(/\D/g, "");
+  const ddd = tel.slice(0, 2), numero = tel.slice(2);
+  if (tel.length < 10) return "";
+  return `(${ddd}) ${numero.length === 9 ? numero.slice(0, 5) + "-" + numero.slice(5) : numero.slice(0, 4) + "-" + numero.slice(4)}`;
+};
+const hasEmployeeCode = (name: string) => /\|\s*\d+\s*\|/.test(name);
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: cors });
@@ -75,13 +83,36 @@ Deno.serve(async (req) => {
           id: c.id, nome: c.nome, telefone: mask((c.telefones ?? [])[0]),
         })) });
       }
+      case "obterCliente": {
+        const clienteId = Number(body.clienteId);
+        if (!clienteId) return json({ error: "cliente_obrigatorio" }, 400);
+        const [cliente, telefonesData] = await Promise.all([
+          trinks(`/clientes/${clienteId}`, estab),
+          trinks(`/clientes/${clienteId}/telefones`, estab),
+        ]);
+        const telefones = list(telefonesData);
+        const telefone = telefones.map(digits).find((tel: string) => tel !== "11900000000") ?? "";
+        const nome = clean(cliente?.nome, 100);
+        return json({ cliente: { id: clienteId, nome, telefone: formatPhone(telefone), nomeProtegido: hasEmployeeCode(nome) } });
+      }
+      case "atualizarCliente":
       case "atualizarTelefone": {
         const clienteId = Number(body.clienteId);
         const tel = clean(body.telefone, 20).replace(/\D/g, "");
+        const nomeSolicitado = clean(body.nome, 100);
         if (!clienteId) return json({ error: "cliente_obrigatorio" }, 400);
         if (tel.length < 10 || tel.length > 11) return json({ error: "telefone_invalido" }, 400);
         const ddd = tel.slice(0, 2), numero = tel.slice(2);
-        const digits = (t: any) => `${t?.ddd ?? ""}${t?.numero ?? ""}`.replace(/\D/g, "");
+        const clienteAtual = await trinks(`/clientes/${clienteId}`, estab);
+        const nomeAtual = clean(clienteAtual?.nome, 100);
+        const nomeFinal = hasEmployeeCode(nomeAtual) ? nomeAtual : nomeSolicitado || nomeAtual;
+        if (nomeFinal.length < 3) return json({ error: "nome_invalido" }, 400);
+        if (!hasEmployeeCode(nomeAtual) && nomeFinal !== nomeAtual) {
+          await trinks(`/clientes/${clienteId}`, estab, {
+            method: "PUT",
+            body: JSON.stringify({ nome: nomeFinal }),
+          });
+        }
         // Telefone placeholder (11) 90000-0000: remover sempre que estiver no cadastro.
         const PLACEHOLDER = "11900000000";
         const removerPlaceholder = async (telefones: any[]) => {
@@ -105,7 +136,7 @@ Deno.serve(async (req) => {
         const c = await trinks(`/clientes/${clienteId}`, estab);
         return json({ ok: true, cliente: {
           id: clienteId, nome: c?.nome ?? "",
-          telefone: `(${ddd}) ${numero.length === 9 ? numero.slice(0, 5) + "-" + numero.slice(5) : numero.slice(0, 4) + "-" + numero.slice(4)}`,
+          telefone: formatPhone(tel), nomeProtegido: hasEmployeeCode(clean(c?.nome, 100)),
         } });
       }
       case "agendar": {
