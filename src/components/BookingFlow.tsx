@@ -139,9 +139,13 @@ export default function BookingFlow({ unidade, nomeUnidade, fallbackUrl }: { uni
       {loading && <div className="flex justify-center py-10"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>}
 
       {!loading && step === 0 && Object.entries(grupos).map(([cat, list]) => (
-        <div key={cat} className="mb-8">
-          <p className="font-body text-xs uppercase tracking-[0.3em] text-accent mb-3">{cat}</p>
-          <div className="grid sm:grid-cols-2 gap-3">
+        <div key={cat} className="mb-3">
+          <button onClick={() => setAberta(aberta === cat ? null : cat)}
+            className="w-full flex items-center justify-between rounded-xl border border-border bg-card px-5 py-4 hover:border-primary">
+            <span className="font-body text-xs uppercase tracking-[0.3em] text-accent">{cat}</span>
+            <span className="font-body text-xs text-muted-foreground">{list.length} · {aberta === cat ? "−" : "+"}</span>
+          </button>
+          {aberta === cat && <div className="grid sm:grid-cols-2 gap-3 mt-3">
             {list.map((s) => (
               <button key={s.id} onClick={() => escolherServico(s)} className={card}>
                 <div className="flex items-start gap-3">
@@ -153,7 +157,7 @@ export default function BookingFlow({ unidade, nomeUnidade, fallbackUrl }: { uni
                 </div>
               </button>
             ))}
-          </div>
+          </div>}
         </div>
       ))}
 
@@ -201,16 +205,38 @@ export default function BookingFlow({ unidade, nomeUnidade, fallbackUrl }: { uni
             <strong>{servico?.nome}</strong> com {slot.nome}<br />
             {new Date(data + "T12:00").toLocaleDateString("pt-BR", { weekday: "long", day: "2-digit", month: "long" })} às {slot.hora}
           </div>
-          {(["nome", "telefone", "email"] as const).map((k) => (
-            <input key={k} value={form[k]} onChange={(e) => setForm({ ...form, [k]: e.target.value })}
-              placeholder={{ nome: "Nome completo", telefone: "WhatsApp com DDD", email: "E-mail (opcional)" }[k]}
+          <p className="font-body text-sm text-muted-foreground">Informe seu nome (pode ser parcial) ou seu telefone para localizarmos seu cadastro.</p>
+          {(["nome", "telefone"] as const).map((k) => (
+            <input key={k} value={form[k]} onChange={(e) => { setForm({ ...form, [k]: e.target.value }); setClientes(null); setCliente(null); }}
+              placeholder={{ nome: "Nome", telefone: "Telefone com DDD" }[k]}
               className="w-full rounded-xl border border-input bg-card px-4 py-3 font-body text-sm outline-none focus:border-primary" />
           ))}
+          {!clientes?.length && (
+            <button onClick={buscar} disabled={loading}
+              className="w-full rounded-full border border-primary px-8 py-3 font-body text-xs font-semibold uppercase tracking-wider text-primary disabled:opacity-60">
+              {loading ? "Buscando..." : "Localizar meu cadastro"}
+            </button>
+          )}
+          {!!clientes?.length && (
+            <div className="space-y-2">
+              <p className="font-body text-xs uppercase tracking-widest text-muted-foreground">Confirme que é você</p>
+              {clientes.map((c) => (
+                <button key={c.id} onClick={() => setCliente(c)}
+                  className={`w-full text-left rounded-xl border px-4 py-3 font-body text-sm transition ${cliente?.id === c.id ? "border-primary bg-primary/5" : "border-border bg-card hover:border-primary"}`}>
+                  <span className="flex items-center gap-2">{cliente?.id === c.id && <Check className="h-4 w-4 text-primary" />}<strong>{c.nome}</strong></span>
+                  {c.telefone && <span className="block text-xs text-muted-foreground">{c.telefone}</span>}
+                </button>
+              ))}
+              <button onClick={() => { setClientes(null); setCliente(null); }} className="font-body text-xs text-muted-foreground underline">Não sou eu, buscar novamente</button>
+            </div>
+          )}
           {erro && <p className="font-body text-sm text-destructive">{erro}</p>}
-          <button onClick={confirmar} disabled={loading}
-            className="w-full rounded-full bg-primary px-8 py-3 font-body text-xs font-semibold uppercase tracking-wider text-primary-foreground disabled:opacity-60">
-            {loading ? "Confirmando..." : "Confirmar agendamento"}
-          </button>
+          {cliente && (
+            <button onClick={confirmar} disabled={loading}
+              className="w-full rounded-full bg-primary px-8 py-3 font-body text-xs font-semibold uppercase tracking-wider text-primary-foreground disabled:opacity-60">
+              {loading ? "Confirmando..." : "Confirmar agendamento"}
+            </button>
+          )}
         </div>
       )}
     </div>
