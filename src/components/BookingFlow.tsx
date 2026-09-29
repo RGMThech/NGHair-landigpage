@@ -44,10 +44,7 @@ export default function BookingFlow({ unidade, nomeUnidade, fallbackUrl }: { uni
   const [clientes, setClientes] = useState<Cliente[] | null>(null);
   const [cliente, setCliente] = useState<Cliente | null>(null);
   const [telOk, setTelOk] = useState(false);
-  const [novoTel, setNovoTel] = useState("");
-  const [novoNome, setNovoNome] = useState("");
   const [telAtualizado, setTelAtualizado] = useState(false);
-  const [editTel, setEditTel] = useState(false);
   const [aberta, setAberta] = useState<string | null>(null);
   const [erro, setErro] = useState("");
   const [feito, setFeito] = useState(false);
@@ -92,7 +89,7 @@ export default function BookingFlow({ unidade, nomeUnidade, fallbackUrl }: { uni
   const buscar = async () => {
     const r = schema.safeParse(form);
     if (!r.success) return setErro(r.error.issues[0].message);
-    setLoading(true); setErro(""); setCliente(null); setClientes(null); setTelOk(false); setEditTel(false); setNovoTel(""); setTelAtualizado(false);
+    setLoading(true); setErro(""); setCliente(null); setClientes(null); setTelOk(false); setTelAtualizado(false);
     try {
       const d = await call({ action: "buscarCliente", unidade, nome: form.nome.trim(), telefone: form.telefone.trim() });
       const list: Cliente[] = d.clientes ?? [];
@@ -109,25 +106,21 @@ export default function BookingFlow({ unidade, nomeUnidade, fallbackUrl }: { uni
       if (!d?.cliente) throw new Error("cadastro_nao_encontrado");
       const completo: Cliente = d.cliente;
       setCliente(completo);
-      setNovoNome(completo.nome);
-      setNovoTel(completo.telefone || "");
       setForm({ nome: completo.nome, telefone: completo.telefone || "" });
-      setEditTel(true);
     } catch { setErro("Não conseguimos carregar os dados deste cadastro. Tente novamente."); }
     finally { setLoading(false); }
   };
   const salvarCadastro = async () => {
-    const tel = novoTel.replace(/\D/g, "");
-    const nome = novoNome.trim();
+    const tel = form.telefone.replace(/\D/g, "");
+    const nome = form.nome.trim();
     if (nome.length < 3) return setErro("Informe o nome completo ou com pelo menos 3 caracteres.");
     if (tel.length < 10 || tel.length > 11) return setErro("Informe o telefone com DDD (ex.: 11 99999-9999).");
     setLoading(true); setErro("");
     try {
       const d = await call({ action: "atualizarCliente", unidade, clienteId: cliente?.id, nome, telefone: tel });
       if (!d?.ok || !d.cliente) throw new Error(d?.error || "falha");
-      setCliente(d.cliente); setTelAtualizado(true); setTelOk(true); setEditTel(false);
-      setNovoNome(d.cliente.nome); setNovoTel(d.cliente.telefone || novoTel);
-      setForm({ nome: d.cliente.nome, telefone: d.cliente.telefone || novoTel });
+      setCliente(d.cliente); setTelAtualizado(true); setTelOk(true);
+      setForm({ nome: d.cliente.nome, telefone: d.cliente.telefone || form.telefone });
     } catch { setErro("Não conseguimos atualizar o cadastro agora. Tente novamente."); }
     finally { setLoading(false); }
   };
@@ -257,10 +250,21 @@ export default function BookingFlow({ unidade, nomeUnidade, fallbackUrl }: { uni
           </div>
           <p className="font-body text-sm text-muted-foreground">Informe seu nome (pode ser parcial) ou seu telefone para localizarmos seu cadastro.</p>
           {(["nome", "telefone"] as const).map((k) => (
-            <input key={k} value={form[k]} onChange={(e) => { setForm({ ...form, [k]: e.target.value }); setClientes(null); setCliente(null); }}
-              placeholder={{ nome: "Nome", telefone: "Telefone com DDD" }[k]}
-              className="w-full rounded-xl border border-input bg-card px-4 py-3 font-body text-sm outline-none focus:border-primary" />
+            <label key={k} className="block space-y-1">
+              {cliente && <span className="font-body text-xs text-muted-foreground">{{ nome: "Nome", telefone: "Telefone" }[k]}</span>}
+              <input value={form[k]} onChange={(e) => {
+                setForm({ ...form, [k]: e.target.value });
+                if (cliente) { setTelOk(false); setTelAtualizado(false); }
+                else { setClientes(null); }
+              }}
+                disabled={k === "nome" && cliente?.nomeProtegido}
+                placeholder={{ nome: "Nome", telefone: "Telefone com DDD" }[k]}
+                inputMode={k === "telefone" ? "tel" : undefined}
+                autoComplete={k === "telefone" ? "tel" : "name"}
+                className="w-full rounded-xl border border-input bg-card px-4 py-3 font-body text-sm outline-none focus:border-primary disabled:opacity-70" />
+            </label>
           ))}
+          {cliente?.nomeProtegido && <p className="font-body text-xs text-muted-foreground">Este nome contém seu código de colaborador e será mantido.</p>}
           {!clientes?.length && (
             <button onClick={buscar} disabled={loading}
               className="w-full rounded-full border border-primary px-8 py-3 font-body text-xs font-semibold uppercase tracking-wider text-primary disabled:opacity-60">
@@ -282,24 +286,11 @@ export default function BookingFlow({ unidade, nomeUnidade, fallbackUrl }: { uni
           )}
           {cliente && !telOk && (
             <div className="rounded-xl border border-border bg-muted/50 p-4 space-y-3">
-              <p className="font-body text-sm text-foreground">Confira e atualize seus dados antes de continuar.</p>
-              {editTel && (
-                <div className="space-y-2">
-                  <label className="block font-body text-xs text-muted-foreground">Nome</label>
-                  <input value={novoNome} onChange={(e) => setNovoNome(e.target.value)} disabled={cliente.nomeProtegido}
-                    placeholder="Nome" autoComplete="name"
-                    className="w-full rounded-xl border border-input bg-card px-4 py-3 font-body text-sm outline-none focus:border-primary disabled:opacity-70" />
-                  {cliente.nomeProtegido && <p className="font-body text-xs text-muted-foreground">Este nome contém seu código de colaborador e será mantido.</p>}
-                  <label className="block font-body text-xs text-muted-foreground">Telefone</label>
-                  <input value={novoTel} onChange={(e) => setNovoTel(e.target.value)}
-                    placeholder="Telefone com DDD" inputMode="tel" autoComplete="tel"
-                    className="w-full rounded-xl border border-input bg-card px-4 py-3 font-body text-sm outline-none focus:border-primary" />
-                  <button onClick={salvarCadastro} disabled={loading}
-                    className="w-full rounded-full bg-primary px-4 py-2.5 font-body text-xs font-semibold uppercase tracking-wider text-primary-foreground disabled:opacity-60">
-                    {loading ? "Salvando..." : "Confirmar e salvar dados"}
-                  </button>
-                </div>
-              )}
+              <p className="font-body text-sm text-foreground">Confira o nome e o telefone preenchidos acima. Você pode corrigi-los antes de continuar.</p>
+              <button onClick={salvarCadastro} disabled={loading}
+                className="w-full rounded-full bg-primary px-4 py-2.5 font-body text-xs font-semibold uppercase tracking-wider text-primary-foreground disabled:opacity-60">
+                {loading ? "Salvando..." : "Confirmar e salvar dados"}
+              </button>
             </div>
           )}
           {cliente && telOk && (
