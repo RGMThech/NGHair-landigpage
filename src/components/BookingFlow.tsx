@@ -301,7 +301,7 @@ export default function BookingFlow({ unidade, nomeUnidade, fallbackUrl }: { uni
           )}
           {naoEncontrado && !cliente && (
             <div className="rounded-xl border border-border bg-muted/50 p-4 space-y-3">
-              <p className="font-body text-sm text-foreground">Primeira vez no salão? Preencha acima seu nome completo e telefone com DDD e crie seu cadastro.</p>
+              <p className="font-body text-sm text-foreground">Primeira vez no salão? Preencha acima seu nome completo, telefone com DDD e, se quiser, seu e-mail. Depois crie seu cadastro.</p>
               <button onClick={criarCadastro} disabled={loading}
                 className="w-full rounded-full bg-primary px-4 py-2.5 font-body text-xs font-semibold uppercase tracking-wider text-primary-foreground disabled:opacity-60">
                 {loading ? "Criando..." : "Criar meu cadastro"}
@@ -336,7 +336,7 @@ export default function BookingFlow({ unidade, nomeUnidade, fallbackUrl }: { uni
                  <Check className="h-4 w-4 text-primary" /> {telAtualizado ? "Cadastro atualizado no salão:" : "Dados confirmados:"}
               </p>
               <p className="font-body text-sm text-foreground"><strong>{cliente.nome}</strong></p>
-              <p className="font-body text-sm text-muted-foreground">{cliente.telefone || "—"}</p>
+              <p className="font-body text-sm text-muted-foreground">{cliente.telefone || "—"}{cliente.email ? ` · ${cliente.email}` : ""}</p>
             </div>
           )}
           {erro && <p className="font-body text-sm text-destructive">{erro}</p>}
