@@ -24,13 +24,27 @@ const list = (d: any) => (Array.isArray(d) ? d : d?.data ?? []);
 const normRe = (s: string) => s.replace(/\D/g, "").replace(/^0+/, "") || "0";
 const ymd = (d: Date) => d.toISOString().slice(0, 10);
 
-async function clientesDoRe(re: string, estab: string) {
-  const alvo = normRe(re);
-  const found = list(await trinks(`/clientes?nome=${encodeURIComponent(alvo)}&pageSize=50`, estab));
-  return found.filter((c: any) => {
-    const m = String(c.nome ?? "").match(/\|\s*(\d+)\s*\|/);
-    return m && normRe(m[1]) === alvo;
-  }).map((c: any) => Number(c.id));
+const normNome = (s: string) =>
+  String(s ?? "").replace(/\|[^|]*\|.*$/, "").normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase().replace(/\s+/g, " ").trim();
+
+// Localiza a colaboradora pelo RE (código no nome) OU pelo nome completo do perfil (igual, sem acentos).
+async function clientesDoRe(re: string, estab: string, nome?: string | null) {
+  const ids = new Set<number>();
+  const alvo = normRe(re ?? "");
+  if (alvo !== "0") {
+    const found = list(await trinks(`/clientes?nome=${encodeURIComponent(alvo)}&pageSize=50`, estab));
+    for (const c of found) {
+      const m = String(c.nome ?? "").match(/\|\s*(\d+)\s*\|/);
+      if (m && normRe(m[1]) === alvo) ids.add(Number(c.id));
+    }
+  }
+  const n = normNome(nome ?? "");
+  if (n.length >= 5 && n.includes(" ")) {
+    const found = list(await trinks(`/clientes?nome=${encodeURIComponent(String(nome).trim())}&pageSize=50`, estab));
+    for (const c of found) if (normNome(c.nome) === n) ids.add(Number(c.id));
+  }
+  return [...ids];
 }
 
 async function agendamentosDe(clienteId: number, estab: string, ini: string, fim: string) {
@@ -55,8 +69,8 @@ Deno.serve(async (req) => {
     const { data: u, error } = await userClient.auth.getUser();
     if (error || !u.user) return json({ error: "sessao_invalida" }, 401);
     const admin = createClient(url, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
-    const { data: profile } = await admin.from("eurofarma_profiles").select("re").eq("user_id", u.user.id).maybeSingle();
-    if (!profile?.re) return json({ error: "sem_re" }, 403);
+    const { data: profile } = await admin.from("eurofarma_profiles").select("re, full_name").eq("user_id", u.user.id).maybeSingle();
+    if (!profile?.re && !profile?.full_name) return json({ error: "sem_re" }, 403);
 
     const body = await req.json().catch(() => ({}));
     const hoje = new Date(Date.now() - 3 * 3600_000); // horário de São Paulo
@@ -68,7 +82,7 @@ Deno.serve(async (req) => {
       const un = UNIDADES[body.unidade];
       const agId = Number(body.agendamentoId);
       if (!un || !agId) return json({ error: "dados_invalidos" }, 400);
-      const ids = await clientesDoRe(profile.re, un.id);
+      const ids = await clientesDoRe(profile.re, un.id, profile.full_name);
       let pertence = false;
       for (const id of ids) {
         if ((await agendamentosDe(id, un.id, ini, fim)).some((a) => a.id === agId)) { pertence = true; break; }
@@ -84,7 +98,7 @@ Deno.serve(async (req) => {
     const agendamentos: any[] = [];
     for (const [slug, un] of Object.entries(UNIDADES)) {
       try {
-        for (const id of await clientesDoRe(profile.re, un.id)) {
+        for (const id of await clientesDoRe(profile.re, un.id, profile.full_name)) {
           for (const a of await agendamentosDe(id, un.id, ini, fim)) {
             const st = String(a?.status?.nome ?? "");
             if (/cancel|finaliz|faltou/i.test(st)) continue;
