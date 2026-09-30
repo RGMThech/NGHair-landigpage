@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useEurofarmaAuth, eurofarmaLogout } from "@/hooks/useEurofarmaAuth";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { LogOut, Table as TableIcon, History, User, BarChart3 } from "lucide-react";
+import { LogOut, Table as TableIcon, History, User, BarChart3, CalendarClock } from "lucide-react";
 
 const EurofarmaPortal = () => {
   const navigate = useNavigate();
@@ -99,6 +99,17 @@ const EurofarmaPortal = () => {
             <h2 className="font-display text-2xl mb-2">Serviços utilizados</h2>
             <p className="text-sm text-muted-foreground">
               Consulte por período os serviços que você utilizou.
+            </p>
+          </Link>
+
+          <Link
+            to="/empresas/eurofarma/agendamentos"
+            className="group border border-border rounded-2xl p-8 bg-card hover:border-primary transition-all"
+          >
+            <CalendarClock className="h-8 w-8 text-primary mb-4" />
+            <h2 className="font-display text-2xl mb-2">Meus agendamentos</h2>
+            <p className="text-sm text-muted-foreground">
+              Veja seus próximos horários marcados e cancele se precisar.
             </p>
           </Link>
 

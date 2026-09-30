@@ -16,6 +16,7 @@ import EurofarmaForgotPassword from "./pages/empresas/EurofarmaForgotPassword.ts
 import EurofarmaResetPassword from "./pages/empresas/EurofarmaResetPassword.tsx";
 import EurofarmaProfile from "./pages/empresas/EurofarmaProfile.tsx";
 import EurofarmaDashboard from "./pages/empresas/EurofarmaDashboard.tsx";
+import EurofarmaAgendamentos from "./pages/empresas/EurofarmaAgendamentos.tsx";
 import Convenios from "./pages/empresas/Convenios.tsx";
 import VerticeLogin from "./pages/empresas/VerticeLogin.tsx";
 import VerticePortal from "./pages/empresas/VerticePortal.tsx";
@@ -51,6 +52,7 @@ const AppRoutes = () => {
       <Route path="/empresas/eurofarma/precos" element={<EurofarmaPrices />} />
       <Route path="/empresas/eurofarma/historico" element={<EurofarmaHistory />} />
       <Route path="/empresas/eurofarma/dashboard" element={<EurofarmaDashboard />} />
+      <Route path="/empresas/eurofarma/agendamentos" element={<EurofarmaAgendamentos />} />
       <Route path="/empresas/convenios" element={<Convenios />} />
       <Route path="/empresas/vertice" element={<VerticeLogin />} />
       <Route path="/empresas/vertice/portal" element={<VerticePortal />} />
