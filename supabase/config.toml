@@ -9,3 +9,5 @@ project_id = "uwcjtomxzlmqsffjqxlg"
     verify_jwt = false
   [functions.trinks-booking]
     verify_jwt = false
+  [functions.eurofarma-agendamentos]
+    verify_jwt = false
