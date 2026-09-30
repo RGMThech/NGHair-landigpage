@@ -1,0 +1,109 @@
+// Agendamentos futuros da colaboradora Eurofarma logada (localizada no Trinks pelo RE no nome).
+// Nunca devolve valores ao navegador.
+import { createClient } from "npm:@supabase/supabase-js@2.95.0";
+import { corsHeaders } from "npm:@supabase/supabase-js@2.95.0/cors";
+
+const API = "https://api.trinks.com/v1";
+const UNIDADES: Record<string, { id: string; nome: string }> = {
+  "campo-belo": { id: "20181", nome: "Campo Belo" },
+  brooklin: { id: "281029", nome: "Brooklin" },
+};
+const json = (b: unknown, s = 200) =>
+  new Response(JSON.stringify(b), { status: s, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+
+async function trinks(path: string, estab: string, init: RequestInit = {}) {
+  const r = await fetch(`${API}${path}`, {
+    ...init,
+    headers: { "X-Api-Key": Deno.env.get("TRINKS_API_KEY")!, estabelecimentoId: estab, "Content-Type": "application/json" },
+  });
+  const t = await r.text();
+  if (!r.ok) { console.error("trinks", path, r.status, t.slice(0, 300)); throw new Error(`trinks_${r.status}`); }
+  return t ? JSON.parse(t) : {};
+}
+const list = (d: any) => (Array.isArray(d) ? d : d?.data ?? []);
+const normRe = (s: string) => s.replace(/\D/g, "").replace(/^0+/, "") || "0";
+const ymd = (d: Date) => d.toISOString().slice(0, 10);
+
+async function clientesDoRe(re: string, estab: string) {
+  const alvo = normRe(re);
+  const found = list(await trinks(`/clientes?nome=${encodeURIComponent(alvo)}&pageSize=50`, estab));
+  return found.filter((c: any) => {
+    const m = String(c.nome ?? "").match(/\|\s*(\d+)\s*\|/);
+    return m && normRe(m[1]) === alvo;
+  }).map((c: any) => Number(c.id));
+}
+
+async function agendamentosDe(clienteId: number, estab: string, ini: string, fim: string) {
+  const out: any[] = [];
+  for (let page = 1; page <= 5; page++) {
+    const d = await trinks(`/agendamentos?clienteId=${clienteId}&dataInicio=${ini}&dataFim=${fim}&pageSize=50&page=${page}`, estab);
+    out.push(...list(d));
+    if (!d?.totalPages || page >= d.totalPages) break;
+  }
+  return out.filter((a) => a?.cliente?.id === clienteId);
+}
+
+Deno.serve(async (req) => {
+  if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+  try {
+    const token = (req.headers.get("Authorization") ?? "").replace(/^Bearer\s+/i, "");
+    if (!token) return json({ error: "nao_autenticado" }, 401);
+    const url = Deno.env.get("SUPABASE_URL")!;
+    const userClient = createClient(url, Deno.env.get("SUPABASE_ANON_KEY")!, {
+      global: { headers: { Authorization: `Bearer ${token}` } },
+    });
+    const { data: u, error } = await userClient.auth.getUser();
+    if (error || !u.user) return json({ error: "sessao_invalida" }, 401);
+    const admin = createClient(url, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+    const { data: profile } = await admin.from("eurofarma_profiles").select("re").eq("user_id", u.user.id).maybeSingle();
+    if (!profile?.re) return json({ error: "sem_re" }, 403);
+
+    const body = await req.json().catch(() => ({}));
+    const hoje = new Date(Date.now() - 3 * 3600_000); // horário de São Paulo
+    const fimD = new Date(hoje); fimD.setMonth(fimD.getMonth() + 2);
+    const ini = ymd(hoje), fim = ymd(fimD);
+    const agoraSP = hoje.toISOString().slice(0, 16);
+
+    if (body.action === "cancelar") {
+      const un = UNIDADES[body.unidade];
+      const agId = Number(body.agendamentoId);
+      if (!un || !agId) return json({ error: "dados_invalidos" }, 400);
+      const ids = await clientesDoRe(profile.re, un.id);
+      let pertence = false;
+      for (const id of ids) {
+        if ((await agendamentosDe(id, un.id, ini, fim)).some((a) => a.id === agId)) { pertence = true; break; }
+      }
+      if (!pertence) return json({ error: "nao_encontrado" }, 404);
+      await trinks(`/agendamentos/${agId}/status/cancelado`, un.id, {
+        method: "PATCH",
+        body: JSON.stringify({ quemCancelou: 2, motivo: "Cancelado pela cliente no Portal Eurofarma" }),
+      });
+      return json({ ok: true });
+    }
+
+    const agendamentos: any[] = [];
+    for (const [slug, un] of Object.entries(UNIDADES)) {
+      try {
+        for (const id of await clientesDoRe(profile.re, un.id)) {
+          for (const a of await agendamentosDe(id, un.id, ini, fim)) {
+            const st = String(a?.status?.nome ?? "");
+            if (/cancel|finaliz|faltou/i.test(st)) continue;
+            if (String(a.dataHoraInicio).slice(0, 16) < agoraSP) continue;
+            agendamentos.push({
+              id: a.id, unidade: slug, unidadeNome: un.nome, status: st,
+              servico: a?.servico?.nome ?? "", profissional: a?.profissional?.nome ?? "",
+              dataHoraInicio: a.dataHoraInicio, duracao: a.duracaoEmMinutos ?? null,
+            });
+          }
+        }
+      } catch (e) {
+        console.error("unidade indisponivel", slug, (e as Error).message);
+      }
+    }
+    agendamentos.sort((a, b) => String(a.dataHoraInicio).localeCompare(String(b.dataHoraInicio)));
+    return json({ agendamentos, ate: fim });
+  } catch (e) {
+    console.error(e);
+    return json({ error: (e as Error).message || "erro" }, 500);
+  }
+});
