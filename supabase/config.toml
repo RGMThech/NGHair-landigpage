@@ -11,3 +11,5 @@ project_id = "uwcjtomxzlmqsffjqxlg"
     verify_jwt = false
   [functions.eurofarma-agendamentos]
     verify_jwt = false
+  [functions.cliente-area]
+    verify_jwt = false
