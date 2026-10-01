@@ -348,11 +348,10 @@ export default function BookingFlow({ unidade, nomeUnidade, fallbackUrl }: { uni
                     const fora = d.getMonth() !== mes.getMonth();
                     const habil = !fora && diaHabil(d);
                     const sel = data === iso(d);
-                    const conferindo = loadingDatas && !fora;
                     return (
-                      <button key={iso(d)} disabled={!habil || conferindo} onClick={() => escolherData(iso(d))}
+                      <button key={iso(d)} disabled={!habil || loading} onClick={() => escolherData(iso(d))}
                         aria-label={d.toLocaleDateString("pt-BR")}
-                        className={`h-10 rounded-lg font-body text-sm transition ${sel ? "bg-primary text-primary-foreground" : habil ? "border border-border bg-card hover:border-primary hover:text-primary" : "text-muted-foreground/40"} ${conferindo ? "animate-pulse cursor-wait" : ""}`}>
+                        className={`h-10 rounded-lg font-body text-sm transition ${sel ? "bg-primary text-primary-foreground" : habil ? "border border-border bg-card hover:border-primary hover:text-primary" : "text-muted-foreground/40"}`}>
                         {d.getDate()}
                       </button>
                     );
