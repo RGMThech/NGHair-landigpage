@@ -377,11 +377,8 @@ export default function BookingFlow({ unidade, nomeUnidade, fallbackUrl }: { uni
                     return (
                       <button key={iso(d)} disabled={!habil || conferindo} onClick={() => escolherData(iso(d))}
                         aria-label={d.toLocaleDateString("pt-BR")}
-                        className={`relative h-10 rounded-lg font-body text-sm transition ${sel ? "bg-primary text-primary-foreground" : habil ? "border border-border bg-card hover:border-primary hover:text-primary" : "text-muted-foreground/40"} ${conferindo ? "animate-pulse cursor-wait" : ""}`}>
+                        className={`h-10 rounded-lg font-body text-sm transition ${sel ? "bg-primary text-primary-foreground" : habil ? "border border-border bg-card hover:border-primary hover:text-primary" : "text-muted-foreground/40"} ${conferindo ? "animate-pulse cursor-wait" : ""}`}>
                         {d.getDate()}
-                        {conferindo && !habil && (
-                          <Loader2 className="absolute inset-0 m-auto h-3 w-3 animate-spin text-muted-foreground/50" />
-                        )}
                       </button>
                     );
                   })}
