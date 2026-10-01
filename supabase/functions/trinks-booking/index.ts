@@ -101,25 +101,47 @@ Deno.serve(async (req) => {
         const agoraSp = new Date(new Date().toLocaleString("en-US", { timeZone: "America/Sao_Paulo" }));
         const hojeSp = `${agoraSp.getFullYear()}-${String(agoraSp.getMonth() + 1).padStart(2, "0")}-${String(agoraSp.getDate()).padStart(2, "0")}`;
         const limiteHoje = agoraSp.getHours() * 60 + agoraSp.getMinutes() - 5;
-        const datas: string[] = [];
+        // Uma chamada por dia (não há endpoint por período no Trinks). Consultas em
+        // lotes paralelos para respeitar o limite de 60 req/min sem travar o calendário.
+        const dias: string[] = [];
         for (let offset = 0; offset < 30; offset += 1) {
           const atual = new Date(primeiraData);
           atual.setUTCDate(primeiraData.getUTCDate() + offset);
-          const data = atual.toISOString().slice(0, 10);
-          const q = new URLSearchParams({ servicoId: String(servicoId) });
-          if (profissionalId) q.set("profissionalId", String(profissionalId));
-          const resposta = await trinks(`/agendamentos/profissionais/${data}?${q}`, estab);
-          const disponivel = list(resposta).some((p: any) => {
-            if (!profissionalId && idsPermitidos.size > 0 && !idsPermitidos.has(Number(p.id))) return false;
-            return (p.horariosVagos ?? p.horarios ?? []).some((hora: unknown) => {
-              if (data !== hojeSp) return true;
-              const [h, m] = String(hora).slice(0, 5).split(":").map(Number);
-              return h * 60 + m > limiteHoje;
-            });
-          });
-          if (disponivel) datas.push(data);
+          dias.push(atual.toISOString().slice(0, 10));
         }
-        datasCache.set(cacheKey, { expiraEm: Date.now() + 120_000, datas });
+        const LOTE = 6;
+        const livro = new Map<string, boolean>();
+        let erros = 0;
+        for (let i = 0; i < dias.length; i += LOTE) {
+          const lote = dias.slice(i, i + LOTE);
+          const resultados = await Promise.all(lote.map(async (data) => {
+            try {
+              const q = new URLSearchParams({ servicoId: String(servicoId) });
+              if (profissionalId) q.set("profissionalId", String(profissionalId));
+              const resposta = await trinks(`/agendamentos/profissionais/${data}?${q}`, estab);
+              const disponivel = list(resposta).some((p: any) => {
+                if (!profissionalId && idsPermitidos.size > 0 && !idsPermitidos.has(Number(p.id))) return false;
+                return (p.horariosVagos ?? p.horarios ?? []).some((hora: unknown) => {
+                  if (data !== hojeSp) return true;
+                  const [h, m] = String(hora).slice(0, 5).split(":").map(Number);
+                  return h * 60 + m > limiteHoje;
+                });
+              });
+              return [data, disponivel] as const;
+            } catch {
+              // Dia com falha (ex.: 429) fica fora da lista: é melhor um dia desabilitado
+              // temporariamente do que um dia clicável sem vaga de verdade.
+              erros += 1;
+              return null;
+            }
+          }));
+          for (const r of resultados) if (r) livro.set(r[0], r[1]);
+        }
+        // Maioria dos dias falhou (limite da API): a consulta não é confiável — o
+        // navegador mantém todos os dias clicáveis e a checagem real ocorre ao clicar.
+        if (erros > 15) return json({ error: "consulta_indisponivel" });
+        const datas = dias.filter((data) => livro.get(data));
+        datasCache.set(cacheKey, { expiraEm: Date.now() + 300_000, datas });
         return json({ datas });
       }
       case "buscarCliente": {

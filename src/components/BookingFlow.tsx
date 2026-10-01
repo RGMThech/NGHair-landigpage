@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { z } from "zod";
 import { ArrowLeft, Check, Clock, Loader2, Scissors, User } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -40,7 +40,7 @@ export default function BookingFlow({ unidade, nomeUnidade, fallbackUrl }: { uni
   const [servicos, setServicos] = useState<Servico[]>([]);
   const [profs, setProfs] = useState<Prof[]>([]);
   const [horarios, setHorarios] = useState<Horario[]>([]);
-  const [datasDisponiveis, setDatasDisponiveis] = useState<Set<string>>(new Set());
+  const [datasDisponiveis, setDatasDisponiveis] = useState<Set<string> | null>(null); // null = ainda consultando / consulta falhou
   const [loadingDatas, setLoadingDatas] = useState(false);
   const [servico, setServico] = useState<Servico | null>(null);
   const [prof, setProf] = useState<Prof | null>(null); // null = sem preferência
@@ -50,8 +50,8 @@ export default function BookingFlow({ unidade, nomeUnidade, fallbackUrl }: { uni
   const [clientes, setClientes] = useState<Cliente[] | null>(null);
   const [naoEncontrado, setNaoEncontrado] = useState(false);
   const [cliente, setCliente] = useState<Cliente | null>(null);
-  const [telOk, setTelOk] = useState(false);
   const [telAtualizado, setTelAtualizado] = useState(false);
+  const nomeRef = useRef<HTMLInputElement>(null);
   const hoje = useMemo(hojeEmSaoPaulo, []);
   const limiteAgendamento = useMemo(() => {
     const d = new Date(hoje);
@@ -75,7 +75,7 @@ export default function BookingFlow({ unidade, nomeUnidade, fallbackUrl }: { uni
       label: mes.toLocaleDateString("pt-BR", { month: "long", year: "numeric" }),
     };
   }), [hoje]);
-  const diaHabil = (d: Date) => d >= hoje && d <= limiteAgendamento && datasDisponiveis.has(iso(d));
+  const diaHabil = (d: Date) => d >= hoje && d <= limiteAgendamento && (!datasDisponiveis || datasDisponiveis.has(iso(d)));
   const [aberta, setAberta] = useState<string | null>(null);
   const [erro, setErro] = useState("");
   const [feito, setFeito] = useState(false);
@@ -97,7 +97,7 @@ export default function BookingFlow({ unidade, nomeUnidade, fallbackUrl }: { uni
     if (step !== 2 || !servico) return;
     let ativo = true;
     setLoadingDatas(true);
-    setDatasDisponiveis(new Set());
+    setDatasDisponiveis(null);
     call({
       action: "datasDisponiveis",
       unidade,
@@ -108,7 +108,9 @@ export default function BookingFlow({ unidade, nomeUnidade, fallbackUrl }: { uni
     }).then((resposta) => {
       if (ativo) setDatasDisponiveis(new Set(resposta.datas ?? []));
     }).catch(() => {
-      if (ativo) setErro("Não conseguimos consultar os dias disponíveis agora. Tente novamente.");
+      // Sem consulta, todos os dias seguem clicáveis: a checagem real
+      // acontece ao escolher o dia, na consulta de horários.
+      if (ativo) setDatasDisponiveis(null);
     }).finally(() => {
       if (ativo) setLoadingDatas(false);
     });
@@ -151,7 +153,7 @@ export default function BookingFlow({ unidade, nomeUnidade, fallbackUrl }: { uni
   const buscar = async () => {
     const r = schema.safeParse(form);
     if (!r.success) return setErro(r.error.issues[0].message);
-    setLoading(true); setErro(""); setCliente(null); setClientes(null); setTelOk(false); setTelAtualizado(false);
+    setLoading(true); setErro(""); setCliente(null); setClientes(null); setTelAtualizado(false);
     try {
       const d = await call({ action: "buscarCliente", unidade, nome: form.nome.trim(), telefone: form.telefone.trim(), email: form.email.trim() });
       const list: Cliente[] = d.clientes ?? [];
@@ -163,7 +165,7 @@ export default function BookingFlow({ unidade, nomeUnidade, fallbackUrl }: { uni
     finally { setLoading(false); }
   };
   const selecionarCliente = async (resultado: Cliente) => {
-    setLoading(true); setErro(""); setTelOk(false); setTelAtualizado(false);
+    setLoading(true); setErro(""); setTelAtualizado(false);
     try {
       const d = await call({ action: "obterCliente", unidade, clienteId: resultado.id });
       if (!d?.cliente) throw new Error("cadastro_nao_encontrado");
@@ -187,7 +189,7 @@ export default function BookingFlow({ unidade, nomeUnidade, fallbackUrl }: { uni
       if (d?.error === "email_ja_existe") { setNaoEncontrado(false); return setErro("Já existe um cadastro com este e-mail. Busque apenas pelo e-mail."); }
       if (!d?.ok || !d.cliente) throw new Error(d?.error || "falha");
       setCliente(d.cliente); setClientes([d.cliente]); setNaoEncontrado(false);
-      setTelOk(true); setTelAtualizado(true);
+      setTelAtualizado(true);
       setForm({ nome: d.cliente.nome, telefone: d.cliente.telefone, email: d.cliente.email || email });
     } catch (e) {
       const mensagem = (e as Error).message;
@@ -214,7 +216,7 @@ export default function BookingFlow({ unidade, nomeUnidade, fallbackUrl }: { uni
     try {
       const d = await call({ action: "atualizarCliente", unidade, clienteId: cliente?.id, nome, telefone: tel, email });
       if (!d?.ok || !d.cliente) throw new Error(d?.error || "falha");
-      setCliente(d.cliente); setTelAtualizado(true); setTelOk(true);
+      setCliente(d.cliente); setTelAtualizado(true);
       setForm({ nome: d.cliente.nome, telefone: d.cliente.telefone || form.telefone, email: d.cliente.email || "" });
       if (d.aviso === "dados_bloqueados") setErro("Telefone salvo. O nome/e-mail deste cadastro só pode ser alterado pela própria cliente no app Trinks — mantivemos os dados atuais e você já pode confirmar o agendamento.");
     } catch (e) {
@@ -225,13 +227,18 @@ export default function BookingFlow({ unidade, nomeUnidade, fallbackUrl }: { uni
   };
   const confirmar = async () => {
     if (!cliente) return setErro("Selecione seu cadastro para continuar.");
-    if (!telOk) return setErro("Confirme ou atualize seu telefone para continuar.");
     setLoading(true); setErro("");
     try {
       await call({ action: "agendar", unidade, clienteId: cliente.id, servicoId: servico!.id, profissionalId: slot!.profissionalId, data, hora: slot!.hora, duracao: servico!.duracao });
       reportConversion(); setFeito(true);
     } catch { setErro("Não conseguimos confirmar agora. Tente outro horário ou agende pelo link abaixo."); }
     finally { setLoading(false); }
+  };
+
+  const novaBusca = () => {
+    setClientes(null); setCliente(null); setTelAtualizado(false); setNaoEncontrado(false); setErro("");
+    setForm({ nome: "", telefone: "", email: "" });
+    setTimeout(() => nomeRef.current?.focus(), 0);
   };
 
   const card = "text-left bg-card border border-border rounded-2xl p-5 transition-all hover:border-primary hover:-translate-y-0.5";
@@ -320,7 +327,9 @@ export default function BookingFlow({ unidade, nomeUnidade, fallbackUrl }: { uni
       {step === 2 && (
         <div>
           <p className="mb-4 text-center font-body text-sm text-muted-foreground">
-            {loadingDatas ? "Consultando a agenda do profissional..." : "Escolha uma data disponível nos próximos 30 dias."}
+            {loadingDatas
+              ? "Consultando a agenda do profissional — os dias sem vaga vão sendo escurecidos..."
+              : "Escolha uma data disponível nos próximos 30 dias."}
           </p>
           <div className="mx-auto mb-6 grid max-w-3xl gap-6 md:grid-cols-2">
             {mesesExibidos.map(({ mes, semanas, label }) => (
@@ -334,7 +343,7 @@ export default function BookingFlow({ unidade, nomeUnidade, fallbackUrl }: { uni
                 <div className="grid grid-cols-7 gap-1">
                   {semanas.flat().map((d) => {
                     const fora = d.getMonth() !== mes.getMonth();
-                    const habil = !loadingDatas && !fora && diaHabil(d);
+                    const habil = !fora && diaHabil(d);
                     const sel = data === iso(d);
                     return (
                       <button key={iso(d)} disabled={!habil} onClick={() => escolherData(iso(d))}
@@ -371,10 +380,10 @@ export default function BookingFlow({ unidade, nomeUnidade, fallbackUrl }: { uni
           {(["nome", "telefone", "email"] as const).map((k) => (
             <label key={k} className="block space-y-1">
               {cliente && <span className="font-body text-xs text-muted-foreground">{{ nome: "Nome", telefone: "Telefone", email: "E-mail" }[k]}</span>}
-              <input value={form[k]} onChange={(e) => {
+              <input ref={k === "nome" ? nomeRef : undefined} value={form[k]} onChange={(e) => {
                 setForm({ ...form, [k]: e.target.value });
-                if (cliente) { setTelOk(false); setTelAtualizado(false); }
-                else { setClientes(null); }
+                if (cliente) setTelAtualizado(false);
+                else setClientes(null);
               }}
                 disabled={k === "nome" && cliente?.nomeProtegido}
                 placeholder={{ nome: "Nome", telefone: "Telefone com DDD", email: "E-mail (opcional)" }[k]}
@@ -401,7 +410,13 @@ export default function BookingFlow({ unidade, nomeUnidade, fallbackUrl }: { uni
           )}
           {!!clientes?.length && (
             <div className="space-y-2">
-              <p className="font-body text-xs uppercase tracking-widest text-muted-foreground">Confirme que é você</p>
+              <p className="font-body text-xs uppercase tracking-widest text-muted-foreground">
+                {cliente
+                  ? "Cadastro selecionado"
+                  : clientes.length > 1
+                    ? `Encontramos ${clientes.length} cadastros — selecione o seu`
+                    : "Encontramos 1 cadastro — selecione para continuar"}
+              </p>
               {clientes.map((c) => (
                 <button key={c.id} onClick={() => selecionarCliente(c)}
                   className={`w-full text-left rounded-xl border px-4 py-3 font-body text-sm transition ${cliente?.id === c.id ? "border-primary bg-primary/5" : "border-border bg-card hover:border-primary"}`}>
@@ -409,29 +424,29 @@ export default function BookingFlow({ unidade, nomeUnidade, fallbackUrl }: { uni
                   {c.telefone && <span className="block text-xs text-muted-foreground">{c.telefone}</span>}
                 </button>
               ))}
-              <button onClick={() => { setClientes(null); setCliente(null); setTelOk(false); }} className="font-body text-xs text-muted-foreground underline">Não sou eu, buscar novamente</button>
+              <button onClick={novaBusca} className="font-body text-xs text-muted-foreground underline">Não sou eu, buscar novamente</button>
             </div>
           )}
-          {cliente && !telOk && (
+          {cliente && !telAtualizado && (
             <div className="rounded-xl border border-border bg-muted/50 p-4 space-y-3">
-              <p className="font-body text-sm text-foreground">Confira o nome, o telefone e o e-mail preenchidos acima. Você pode corrigi-los antes de continuar.</p>
+              <p className="font-body text-sm text-foreground">Seus dados estão nos campos acima. Se desejar corrigir algo, salve no cadastro do salão; caso contrário, confirme o agendamento abaixo.</p>
               <button onClick={salvarCadastro} disabled={loading}
                 className="w-full rounded-full bg-accent px-4 py-2.5 font-body text-xs font-semibold uppercase tracking-wider text-accent-foreground shadow-sm transition hover:opacity-90 disabled:opacity-60">
-                {loading ? "Salvando..." : "Confirmar e salvar dados"}
+                {loading ? "Salvando..." : "Atualizar dados"}
               </button>
             </div>
           )}
-          {cliente && telOk && (
+          {cliente && telAtualizado && (
             <div className="rounded-xl border border-primary/40 bg-primary/5 p-4 space-y-1">
               <p className="font-body text-sm text-foreground flex items-center gap-2">
-                 <Check className="h-4 w-4 text-primary" /> {telAtualizado ? "Cadastro atualizado no salão:" : "Dados confirmados:"}
+                 <Check className="h-4 w-4 text-primary" /> Cadastro atualizado no salão:
               </p>
               <p className="font-body text-sm text-foreground"><strong>{cliente.nome}</strong></p>
               <p className="font-body text-sm text-muted-foreground">{cliente.telefone || "—"}{cliente.email ? ` · ${cliente.email}` : ""}</p>
             </div>
           )}
           {erro && <p className="font-body text-sm text-destructive">{erro}</p>}
-          {cliente && telOk && (
+          {cliente && (
             <button onClick={confirmar} disabled={loading}
               className="w-full rounded-full bg-primary px-8 py-3 font-body text-xs font-semibold uppercase tracking-wider text-primary-foreground disabled:opacity-60">
               {loading ? "Confirmando..." : "Confirmar agendamento"}
