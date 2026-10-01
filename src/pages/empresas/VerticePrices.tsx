@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
-import { ArrowLeft } from "lucide-react";
-import { verticePrices } from "@/lib/vertice-prices";
+import { ArrowLeft, Scissors, Sparkles, Hand } from "lucide-react";
+import { verticePriceCategories } from "@/lib/vertice-prices";
 import { useVerticeAuth } from "@/hooks/useVerticeAuth";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
@@ -8,6 +8,12 @@ import {
 
 const fmt = (n: number) =>
   n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+
+const categoryIcons = {
+  Cabelo: Scissors,
+  Unhas: Hand,
+  Estética: Sparkles,
+};
 
 const VerticePrices = () => {
   const { userId, checking } = useVerticeAuth();
@@ -25,32 +31,39 @@ const VerticePrices = () => {
       <section className="container max-w-5xl py-12">
         <h1 className="font-display text-4xl text-foreground mb-3">Tabela de preços</h1>
         <p className="text-muted-foreground mb-8">
-          Valores exclusivos para colaboradores Vértice — 30% de desconto sobre o valor cheio.
+          Consulte os serviços disponíveis e seus respectivos valores.
         </p>
 
-        <div className="border border-border rounded-2xl overflow-hidden bg-card">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Serviço</TableHead>
-                <TableHead className="text-right">Valor cheio</TableHead>
-                <TableHead className="text-right text-primary">Valor Vértice</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {verticePrices.map((item) => (
-                <TableRow key={item.name}>
-                  <TableCell className="font-medium">{item.name}</TableCell>
-                  <TableCell className="text-right text-muted-foreground line-through">
-                    {fmt(item.full)}
-                  </TableCell>
-                  <TableCell className="text-right font-semibold text-primary">
-                    {fmt(item.collaborator)}
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+        <div className="space-y-8">
+          {verticePriceCategories.map((category) => {
+            const Icon = categoryIcons[category.name as keyof typeof categoryIcons];
+            return (
+              <section key={category.name} className="border border-border rounded-lg overflow-hidden bg-card">
+                <div className="flex items-center gap-3 border-b border-border bg-muted/60 px-5 py-4">
+                  <Icon className="h-5 w-5 text-primary" aria-hidden="true" />
+                  <h2 className="font-display text-2xl text-foreground">{category.name}</h2>
+                </div>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Serviço</TableHead>
+                      <TableHead className="text-right">Valor</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {category.items.map((item) => (
+                      <TableRow key={item.name}>
+                        <TableCell className="font-medium">{item.name}</TableCell>
+                        <TableCell className="text-right font-semibold text-foreground">
+                          {fmt(item.value)}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </section>
+            );
+          })}
         </div>
       </section>
     </main>
