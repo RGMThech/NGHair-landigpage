@@ -107,9 +107,21 @@ Deno.serve(async (req) => {
         if (tel.length < 10 || tel.length > 11) return json({ error: "telefone_invalido" });
         if (await buscarPorEmail(email)) return json({ ok: true, jaExistia: true });
         const ddd = tel.slice(0, 2), numero = tel.slice(2);
-        await trinks("/clientes", ESTAB, { method: "POST", body: JSON.stringify({
+        const payload = JSON.stringify({
           nome, email, telefones: [{ ddi: "55", ddd, numero, tipoId: numero.length === 9 ? 3 : 1 }],
-        }) });
+        });
+        // Cadastro feito pela Área do Cliente é criado nos dois salões.
+        await trinks("/clientes", ESTAB, { method: "POST", body: payload });
+        for (const un of Object.values(UNIDADES)) {
+          if (un.id === ESTAB) continue;
+          try {
+            const ja = list(await trinks(`/clientes?email=${encodeURIComponent(email)}&pageSize=5`, un.id))
+              .some((c: any) => clean(c?.email, 150).toLowerCase() === email);
+            if (!ja) await trinks("/clientes", un.id, { method: "POST", body: payload });
+          } catch (e) {
+            console.error("criar cliente na unidade", un.nome, (e as Error).message);
+          }
+        }
         // O Trinks às vezes cria sem devolver o ID: relocaliza pelo e-mail.
         for (let i = 0; i < 3; i++) {
           if (await buscarPorEmail(email)) return json({ ok: true });
