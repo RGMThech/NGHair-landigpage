@@ -40,7 +40,7 @@ const Navbar = () => {
         </a>
 
         {/* Desktop */}
-        <div className="hidden lg:flex items-center gap-5 xl:gap-6">
+        <div className="hidden xl:flex items-center gap-5 xl:gap-6">
           {links.map((link) => (
             <a
               key={link.label}
@@ -106,15 +106,15 @@ const Navbar = () => {
           >
             Agendar
           </Link>
-          <UserMenu />
+          <UserMenu className={scrolled ? "" : "border-cream/80 text-cream"} />
         </div>
 
         {/* Mobile right side */}
-        <div className="lg:hidden flex items-center gap-2">
+        <div className="xl:hidden flex items-center gap-2">
           <CartDrawer
             buttonClassName={`relative inline-flex items-center justify-center h-9 w-9 rounded-full transition ${scrolled ? "text-foreground" : "text-cream"}`}
           />
-          <UserMenu className="px-3 py-1.5" />
+          <UserMenu className={`px-3 py-1.5 ${scrolled ? "" : "border-cream/80 text-cream"}`} />
           <button
             onClick={() => setOpen(!open)}
             className={`transition-colors ${scrolled ? "text-foreground" : "text-cream"}`}
@@ -127,7 +127,7 @@ const Navbar = () => {
 
       {/* Mobile menu */}
       {open && (
-        <div className="lg:hidden absolute top-full left-0 right-0 bg-background/95 backdrop-blur-md border-b border-border p-6 flex flex-col gap-4">
+        <div className="xl:hidden absolute top-full left-0 right-0 bg-background/95 backdrop-blur-md border-b border-border p-6 flex flex-col gap-4">
           {links.map((link) => (
             <a
               key={link.label}
