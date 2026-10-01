@@ -31,16 +31,16 @@ const Navbar = () => {
       }`}
     >
       <div className="container max-w-6xl flex items-center justify-between">
-        <a href="https://nghair.com.br" className="flex items-center transition-transform duration-300 hover:scale-105">
+        <a href="https://nghair.com.br" className="flex shrink-0 items-center transition-transform duration-300 hover:scale-105">
           <img
             src="/logo_nghair.jpeg"
             alt="NGHair"
-            className={`w-auto rounded-md shadow-sm transition-all duration-500 ${scrolled ? "h-14" : "h-20"}`}
+            className={`w-auto max-w-none shrink-0 object-contain rounded-md shadow-sm transition-all duration-500 ${scrolled ? "h-14" : "h-20"}`}
           />
         </a>
 
         {/* Desktop */}
-        <div className="hidden md:flex items-center gap-8">
+        <div className="hidden md:flex items-center gap-4 lg:gap-6 xl:gap-8">
           {links.map((link) => (
             <a
               key={link.label}

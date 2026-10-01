@@ -39,7 +39,7 @@ const ClienteLogin = () => {
     supabase.auth.getUser().then(async ({ data }) => {
       if (!data.user) return;
       const { data: p } = await supabase.from("cliente_profiles").select("id").eq("user_id", data.user.id).maybeSingle();
-      if (p) navigate("/minha-conta/perfil", { replace: true });
+      if (p) navigate("/", { replace: true });
     });
   }, [navigate]);
 
@@ -89,7 +89,7 @@ const ClienteLogin = () => {
     const { error } = await supabase.auth.verifyOtp({ token_hash: r.token_hash, type: "magiclink" });
     setLoading(false);
     if (error) return erro("Erro ao entrar. Tente novamente.");
-    navigate("/minha-conta/perfil", { replace: true });
+    navigate("/", { replace: true });
   };
 
   return (
