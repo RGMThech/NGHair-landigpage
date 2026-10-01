@@ -23,6 +23,13 @@ const schema = z.object({
 }).refine((v) => v.nome.length >= 3 || v.telefone.replace(/\D/g, "").length >= 8 || emailOk(v.email), "Informe ao menos 3 letras do nome, o telefone ou o e-mail");
 
 const iso = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+const hojeEmSaoPaulo = () => {
+  const partes = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/Sao_Paulo", year: "numeric", month: "2-digit", day: "2-digit",
+  }).formatToParts(new Date());
+  const valor = (tipo: string) => Number(partes.find((parte) => parte.type === tipo)?.value ?? 0);
+  return new Date(valor("year"), valor("month") - 1, valor("day"));
+};
 
 const steps = ["Serviço", "Profissional", "Horário", "Seus dados"];
 
@@ -33,6 +40,8 @@ export default function BookingFlow({ unidade, nomeUnidade, fallbackUrl }: { uni
   const [servicos, setServicos] = useState<Servico[]>([]);
   const [profs, setProfs] = useState<Prof[]>([]);
   const [horarios, setHorarios] = useState<Horario[]>([]);
+  const [datasDisponiveis, setDatasDisponiveis] = useState<Set<string>>(new Set());
+  const [loadingDatas, setLoadingDatas] = useState(false);
   const [servico, setServico] = useState<Servico | null>(null);
   const [prof, setProf] = useState<Prof | null>(null); // null = sem preferência
   const [data, setData] = useState<string>("");
@@ -43,7 +52,7 @@ export default function BookingFlow({ unidade, nomeUnidade, fallbackUrl }: { uni
   const [cliente, setCliente] = useState<Cliente | null>(null);
   const [telOk, setTelOk] = useState(false);
   const [telAtualizado, setTelAtualizado] = useState(false);
-  const hoje = useMemo(() => { const d = new Date(); d.setHours(0, 0, 0, 0); return d; }, []);
+  const hoje = useMemo(hojeEmSaoPaulo, []);
   const limiteAgendamento = useMemo(() => {
     const d = new Date(hoje);
     d.setDate(d.getDate() + 29);
@@ -66,7 +75,7 @@ export default function BookingFlow({ unidade, nomeUnidade, fallbackUrl }: { uni
       label: mes.toLocaleDateString("pt-BR", { month: "long", year: "numeric" }),
     };
   }), [hoje]);
-  const diaHabil = (d: Date) => d >= hoje && d <= limiteAgendamento && d.getDay() !== 0 && d.getDay() !== 1;
+  const diaHabil = (d: Date) => d >= hoje && d <= limiteAgendamento && datasDisponiveis.has(iso(d));
   const [aberta, setAberta] = useState<string | null>(null);
   const [erro, setErro] = useState("");
   const [feito, setFeito] = useState(false);
@@ -83,6 +92,28 @@ export default function BookingFlow({ unidade, nomeUnidade, fallbackUrl }: { uni
     run(async () => setServicos((await call({ action: "servicos", unidade })).servicos ?? []));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [unidade]);
+
+  useEffect(() => {
+    if (step !== 2 || !servico) return;
+    let ativo = true;
+    setLoadingDatas(true);
+    setDatasDisponiveis(new Set());
+    call({
+      action: "datasDisponiveis",
+      unidade,
+      servicoId: servico.id,
+      profissionalId: prof?.id,
+      profissionalIds: prof ? [prof.id] : profs.map((p) => p.id),
+      inicio: iso(hoje),
+    }).then((resposta) => {
+      if (ativo) setDatasDisponiveis(new Set(resposta.datas ?? []));
+    }).catch(() => {
+      if (ativo) setErro("Não conseguimos consultar os dias disponíveis agora. Tente novamente.");
+    }).finally(() => {
+      if (ativo) setLoadingDatas(false);
+    });
+    return () => { ativo = false; };
+  }, [step, servico, prof, profs, unidade, hoje]);
 
   const escolherServico = (s: Servico) => {
     setServico(s); setStep(1);
@@ -277,7 +308,9 @@ export default function BookingFlow({ unidade, nomeUnidade, fallbackUrl }: { uni
 
       {step === 2 && (
         <div>
-          <p className="mb-4 text-center font-body text-sm text-muted-foreground">Escolha uma data nos próximos 30 dias.</p>
+          <p className="mb-4 text-center font-body text-sm text-muted-foreground">
+            {loadingDatas ? "Consultando a agenda do profissional..." : "Escolha uma data disponível nos próximos 30 dias."}
+          </p>
           <div className="mx-auto mb-6 grid max-w-3xl gap-6 md:grid-cols-2">
             {mesesExibidos.map(({ mes, semanas, label }) => (
               <div key={iso(mes)} className="min-w-0">
@@ -290,7 +323,7 @@ export default function BookingFlow({ unidade, nomeUnidade, fallbackUrl }: { uni
                 <div className="grid grid-cols-7 gap-1">
                   {semanas.flat().map((d) => {
                     const fora = d.getMonth() !== mes.getMonth();
-                    const habil = !fora && diaHabil(d);
+                    const habil = !loadingDatas && !fora && diaHabil(d);
                     const sel = data === iso(d);
                     return (
                       <button key={iso(d)} disabled={!habil} onClick={() => escolherData(iso(d))}
