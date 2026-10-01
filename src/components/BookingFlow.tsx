@@ -392,7 +392,7 @@ export default function BookingFlow({ unidade, nomeUnidade, fallbackUrl }: { uni
           )}
           {naoEncontrado && !cliente && (
             <div className="rounded-xl border border-border bg-muted/50 p-4 space-y-3">
-              <p className="font-body text-sm text-foreground">Antes de criar, tente localizar novamente usando seu e-mail e/ou telefone com DDD. Se for sua primeira vez no salão, preencha nome completo, telefone e e-mail para criar o cadastro.</p>
+              <p className="font-body text-sm text-foreground">Antes de criar, tente localizar novamente pelo e-mail e/ou telefone com DDD. Para criar o cadastro, informe um nome, um telefone com DDD e um e-mail — se você for de uma empresa parceira, utilize o e-mail da empresa.</p>
               <button onClick={criarCadastro} disabled={loading}
                 className="w-full rounded-full bg-primary px-4 py-2.5 font-body text-xs font-semibold uppercase tracking-wider text-primary-foreground disabled:opacity-60">
                 {loading ? "Criando..." : "Criar meu cadastro"}
