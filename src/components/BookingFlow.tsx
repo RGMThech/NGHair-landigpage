@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useClienteProfile } from "@/hooks/useClienteAuth";
 import { z } from "zod";
 import { ArrowLeft, Check, Clock, Loader2, Scissors, User } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -241,6 +242,32 @@ export default function BookingFlow({ unidade, nomeUnidade, fallbackUrl }: { uni
     setTimeout(() => nomeRef.current?.focus(), 0);
   };
 
+  // Cliente logada na Área do Cliente: identifica o cadastro do Trinks sem passar pela localização.
+  const { profile: perfilCliente } = useClienteProfile();
+  const [modoLogado, setModoLogado] = useState(false);
+  useEffect(() => { setModoLogado(!!perfilCliente); }, [perfilCliente?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    if (step !== 3 || !modoLogado || !perfilCliente || cliente) return;
+    let ativo = true;
+    (async () => {
+      try {
+        let id: number | null = unidade === "campo-belo" ? perfilCliente.trinks_cliente_id : null;
+        if (!id) {
+          const d = await call({ action: "buscarCliente", unidade, email: perfilCliente.email });
+          const lista: Cliente[] = d.clientes ?? [];
+          if (lista.length === 1) id = lista[0].id;
+        }
+        if (!id) throw new Error("sem_cadastro");
+        const d = await call({ action: "obterCliente", unidade, clienteId: id });
+        if (!d?.cliente) throw new Error("sem_cadastro");
+        if (ativo) setCliente(d.cliente);
+      } catch {
+        if (ativo) { setModoLogado(false); setErro("Não localizamos seu cadastro nesta unidade. Informe seus dados abaixo."); }
+      }
+    })();
+    return () => { ativo = false; };
+  }, [step, modoLogado, perfilCliente, cliente, unidade]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const card = "text-left bg-card border border-border rounded-2xl p-5 transition-all hover:border-primary hover:-translate-y-0.5";
 
   if (indisponivel)
@@ -370,7 +397,35 @@ export default function BookingFlow({ unidade, nomeUnidade, fallbackUrl }: { uni
         </div>
       )}
 
-      {step === 3 && slot && (
+      {step === 3 && slot && modoLogado && (
+        <div className="max-w-md space-y-4">
+          <div className="rounded-xl bg-muted/50 p-4 font-body text-sm text-foreground">
+            <strong>{servico?.nome}</strong> com {slot.nome}<br />
+            {new Date(data + "T12:00").toLocaleDateString("pt-BR", { weekday: "long", day: "2-digit", month: "long" })} às {slot.hora}
+          </div>
+          {!cliente ? (
+            <p className="font-body text-sm text-muted-foreground">Carregando seu cadastro...</p>
+          ) : (
+            <div className="rounded-xl border border-primary/40 bg-primary/5 p-4 space-y-1">
+              <p className="font-body text-xs uppercase tracking-widest text-muted-foreground">Agendamento para</p>
+              <p className="font-body text-sm text-foreground"><strong>{cliente.nome}</strong></p>
+              <p className="font-body text-sm text-muted-foreground">{[cliente.telefone, cliente.email].filter(Boolean).join(" · ") || "—"}</p>
+            </div>
+          )}
+          {erro && <p className="font-body text-sm text-destructive">{erro}</p>}
+          {cliente && (
+            <button onClick={confirmar} disabled={loading}
+              className="w-full rounded-full bg-primary px-8 py-3 font-body text-xs font-semibold uppercase tracking-wider text-primary-foreground disabled:opacity-60">
+              {loading ? "Confirmando..." : "Confirmar agendamento"}
+            </button>
+          )}
+          <button onClick={() => { setModoLogado(false); novaBusca(); }} className="font-body text-xs text-muted-foreground underline">
+            Agendar para outra pessoa
+          </button>
+        </div>
+      )}
+
+      {step === 3 && slot && !modoLogado && (
         <div className="max-w-md space-y-4">
           <div className="rounded-xl bg-muted/50 p-4 font-body text-sm text-foreground">
             <strong>{servico?.nome}</strong> com {slot.nome}<br />
