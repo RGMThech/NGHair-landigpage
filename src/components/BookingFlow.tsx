@@ -41,8 +41,6 @@ export default function BookingFlow({ unidade, nomeUnidade, fallbackUrl }: { uni
   const [servicos, setServicos] = useState<Servico[]>([]);
   const [profs, setProfs] = useState<Prof[]>([]);
   const [horarios, setHorarios] = useState<Horario[]>([]);
-  const [datasDisponiveis, setDatasDisponiveis] = useState<Set<string> | null>(null); // null = ainda consultando / consulta falhou
-  const [loadingDatas, setLoadingDatas] = useState(false);
   const [servico, setServico] = useState<Servico | null>(null);
   const [prof, setProf] = useState<Prof | null>(null); // null = sem preferência
   const [data, setData] = useState<string>("");
@@ -76,7 +74,9 @@ export default function BookingFlow({ unidade, nomeUnidade, fallbackUrl }: { uni
       label: mes.toLocaleDateString("pt-BR", { month: "long", year: "numeric" }),
     };
   }), [hoje]);
-  const diaHabil = (d: Date) => d >= hoje && d <= limiteAgendamento && (!datasDisponiveis || datasDisponiveis.has(iso(d)));
+  // Calendário abre de imediato com todos os dias da janela clicáveis; a
+  // disponibilidade real é conferida só ao clicar na data (economiza a API).
+  const diaHabil = (d: Date) => d >= hoje && d <= limiteAgendamento;
   const [aberta, setAberta] = useState<string | null>(null);
   const [erro, setErro] = useState("");
   const [feito, setFeito] = useState(false);
@@ -94,29 +94,6 @@ export default function BookingFlow({ unidade, nomeUnidade, fallbackUrl }: { uni
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [unidade]);
 
-  useEffect(() => {
-    if (step !== 2 || !servico) return;
-    let ativo = true;
-    setLoadingDatas(true);
-    setDatasDisponiveis(null);
-    call({
-      action: "datasDisponiveis",
-      unidade,
-      servicoId: servico.id,
-      profissionalId: prof?.id,
-      profissionalIds: prof ? [prof.id] : profs.map((p) => p.id),
-      inicio: iso(hoje),
-    }).then((resposta) => {
-      if (ativo) setDatasDisponiveis(new Set(resposta.datas ?? []));
-    }).catch(() => {
-      // Sem consulta, todos os dias seguem clicáveis: a checagem real
-      // acontece ao escolher o dia, na consulta de horários.
-      if (ativo) setDatasDisponiveis(null);
-    }).finally(() => {
-      if (ativo) setLoadingDatas(false);
-    });
-    return () => { ativo = false; };
-  }, [step, servico, prof, profs, unidade, hoje]);
 
   const escolherServico = (s: Servico) => {
     setServico(s); setStep(1);
@@ -354,12 +331,10 @@ export default function BookingFlow({ unidade, nomeUnidade, fallbackUrl }: { uni
       {step === 2 && (
         <div>
           <p className="mb-4 text-center font-body text-sm text-muted-foreground flex items-center justify-center gap-2">
-            {loadingDatas && <Loader2 className="h-4 w-4 animate-spin text-primary" />}
-            {loadingDatas
-              ? "Consultando a agenda do profissional — os dias sem vaga vão sendo escurecidos..."
-              : "Escolha uma data disponível nos próximos 30 dias."}
+            {loading && <Loader2 className="h-4 w-4 animate-spin text-primary" />}
+            {loading ? "Conferindo os horários livres deste dia..." : "Escolha uma data nos próximos 30 dias."}
           </p>
-          <div className={`mx-auto mb-6 grid max-w-3xl gap-6 md:grid-cols-2 transition-opacity duration-300 ${loadingDatas ? "opacity-60" : ""}`}>
+          <div className="mx-auto mb-6 grid max-w-3xl gap-6 md:grid-cols-2">
             {mesesExibidos.map(({ mes, semanas, label }) => (
               <div key={iso(mes)} className="min-w-0">
                 <p className="mb-3 text-center font-display text-lg capitalize text-foreground">{label}</p>
@@ -373,11 +348,10 @@ export default function BookingFlow({ unidade, nomeUnidade, fallbackUrl }: { uni
                     const fora = d.getMonth() !== mes.getMonth();
                     const habil = !fora && diaHabil(d);
                     const sel = data === iso(d);
-                    const conferindo = loadingDatas && !fora;
                     return (
-                      <button key={iso(d)} disabled={!habil || conferindo} onClick={() => escolherData(iso(d))}
+                      <button key={iso(d)} disabled={!habil || loading} onClick={() => escolherData(iso(d))}
                         aria-label={d.toLocaleDateString("pt-BR")}
-                        className={`h-10 rounded-lg font-body text-sm transition ${sel ? "bg-primary text-primary-foreground" : habil ? "border border-border bg-card hover:border-primary hover:text-primary" : "text-muted-foreground/40"} ${conferindo ? "animate-pulse cursor-wait" : ""}`}>
+                        className={`h-10 rounded-lg font-body text-sm transition ${sel ? "bg-primary text-primary-foreground" : habil ? "border border-border bg-card hover:border-primary hover:text-primary" : "text-muted-foreground/40"}`}>
                         {d.getDate()}
                       </button>
                     );
