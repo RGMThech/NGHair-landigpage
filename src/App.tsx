@@ -30,6 +30,9 @@ import Loja from "./pages/Loja.tsx";
 import Agendamento from "./pages/Agendamento.tsx";
 import ProductDetail from "./pages/ProductDetail.tsx";
 import { useCartSync } from "./hooks/useCartSync";
+import ClienteLogin from "./pages/cliente/ClienteLogin.tsx";
+import ClientePerfil from "./pages/cliente/ClientePerfil.tsx";
+import ClienteAgendamentos from "./pages/cliente/ClienteAgendamentos.tsx";
 
 const queryClient = new QueryClient();
 
@@ -62,6 +65,9 @@ const AppRoutes = () => {
       <Route path="/empresas/vertice/servicos" element={<VerticeHistory />} />
       <Route path="/unidades/campo-belo" element={<CampoBelo />} />
       <Route path="/unidades/brooklin" element={<Brooklin />} />
+      <Route path="/minha-conta/entrar" element={<ClienteLogin />} />
+      <Route path="/minha-conta/perfil" element={<ClientePerfil />} />
+      <Route path="/minha-conta/agendamentos" element={<ClienteAgendamentos />} />
       {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
       <Route path="*" element={<NotFound />} />
     </Routes>

@@ -5,6 +5,7 @@ import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { CartDrawer } from "@/components/CartDrawer";
+import { UserMenu } from "@/components/UserMenu";
 
 const links = [
   { label: "Início", href: "#" },
@@ -105,6 +106,7 @@ const Navbar = () => {
           >
             Agendar
           </Link>
+          <UserMenu />
         </div>
 
         {/* Mobile right side */}
@@ -112,6 +114,7 @@ const Navbar = () => {
           <CartDrawer
             buttonClassName={`relative inline-flex items-center justify-center h-9 w-9 rounded-full transition ${scrolled ? "text-foreground" : "text-cream"}`}
           />
+          <UserMenu className="px-3 py-1.5" />
           <button
             onClick={() => setOpen(!open)}
             className={`transition-colors ${scrolled ? "text-foreground" : "text-cream"}`}
