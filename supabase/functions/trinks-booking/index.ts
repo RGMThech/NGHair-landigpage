@@ -43,6 +43,7 @@ const formatPhone = (value: string) => {
   return `(${ddd}) ${numero.length === 9 ? numero.slice(0, 5) + "-" + numero.slice(5) : numero.slice(0, 4) + "-" + numero.slice(4)}`;
 };
 const hasEmployeeCode = (name: string) => /\|\s*\d+\s*\|/.test(name);
+const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: cors });
@@ -224,9 +225,28 @@ Deno.serve(async (req) => {
         if (nome.length < 5 || !nome.includes(" ")) return json({ error: "nome_invalido" }, 400);
         if (tel.length < 10 || tel.length > 11) return json({ error: "telefone_invalido" }, 400);
         const ddd = tel.slice(0, 2), numero = tel.slice(2);
-        // Evita duplicar: se o telefone já existe, devolve esse cadastro.
+        // Evita duplicar e recupera uma inclusão anterior que o Trinks concluiu
+        // sem devolver o identificador para o site.
         const existentes = list(await trinks(`/clientes?telefone=${tel}&pageSize=5`, estab));
-        if (existentes.length) return json({ error: "ja_existe" });
+        for (const existente of existentes) {
+          const existenteId = Number(existente?.id);
+          if (!existenteId) continue;
+          const telefonesExistentes = list(await trinks(`/clientes/${existenteId}/telefones`, estab));
+          const telefoneExistente = telefonesExistentes.map(digits).find((item: string) => item.endsWith(tel));
+          if (!telefoneExistente) continue;
+          const cadastroExistente = await trinks(`/clientes/${existenteId}`, estab);
+          const mesmoNome = clean(cadastroExistente?.nome, 100).toLowerCase() === nome.toLowerCase();
+          const emailExistente = clean(cadastroExistente?.email, 150).toLowerCase();
+          const mesmoEmail = !email || !emailExistente || emailExistente === email;
+          if (!mesmoNome || !mesmoEmail) return json({ error: "ja_existe" });
+          return json({ ok: true, recuperado: true, cliente: {
+            id: existenteId,
+            nome: clean(cadastroExistente?.nome, 100),
+            telefone: formatPhone(telefoneExistente),
+            email: clean(cadastroExistente?.email, 150),
+            nomeProtegido: hasEmployeeCode(clean(cadastroExistente?.nome, 100)),
+          } });
+        }
         if (email) {
           const porEmail = list(await trinks(`/clientes?email=${encodeURIComponent(email)}&pageSize=5`, estab));
           if (porEmail.length) return json({ error: "email_ja_existe" });
@@ -235,15 +255,43 @@ Deno.serve(async (req) => {
           nome, email: email || undefined,
           telefones: [{ ddi: "55", ddd, numero, tipoId: numero.length === 9 ? 3 : 1 }],
         }) });
-        const id = Number(novo?.id);
-        if (!id) return json({ error: "nao_criado" });
+        // O POST pode criar o cliente e responder sem corpo/ID. Nesse caso, relocaliza
+        // o registro recém-criado antes de informar falha, evitando cadastro duplicado.
+        let id = Number(novo?.id ?? novo?.clienteId ?? novo?.data?.id ?? (typeof novo === "number" ? novo : 0));
+        for (let tentativa = 0; !id && tentativa < 5; tentativa += 1) {
+          await wait(tentativa === 0 ? 250 : 700);
+          const porTelefone = list(await trinks(`/clientes?telefone=${tel}&pageSize=10`, estab));
+          const localizado = porTelefone.find((c: any) => {
+            const telefones = Array.isArray(c?.telefones) ? c.telefones : [];
+            return telefones.length === 0 || telefones.some((t: any) => digits(t).endsWith(tel));
+          });
+          id = Number(localizado?.id);
+          if (!id && email) {
+            const porEmail = list(await trinks(`/clientes?email=${encodeURIComponent(email)}&pageSize=10`, estab));
+            const peloEmail = porEmail.find((c: any) => clean(c?.email, 150).toLowerCase() === email && clean(c?.nome, 100).toLowerCase() === nome.toLowerCase());
+            id = Number(peloEmail?.id);
+          }
+        }
+        if (!id) return json({ error: "criacao_nao_confirmada" });
         const tels = list(await trinks(`/clientes/${id}/telefones`, estab));
         if (!tels.some((t: any) => digits(t).endsWith(tel))) {
           await trinks(`/clientes/${id}/telefones`, estab, { method: "POST", body: JSON.stringify({
             ddi: "55", ddd, numero, tipoId: numero.length === 9 ? 3 : 1,
           }) });
         }
-        return json({ ok: true, cliente: { id, nome, telefone: formatPhone(tel), email, nomeProtegido: false } });
+        const [confirmado, telefonesConfirmados] = await Promise.all([
+          trinks(`/clientes/${id}`, estab),
+          trinks(`/clientes/${id}/telefones`, estab),
+        ]);
+        const telefoneConfirmado = list(telefonesConfirmados).map(digits).find((item: string) => item.endsWith(tel));
+        if (!telefoneConfirmado) return json({ error: "telefone_nao_confirmado" });
+        return json({ ok: true, cliente: {
+          id,
+          nome: clean(confirmado?.nome, 100) || nome,
+          telefone: formatPhone(telefoneConfirmado),
+          email: clean(confirmado?.email, 150) || email,
+          nomeProtegido: hasEmployeeCode(clean(confirmado?.nome, 100)),
+        } });
       }
       case "agendar": {
         const clienteId = Number(body.clienteId);
