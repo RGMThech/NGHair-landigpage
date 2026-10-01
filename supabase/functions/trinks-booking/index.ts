@@ -235,6 +235,10 @@ Deno.serve(async (req) => {
           const telefoneExistente = telefonesExistentes.map(digits).find((item: string) => item.endsWith(tel));
           if (!telefoneExistente) continue;
           const cadastroExistente = await trinks(`/clientes/${existenteId}`, estab);
+          const mesmoNome = clean(cadastroExistente?.nome, 100).toLowerCase() === nome.toLowerCase();
+          const emailExistente = clean(cadastroExistente?.email, 150).toLowerCase();
+          const mesmoEmail = !email || !emailExistente || emailExistente === email;
+          if (!mesmoNome || !mesmoEmail) return json({ error: "ja_existe" });
           return json({ ok: true, recuperado: true, cliente: {
             id: existenteId,
             nome: clean(cadastroExistente?.nome, 100),
