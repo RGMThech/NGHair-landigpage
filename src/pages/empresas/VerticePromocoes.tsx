@@ -1,25 +1,21 @@
 import { Link } from "react-router-dom";
-import { ArrowLeft, Gift, Sparkles, Calendar } from "lucide-react";
+import { ArrowLeft, Gift, Calendar, Scissors, Droplets } from "lucide-react";
 import { useVerticeAuth } from "@/hooks/useVerticeAuth";
 
 const promotions = [
   {
-    title: "Mês da Beleza Vértice",
-    description: "Em todos os serviços de manicure e pedicure, ganhe 10% de desconto adicional sobre o valor da parceria.",
-    badge: "Válido em setembro",
-    highlight: "Manicure + Pedicure com 40% OFF",
+    title: "Serviços de cabelo",
+    description: "Condição especial para colaboradores Vértice em serviços de cabelo.",
+    badge: "Benefício Vértice",
+    highlight: "20% de desconto",
+    icon: Scissors,
   },
   {
-    title: "Segunda-feira Vértice",
-    description: "Traga um colega da Vértice e ambos ganham escova grátis na segunda-feira.",
-    badge: "Toda segunda",
-    highlight: "Escova em dobro",
-  },
-  {
-    title: "Dia de Cuidar",
-    description: "Pacote completo: corte + escova + manicure por um valor especial exclusivo Vértice.",
-    badge: "Sob agendamento",
-    highlight: "Pacote completo R$ 199",
+    title: "Hidratação",
+    description: "Uma condição especial para celebrar o mês de início da parceria NGHair × Vértice.",
+    badge: "Mês de início da parceria",
+    highlight: "R$ 130,00",
+    icon: Droplets,
   },
 ];
 
@@ -46,14 +42,14 @@ const VerticePromocoes = () => {
           Ofertas exclusivas para colaboradores da parceria NGHair × Vértice.
         </p>
 
-        <div className="grid md:grid-cols-3 gap-6 mb-12">
+        <div className="grid md:grid-cols-2 gap-6 mb-12">
           {promotions.map((promo) => (
             <div
               key={promo.title}
               className="border border-border rounded-2xl p-6 bg-card hover:border-primary transition-all flex flex-col"
             >
               <div className="flex items-center gap-2 mb-3">
-                <Sparkles className="h-4 w-4 text-accent" />
+                <promo.icon className="h-4 w-4 text-accent" />
                 <span className="text-xs uppercase tracking-widest text-muted-foreground">
                   {promo.badge}
                 </span>
