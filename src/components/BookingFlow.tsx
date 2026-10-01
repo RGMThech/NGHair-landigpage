@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { z } from "zod";
-import { ArrowLeft, Check, ChevronLeft, ChevronRight, Clock, Loader2, Scissors, User } from "lucide-react";
+import { ArrowLeft, Check, Clock, Loader2, Scissors, User } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { reportConversion } from "@/lib/gtag";
 
@@ -43,22 +43,30 @@ export default function BookingFlow({ unidade, nomeUnidade, fallbackUrl }: { uni
   const [cliente, setCliente] = useState<Cliente | null>(null);
   const [telOk, setTelOk] = useState(false);
   const [telAtualizado, setTelAtualizado] = useState(false);
-  const [mesOffset, setMesOffset] = useState(0); // 0 = mês corrente, 1 = mês seguinte
   const hoje = useMemo(() => { const d = new Date(); d.setHours(0, 0, 0, 0); return d; }, []);
-  const mesExibido = useMemo(() => { const d = new Date(); d.setDate(1); d.setMonth(d.getMonth() + mesOffset); return d; }, [mesOffset]);
-  const semanas = useMemo(() => {
-    const inicio = new Date(mesExibido);
-    inicio.setDate(1 - mesExibido.getDay());
-    return Array.from({ length: 6 }, (_, w) =>
-      Array.from({ length: 7 }, (_, i) => {
+  const limiteAgendamento = useMemo(() => {
+    const d = new Date(hoje);
+    d.setDate(d.getDate() + 29);
+    return d;
+  }, [hoje]);
+  const mesesExibidos = useMemo(() => [0, 1].map((offset) => {
+    const mes = new Date(hoje.getFullYear(), hoje.getMonth() + offset, 1);
+    const inicio = new Date(mes);
+    inicio.setDate(1 - mes.getDay());
+    const semanas = Array.from({ length: 6 }, (_, semana) =>
+      Array.from({ length: 7 }, (_, dia) => {
         const d = new Date(inicio);
-        d.setDate(inicio.getDate() + w * 7 + i);
+        d.setDate(inicio.getDate() + semana * 7 + dia);
         return d;
       })
     );
-  }, [mesExibido]);
-  const mesLabel = mesExibido.toLocaleDateString("pt-BR", { month: "long", year: "numeric" });
-  const diaHabil = (d: Date) => d >= hoje && d.getDay() !== 0 && d.getDay() !== 1;
+    return {
+      mes,
+      semanas,
+      label: mes.toLocaleDateString("pt-BR", { month: "long", year: "numeric" }),
+    };
+  }), [hoje]);
+  const diaHabil = (d: Date) => d >= hoje && d <= limiteAgendamento && d.getDay() !== 0 && d.getDay() !== 1;
   const [aberta, setAberta] = useState<string | null>(null);
   const [erro, setErro] = useState("");
   const [feito, setFeito] = useState(false);
@@ -90,7 +98,7 @@ export default function BookingFlow({ unidade, nomeUnidade, fallbackUrl }: { uni
       setProfs(executores.sort((a, b) => Number(casa(b.funcao ?? "", s.categoria)) - Number(casa(a.funcao ?? "", s.categoria))));
     });
   };
-  const escolherProf = (p: Prof | null) => { setProf(p); setStep(2); setData(""); setSlot(null); setHorarios([]); setMesOffset(0); };
+  const escolherProf = (p: Prof | null) => { setProf(p); setStep(2); setData(""); setSlot(null); setHorarios([]); };
   const escolherData = (d: string) => {
     setData(d); setSlot(null);
     run(async () => {
@@ -269,36 +277,32 @@ export default function BookingFlow({ unidade, nomeUnidade, fallbackUrl }: { uni
 
       {step === 2 && (
         <div>
-          <div className="max-w-sm mx-auto mb-6">
-            <div className="flex items-center justify-between mb-3">
-              <button onClick={() => setMesOffset(0)} disabled={mesOffset === 0} aria-label="Mês anterior"
-                className="h-9 w-9 rounded-full border border-border bg-card flex items-center justify-center text-muted-foreground transition hover:border-primary hover:text-primary disabled:opacity-30 disabled:hover:border-border disabled:hover:text-muted-foreground">
-                <ChevronLeft className="h-4 w-4" />
-              </button>
-              <p className="font-display text-lg text-foreground capitalize">{mesLabel}</p>
-              <button onClick={() => setMesOffset(1)} disabled={mesOffset === 1} aria-label="Próximo mês"
-                className="h-9 w-9 rounded-full border border-border bg-card flex items-center justify-center text-muted-foreground transition hover:border-primary hover:text-primary disabled:opacity-30 disabled:hover:border-border disabled:hover:text-muted-foreground">
-                <ChevronRight className="h-4 w-4" />
-              </button>
-            </div>
-            <div className="grid grid-cols-7 gap-1 mb-1">
-              {["dom", "seg", "ter", "qua", "qui", "sex", "sáb"].map((l, i) => (
-                <span key={i} className="text-center font-body text-[10px] uppercase tracking-widest text-muted-foreground py-1">{l}</span>
-              ))}
-            </div>
-            <div className="grid grid-cols-7 gap-1">
-              {semanas.flat().map((d, i) => {
-                const fora = d.getMonth() !== mesExibido.getMonth();
-                const habil = !fora && diaHabil(d);
-                const sel = data === iso(d);
-                return (
-                  <button key={i} disabled={!habil} onClick={() => escolherData(iso(d))}
-                    className={`h-10 rounded-lg font-body text-sm transition ${sel ? "bg-primary text-primary-foreground" : habil ? "bg-card border border-border hover:border-primary hover:text-primary" : "text-muted-foreground/40"}`}>
-                    {d.getDate()}
-                  </button>
-                );
-              })}
-            </div>
+          <p className="mb-4 text-center font-body text-sm text-muted-foreground">Escolha uma data nos próximos 30 dias.</p>
+          <div className="mx-auto mb-6 grid max-w-3xl gap-6 md:grid-cols-2">
+            {mesesExibidos.map(({ mes, semanas, label }) => (
+              <div key={iso(mes)} className="min-w-0">
+                <p className="mb-3 text-center font-display text-lg capitalize text-foreground">{label}</p>
+                <div className="mb-1 grid grid-cols-7 gap-1">
+                  {["dom", "seg", "ter", "qua", "qui", "sex", "sáb"].map((l) => (
+                    <span key={l} className="py-1 text-center font-body text-[10px] uppercase tracking-widest text-muted-foreground">{l}</span>
+                  ))}
+                </div>
+                <div className="grid grid-cols-7 gap-1">
+                  {semanas.flat().map((d) => {
+                    const fora = d.getMonth() !== mes.getMonth();
+                    const habil = !fora && diaHabil(d);
+                    const sel = data === iso(d);
+                    return (
+                      <button key={iso(d)} disabled={!habil} onClick={() => escolherData(iso(d))}
+                        aria-label={d.toLocaleDateString("pt-BR")}
+                        className={`h-10 rounded-lg font-body text-sm transition ${sel ? "bg-primary text-primary-foreground" : habil ? "border border-border bg-card hover:border-primary hover:text-primary" : "text-muted-foreground/40"}`}>
+                        {d.getDate()}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
           </div>
           {!loading && data && (horarios.length === 0
             ? <p className="font-body text-sm text-muted-foreground text-center py-6">Sem horários livres neste dia. Escolha outra data.</p>
