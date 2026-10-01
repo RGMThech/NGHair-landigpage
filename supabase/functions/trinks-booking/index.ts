@@ -72,6 +72,42 @@ Deno.serve(async (req) => {
           horarios.push({ profissionalId: p.id, nome: p.apelido || p.nome, hora: String(h).slice(0, 5) });
         return json({ horarios });
       }
+      case "datasDisponiveis": {
+        const inicio = clean(body.inicio, 10);
+        const servicoId = Number(body.servicoId);
+        const profissionalId = body.profissionalId ? Number(body.profissionalId) : null;
+        const idsPermitidos = new Set(
+          (Array.isArray(body.profissionalIds) ? body.profissionalIds : [])
+            .map(Number)
+            .filter((id: number) => Number.isInteger(id) && id > 0),
+        );
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(inicio) || !servicoId) return json({ error: "dados_invalidos" }, 400);
+        const [ano, mes, dia] = inicio.split("-").map(Number);
+        const primeiraData = new Date(Date.UTC(ano, mes - 1, dia));
+        if (Number.isNaN(primeiraData.getTime())) return json({ error: "data_invalida" }, 400);
+        const agoraSp = new Date(new Date().toLocaleString("en-US", { timeZone: "America/Sao_Paulo" }));
+        const hojeSp = `${agoraSp.getFullYear()}-${String(agoraSp.getMonth() + 1).padStart(2, "0")}-${String(agoraSp.getDate()).padStart(2, "0")}`;
+        const limiteHoje = agoraSp.getHours() * 60 + agoraSp.getMinutes() - 5;
+        const datas: string[] = [];
+        for (let offset = 0; offset < 30; offset += 1) {
+          const atual = new Date(primeiraData);
+          atual.setUTCDate(primeiraData.getUTCDate() + offset);
+          const data = atual.toISOString().slice(0, 10);
+          const q = new URLSearchParams({ servicoId: String(servicoId) });
+          if (profissionalId) q.set("profissionalId", String(profissionalId));
+          const resposta = await trinks(`/agendamentos/profissionais/${data}?${q}`, estab);
+          const disponivel = list(resposta).some((p: any) => {
+            if (!profissionalId && idsPermitidos.size > 0 && !idsPermitidos.has(Number(p.id))) return false;
+            return (p.horariosVagos ?? p.horarios ?? []).some((hora: unknown) => {
+              if (data !== hojeSp) return true;
+              const [h, m] = String(hora).slice(0, 5).split(":").map(Number);
+              return h * 60 + m > limiteHoje;
+            });
+          });
+          if (disponivel) datas.push(data);
+        }
+        return json({ datas });
+      }
       case "buscarCliente": {
         const nome = clean(body.nome, 100), tel = clean(body.telefone, 20).replace(/\D/g, "");
         const email = clean(body.email, 150).toLowerCase();
