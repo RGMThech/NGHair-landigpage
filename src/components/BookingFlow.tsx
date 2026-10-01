@@ -41,8 +41,6 @@ export default function BookingFlow({ unidade, nomeUnidade, fallbackUrl }: { uni
   const [servicos, setServicos] = useState<Servico[]>([]);
   const [profs, setProfs] = useState<Prof[]>([]);
   const [horarios, setHorarios] = useState<Horario[]>([]);
-  const [datasDisponiveis, setDatasDisponiveis] = useState<Set<string> | null>(null); // null = ainda consultando / consulta falhou
-  const [loadingDatas, setLoadingDatas] = useState(false);
   const [servico, setServico] = useState<Servico | null>(null);
   const [prof, setProf] = useState<Prof | null>(null); // null = sem preferência
   const [data, setData] = useState<string>("");
@@ -76,7 +74,9 @@ export default function BookingFlow({ unidade, nomeUnidade, fallbackUrl }: { uni
       label: mes.toLocaleDateString("pt-BR", { month: "long", year: "numeric" }),
     };
   }), [hoje]);
-  const diaHabil = (d: Date) => d >= hoje && d <= limiteAgendamento && (!datasDisponiveis || datasDisponiveis.has(iso(d)));
+  // Calendário abre de imediato com todos os dias da janela clicáveis; a
+  // disponibilidade real é conferida só ao clicar na data (economiza a API).
+  const diaHabil = (d: Date) => d >= hoje && d <= limiteAgendamento;
   const [aberta, setAberta] = useState<string | null>(null);
   const [erro, setErro] = useState("");
   const [feito, setFeito] = useState(false);
@@ -94,29 +94,6 @@ export default function BookingFlow({ unidade, nomeUnidade, fallbackUrl }: { uni
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [unidade]);
 
-  useEffect(() => {
-    if (step !== 2 || !servico) return;
-    let ativo = true;
-    setLoadingDatas(true);
-    setDatasDisponiveis(null);
-    call({
-      action: "datasDisponiveis",
-      unidade,
-      servicoId: servico.id,
-      profissionalId: prof?.id,
-      profissionalIds: prof ? [prof.id] : profs.map((p) => p.id),
-      inicio: iso(hoje),
-    }).then((resposta) => {
-      if (ativo) setDatasDisponiveis(new Set(resposta.datas ?? []));
-    }).catch(() => {
-      // Sem consulta, todos os dias seguem clicáveis: a checagem real
-      // acontece ao escolher o dia, na consulta de horários.
-      if (ativo) setDatasDisponiveis(null);
-    }).finally(() => {
-      if (ativo) setLoadingDatas(false);
-    });
-    return () => { ativo = false; };
-  }, [step, servico, prof, profs, unidade, hoje]);
 
   const escolherServico = (s: Servico) => {
     setServico(s); setStep(1);
