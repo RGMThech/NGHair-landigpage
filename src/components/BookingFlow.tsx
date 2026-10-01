@@ -353,12 +353,13 @@ export default function BookingFlow({ unidade, nomeUnidade, fallbackUrl }: { uni
 
       {step === 2 && (
         <div>
-          <p className="mb-4 text-center font-body text-sm text-muted-foreground">
+          <p className="mb-4 text-center font-body text-sm text-muted-foreground flex items-center justify-center gap-2">
+            {loadingDatas && <Loader2 className="h-4 w-4 animate-spin text-primary" />}
             {loadingDatas
               ? "Consultando a agenda do profissional — os dias sem vaga vão sendo escurecidos..."
               : "Escolha uma data disponível nos próximos 30 dias."}
           </p>
-          <div className="mx-auto mb-6 grid max-w-3xl gap-6 md:grid-cols-2">
+          <div className={`mx-auto mb-6 grid max-w-3xl gap-6 md:grid-cols-2 transition-opacity duration-300 ${loadingDatas ? "opacity-60" : ""}`}>
             {mesesExibidos.map(({ mes, semanas, label }) => (
               <div key={iso(mes)} className="min-w-0">
                 <p className="mb-3 text-center font-display text-lg capitalize text-foreground">{label}</p>
