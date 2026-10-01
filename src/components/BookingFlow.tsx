@@ -157,7 +157,7 @@ export default function BookingFlow({ unidade, nomeUnidade, fallbackUrl }: { uni
       const list: Cliente[] = d.clientes ?? [];
       setClientes(list);
       if (list.length === 1) setCliente(list[0]);
-      if (!list.length) { setNaoEncontrado(true); setErro("Não encontramos seu cadastro. Confira os dados ou crie seu cadastro abaixo."); }
+      if (!list.length) { setNaoEncontrado(true); setErro("Não encontramos seu cadastro. Tente novamente informando seu e-mail e/ou telefone com DDD. Se ainda não localizar, crie um novo cadastro abaixo."); }
       else setNaoEncontrado(false);
     } catch { setErro("Não conseguimos buscar seu cadastro agora. Tente novamente."); }
     finally { setLoading(false); }
@@ -189,7 +189,18 @@ export default function BookingFlow({ unidade, nomeUnidade, fallbackUrl }: { uni
       setCliente(d.cliente); setClientes([d.cliente]); setNaoEncontrado(false);
       setTelOk(true); setTelAtualizado(true);
       setForm({ nome: d.cliente.nome, telefone: d.cliente.telefone, email: d.cliente.email || email });
-    } catch { setErro("Não conseguimos criar seu cadastro agora. Tente novamente."); }
+    } catch (e) {
+      const mensagem = (e as Error).message;
+      if (mensagem === "ja_existe") {
+        setNaoEncontrado(false);
+        setErro("Já existe um cadastro com este telefone. Faça a busca usando somente o telefone com DDD.");
+      } else if (mensagem === "email_ja_existe") {
+        setNaoEncontrado(false);
+        setErro("Já existe um cadastro com este e-mail. Faça a busca usando somente o e-mail.");
+      } else {
+        setErro("Não conseguimos confirmar o novo cadastro agora. Faça uma busca pelo telefone ou e-mail antes de tentar criar novamente.");
+      }
+    }
     finally { setLoading(false); }
   };
   const salvarCadastro = async () => {
@@ -381,7 +392,7 @@ export default function BookingFlow({ unidade, nomeUnidade, fallbackUrl }: { uni
           )}
           {naoEncontrado && !cliente && (
             <div className="rounded-xl border border-border bg-muted/50 p-4 space-y-3">
-              <p className="font-body text-sm text-foreground">Primeira vez no salão? Preencha acima seu nome completo, telefone com DDD e, se quiser, seu e-mail. Depois crie seu cadastro.</p>
+              <p className="font-body text-sm text-foreground">Antes de criar, tente localizar novamente usando seu e-mail e/ou telefone com DDD. Se for sua primeira vez no salão, preencha nome completo, telefone e e-mail para criar o cadastro.</p>
               <button onClick={criarCadastro} disabled={loading}
                 className="w-full rounded-full bg-primary px-4 py-2.5 font-body text-xs font-semibold uppercase tracking-wider text-primary-foreground disabled:opacity-60">
                 {loading ? "Criando..." : "Criar meu cadastro"}
