@@ -19,16 +19,12 @@ export const verticePriceCategories: VerticePriceCategory[] = [
     items: [
       p("Lavagem", 50),
       p("Lavar e Secar", 70),
-      p("Secar", 72),
-      p("Escova - cabelo curto", 96),
-      p("Escova - cabelo médio (nível dos ombros)", 100),
-      p("Escova - cabelo longo", 120),
+      p("Escova", 120),
       p("Corte Feminino", 242),
       p("Corte Feminino Franja", 64),
       p("Corte masculino", 110),
       p("Corte Máquina Masculino", 80),
       p("Prancha (adicional, qualquer tamanho)", 50),
-      p("Prancha acompanhada de Escova (a depender)", 160),
     ],
   },
   {
