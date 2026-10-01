@@ -353,12 +353,13 @@ export default function BookingFlow({ unidade, nomeUnidade, fallbackUrl }: { uni
 
       {step === 2 && (
         <div>
-          <p className="mb-4 text-center font-body text-sm text-muted-foreground">
+          <p className="mb-4 text-center font-body text-sm text-muted-foreground flex items-center justify-center gap-2">
+            {loadingDatas && <Loader2 className="h-4 w-4 animate-spin text-primary" />}
             {loadingDatas
               ? "Consultando a agenda do profissional — os dias sem vaga vão sendo escurecidos..."
               : "Escolha uma data disponível nos próximos 30 dias."}
           </p>
-          <div className="mx-auto mb-6 grid max-w-3xl gap-6 md:grid-cols-2">
+          <div className={`mx-auto mb-6 grid max-w-3xl gap-6 md:grid-cols-2 transition-opacity duration-300 ${loadingDatas ? "opacity-60" : ""}`}>
             {mesesExibidos.map(({ mes, semanas, label }) => (
               <div key={iso(mes)} className="min-w-0">
                 <p className="mb-3 text-center font-display text-lg capitalize text-foreground">{label}</p>
@@ -372,10 +373,11 @@ export default function BookingFlow({ unidade, nomeUnidade, fallbackUrl }: { uni
                     const fora = d.getMonth() !== mes.getMonth();
                     const habil = !fora && diaHabil(d);
                     const sel = data === iso(d);
+                    const conferindo = loadingDatas && !fora;
                     return (
-                      <button key={iso(d)} disabled={!habil} onClick={() => escolherData(iso(d))}
+                      <button key={iso(d)} disabled={!habil || conferindo} onClick={() => escolherData(iso(d))}
                         aria-label={d.toLocaleDateString("pt-BR")}
-                        className={`h-10 rounded-lg font-body text-sm transition ${sel ? "bg-primary text-primary-foreground" : habil ? "border border-border bg-card hover:border-primary hover:text-primary" : "text-muted-foreground/40"}`}>
+                        className={`h-10 rounded-lg font-body text-sm transition ${sel ? "bg-primary text-primary-foreground" : habil ? "border border-border bg-card hover:border-primary hover:text-primary" : "text-muted-foreground/40"} ${conferindo ? "animate-pulse cursor-wait" : ""}`}>
                         {d.getDate()}
                       </button>
                     );
