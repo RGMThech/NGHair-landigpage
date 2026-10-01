@@ -670,23 +670,13 @@ const Admin = () => {
     return () => subscription.unsubscribe();
   }, []);
 
-  if (access === "loading") return null;
-  if (access === "signedOut") return <AdminLogin onLogin={checkAdminAccess} />;
-  if (access === "notAdmin") {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background p-4">
-        <div className="w-full max-w-md space-y-4 p-8 border rounded-2xl bg-card shadow-lg text-center">
-          <h1 className="font-display text-2xl font-medium text-foreground">Acesso não autorizado</h1>
-          <p className="text-sm text-muted-foreground">
-            Seu usuário está autenticado, mas não possui permissão de administração para importar planilhas.
-          </p>
-          <Button onClick={() => supabase.auth.signOut()} variant="outline" className="w-full">
-            Sair
-          </Button>
-        </div>
-      </div>
-    );
-  }
+  // Acesso só pelo menu do perfil, para quem já entrou no site; sem login próprio aqui.
+  useEffect(() => {
+    if (access === "signedOut") window.location.replace("/minha-conta/entrar");
+    else if (access === "notAdmin") window.location.replace("/");
+  }, [access]);
+
+  if (access !== "admin") return null;
   return <AdminPanel />;
 };
 
