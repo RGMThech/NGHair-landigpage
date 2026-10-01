@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { ArrowLeft, Gift, Sparkles, Calendar, Scissors, Droplets } from "lucide-react";
+import { ArrowLeft, Gift, Calendar, Scissors, Droplets } from "lucide-react";
 import { useVerticeAuth } from "@/hooks/useVerticeAuth";
 
 const promotions = [
