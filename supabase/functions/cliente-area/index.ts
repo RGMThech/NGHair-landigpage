@@ -220,32 +220,61 @@ Deno.serve(async (req) => {
     const fimD = new Date(hoje); fimD.setMonth(fimD.getMonth() + 2);
     const ini = hoje.toISOString().slice(0, 10), fim = fimD.toISOString().slice(0, 10);
     const agoraSP = hoje.toISOString().slice(0, 16);
+    const norm = (s: string) => String(s ?? "").replace(/\|[^|]*\|/g, " ").normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/\s+/g, " ").trim();
+    // Localiza todos os cadastros da cliente na unidade: id salvo, e-mail e nome completo (igual à Eurofarma/Vértice).
+    const idsDe = async (estab: string) => {
+      const ids = new Set<number>();
+      if (estab === ESTAB && clienteId) ids.add(Number(clienteId));
+      const email = clean(perfil.email, 150).toLowerCase();
+      if (email) {
+        const f = list(await trinks(`/clientes?email=${encodeURIComponent(email)}&pageSize=20`, estab).catch(() => []));
+        for (const c of f) if (clean(c?.email, 150).toLowerCase() === email) ids.add(Number(c.id));
+      }
+      const nome = clean(perfil.full_name, 100);
+      if (nome) {
+        const f = list(await trinks(`/clientes?nome=${encodeURIComponent(nome)}&pageSize=50`, estab).catch(() => []));
+        for (const c of f) if (norm(c.nome) === norm(nome)) ids.add(Number(c.id));
+      }
+      return ids;
+    };
     const agsDe = async (estab: string) => {
       const out: any[] = [];
-      for (let page = 1; page <= 5; page++) {
-        const d = await trinks(`/agendamentos?clienteId=${clienteId}&dataInicio=${ini}&dataFim=${fim}&pageSize=50&page=${page}`, estab);
-        out.push(...list(d));
-        if (!d?.totalPages || page >= d.totalPages) break;
+      for (const id of await idsDe(estab)) {
+        for (let page = 1; page <= 5; page++) {
+          const d = await trinks(`/agendamentos?clienteId=${id}&dataInicio=${ini}&dataFim=${fim}&pageSize=50&page=${page}`, estab);
+          out.push(...list(d).filter((a: any) => Number(a?.cliente?.id) === id));
+          if (!d?.totalPages || page >= d.totalPages) break;
+        }
       }
-      return out.filter((a) => a?.cliente?.id === clienteId);
+      return out;
     };
 
     if (action === "cancelar") {
       const agId = Number(body.agendamentoId);
+      const un = UNIDADES[String(body.unidade ?? "campo-belo")] ?? UNIDADES["campo-belo"];
       if (!agId) return json({ error: "dados_invalidos" }, 400);
-      if (!(await agsDe(ESTAB)).some((a) => a.id === agId)) return json({ error: "nao_encontrado" }, 404);
-      await trinks(`/agendamentos/${agId}/status/cancelado`, ESTAB, { method: "PATCH",
+      if (!(await agsDe(un.id)).some((a) => Number(a.id) === agId)) return json({ error: "nao_encontrado" }, 404);
+      await trinks(`/agendamentos/${agId}/status/cancelado`, un.id, { method: "PATCH",
         body: JSON.stringify({ quemCancelou: 2, motivo: "Cancelado pela cliente na Área do Cliente" }) });
       return json({ ok: true });
     }
 
     if (action === "agendamentos") {
-      const un = UNIDADES["campo-belo"];
-      const agendamentos = (await agsDe(ESTAB))
-        .filter((a) => !/cancel|finaliz|faltou/i.test(String(a?.status?.nome ?? "")) && String(a.dataHoraInicio).slice(0, 16) >= agoraSP)
-        .map((a) => ({ id: a.id, unidade: "campo-belo", unidadeNome: un.nome, status: String(a?.status?.nome ?? ""),
-          servico: a?.servico?.nome ?? "", profissional: a?.profissional?.nome ?? "", dataHoraInicio: a.dataHoraInicio }))
-        .sort((a, b) => String(a.dataHoraInicio).localeCompare(String(b.dataHoraInicio)));
+      const agendamentos: any[] = [];
+      for (const [slug, un] of Object.entries(UNIDADES)) {
+        try {
+          const vistos = new Set<number>();
+          for (const a of await agsDe(un.id)) {
+            if (vistos.has(a.id)) continue; vistos.add(a.id);
+            if (/cancel|finaliz|faltou/i.test(String(a?.status?.nome ?? ""))) continue;
+            if (String(a.dataHoraInicio).slice(0, 16) < agoraSP) continue;
+            agendamentos.push({ id: a.id, unidade: slug, unidadeNome: un.nome, status: String(a?.status?.nome ?? ""),
+              servico: a?.servico?.nome ?? "", profissional: a?.profissional?.nome ?? "", dataHoraInicio: a.dataHoraInicio });
+          }
+        } catch (e) { console.error("ags", slug, e); }
+      }
+      agendamentos.sort((a, b) => String(a.dataHoraInicio).localeCompare(String(b.dataHoraInicio)));
       return json({ agendamentos });
     }
 
