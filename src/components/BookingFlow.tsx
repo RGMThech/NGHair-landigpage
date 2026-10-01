@@ -46,7 +46,7 @@ export default function BookingFlow({ unidade, nomeUnidade, fallbackUrl }: { uni
   const hoje = useMemo(() => { const d = new Date(); d.setHours(0, 0, 0, 0); return d; }, []);
   const limiteAgendamento = useMemo(() => {
     const d = new Date(hoje);
-    d.setDate(d.getDate() + 30);
+    d.setDate(d.getDate() + 29);
     return d;
   }, [hoje]);
   const mesesExibidos = useMemo(() => [0, 1].map((offset) => {
