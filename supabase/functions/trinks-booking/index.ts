@@ -225,9 +225,24 @@ Deno.serve(async (req) => {
         if (nome.length < 5 || !nome.includes(" ")) return json({ error: "nome_invalido" }, 400);
         if (tel.length < 10 || tel.length > 11) return json({ error: "telefone_invalido" }, 400);
         const ddd = tel.slice(0, 2), numero = tel.slice(2);
-        // Evita duplicar: se o telefone já existe, devolve esse cadastro.
+        // Evita duplicar e recupera uma inclusão anterior que o Trinks concluiu
+        // sem devolver o identificador para o site.
         const existentes = list(await trinks(`/clientes?telefone=${tel}&pageSize=5`, estab));
-        if (existentes.length) return json({ error: "ja_existe" });
+        for (const existente of existentes) {
+          const existenteId = Number(existente?.id);
+          if (!existenteId) continue;
+          const telefonesExistentes = list(await trinks(`/clientes/${existenteId}/telefones`, estab));
+          const telefoneExistente = telefonesExistentes.map(digits).find((item: string) => item.endsWith(tel));
+          if (!telefoneExistente) continue;
+          const cadastroExistente = await trinks(`/clientes/${existenteId}`, estab);
+          return json({ ok: true, recuperado: true, cliente: {
+            id: existenteId,
+            nome: clean(cadastroExistente?.nome, 100),
+            telefone: formatPhone(telefoneExistente),
+            email: clean(cadastroExistente?.email, 150),
+            nomeProtegido: hasEmployeeCode(clean(cadastroExistente?.nome, 100)),
+          } });
+        }
         if (email) {
           const porEmail = list(await trinks(`/clientes?email=${encodeURIComponent(email)}&pageSize=5`, estab));
           if (porEmail.length) return json({ error: "email_ja_existe" });
