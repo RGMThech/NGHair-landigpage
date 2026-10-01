@@ -23,6 +23,13 @@ const schema = z.object({
 }).refine((v) => v.nome.length >= 3 || v.telefone.replace(/\D/g, "").length >= 8 || emailOk(v.email), "Informe ao menos 3 letras do nome, o telefone ou o e-mail");
 
 const iso = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+const hojeEmSaoPaulo = () => {
+  const partes = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/Sao_Paulo", year: "numeric", month: "2-digit", day: "2-digit",
+  }).formatToParts(new Date());
+  const valor = (tipo: string) => Number(partes.find((parte) => parte.type === tipo)?.value ?? 0);
+  return new Date(valor("year"), valor("month") - 1, valor("day"));
+};
 
 const steps = ["Serviço", "Profissional", "Horário", "Seus dados"];
 
@@ -45,7 +52,7 @@ export default function BookingFlow({ unidade, nomeUnidade, fallbackUrl }: { uni
   const [cliente, setCliente] = useState<Cliente | null>(null);
   const [telOk, setTelOk] = useState(false);
   const [telAtualizado, setTelAtualizado] = useState(false);
-  const hoje = useMemo(() => { const d = new Date(); d.setHours(0, 0, 0, 0); return d; }, []);
+  const hoje = useMemo(hojeEmSaoPaulo, []);
   const limiteAgendamento = useMemo(() => {
     const d = new Date(hoje);
     d.setDate(d.getDate() + 29);

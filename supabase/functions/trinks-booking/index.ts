@@ -5,6 +5,7 @@ const cors = {
 };
 const API = "https://api.trinks.com/v1";
 const UNIDADES: Record<string, string> = { "campo-belo": "20181", brooklin: "281029" };
+const datasCache = new Map<string, { expiraEm: number; datas: string[] }>();
 
 const json = (b: unknown, s = 200) =>
   new Response(JSON.stringify(b), { status: s, headers: { ...cors, "Content-Type": "application/json" } });
@@ -12,13 +13,21 @@ const json = (b: unknown, s = 200) =>
 async function trinks(path: string, estab: string, init: RequestInit = {}) {
   const key = Deno.env.get("TRINKS_API_KEY");
   if (!key) throw new Error("not_configured");
-  const r = await fetch(`${API}${path}`, {
-    ...init,
-    headers: { "X-Api-Key": key, estabelecimentoId: estab, "Content-Type": "application/json", ...(init.headers || {}) },
-  });
-  const t = await r.text();
-  if (!r.ok) { console.error("trinks", path, r.status, t.slice(0, 300)); throw new Error(`trinks_${r.status}`); }
-  return t ? JSON.parse(t) : {};
+  for (let tentativa = 0; tentativa < 3; tentativa += 1) {
+    const r = await fetch(`${API}${path}`, {
+      ...init,
+      headers: { "X-Api-Key": key, estabelecimentoId: estab, "Content-Type": "application/json", ...(init.headers || {}) },
+    });
+    const t = await r.text();
+    if (r.ok) return t ? JSON.parse(t) : {};
+    if (r.status === 429 && tentativa < 2) {
+      const espera = Math.min(Number(r.headers.get("retry-after") || 2), 10) * 1000;
+      await new Promise((resolve) => setTimeout(resolve, espera));
+      continue;
+    }
+    console.error("trinks", path, r.status, t.slice(0, 300));
+    throw new Error(`trinks_${r.status}`);
+  }
 }
 const list = (d: any) => (Array.isArray(d) ? d : d?.data ?? d?.items ?? []);
 const clean = (s: unknown, n: number) => String(s ?? "").trim().slice(0, n);
@@ -82,6 +91,9 @@ Deno.serve(async (req) => {
             .filter((id: number) => Number.isInteger(id) && id > 0),
         );
         if (!/^\d{4}-\d{2}-\d{2}$/.test(inicio) || !servicoId) return json({ error: "dados_invalidos" }, 400);
+        const cacheKey = `${estab}:${servicoId}:${profissionalId ?? [...idsPermitidos].sort((a, b) => a - b).join(",")}:${inicio}`;
+        const cache = datasCache.get(cacheKey);
+        if (cache && cache.expiraEm > Date.now()) return json({ datas: cache.datas });
         const [ano, mes, dia] = inicio.split("-").map(Number);
         const primeiraData = new Date(Date.UTC(ano, mes - 1, dia));
         if (Number.isNaN(primeiraData.getTime())) return json({ error: "data_invalida" }, 400);
@@ -106,6 +118,7 @@ Deno.serve(async (req) => {
           });
           if (disponivel) datas.push(data);
         }
+        datasCache.set(cacheKey, { expiraEm: Date.now() + 120_000, datas });
         return json({ datas });
       }
       case "buscarCliente": {
