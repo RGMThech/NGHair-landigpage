@@ -4,6 +4,7 @@ import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
   DropdownMenuSeparator, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useClienteProfile, clienteLogout } from "@/hooks/useClienteAuth";
 
@@ -18,7 +19,7 @@ export const UserMenu = ({ className = "" }: { className?: string }) => {
     return (
       <Link
         to="/minha-conta/entrar"
-        className={`inline-flex items-center gap-1.5 rounded-full border border-primary px-5 py-2 font-body text-xs font-semibold uppercase tracking-wider text-primary transition-all duration-300 hover:bg-primary hover:text-primary-foreground ${className}`}
+        className={cn("inline-flex items-center gap-1.5 rounded-full border border-primary px-5 py-2 font-body text-xs font-semibold uppercase tracking-wider text-primary transition-all duration-300 hover:bg-primary hover:text-primary-foreground hover:border-primary", className)}
       >
         <LogIn className="h-3.5 w-3.5" /> Entrar
       </Link>

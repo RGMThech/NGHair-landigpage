@@ -30,22 +30,22 @@ const Navbar = () => {
         scrolled ? "bg-background/90 backdrop-blur-md shadow-sm py-3" : "bg-transparent py-6"
       }`}
     >
-      <div className="container max-w-6xl flex items-center justify-between">
-        <a href="https://nghair.com.br" className="flex items-center transition-transform duration-300 hover:scale-105">
+      <div className="container max-w-7xl flex items-center justify-between gap-6">
+        <a href="https://nghair.com.br" className="flex shrink-0 items-center transition-transform duration-300 hover:scale-105">
           <img
             src="/logo_nghair.jpeg"
             alt="NGHair"
-            className={`w-auto rounded-md shadow-sm transition-all duration-500 ${scrolled ? "h-14" : "h-20"}`}
+            className={`w-auto max-w-none shrink-0 object-contain rounded-md shadow-sm transition-all duration-500 ${scrolled ? "h-14" : "h-20"}`}
           />
         </a>
 
         {/* Desktop */}
-        <div className="hidden md:flex items-center gap-8">
+        <div className="hidden xl:flex items-center gap-5 xl:gap-6">
           {links.map((link) => (
             <a
               key={link.label}
               href={link.href}
-              className={`font-body text-sm uppercase tracking-widest transition-colors duration-300 hover:text-primary ${
+              className={`font-body text-[13px] uppercase tracking-wider xl:tracking-widest transition-colors duration-300 hover:text-primary ${
                 scrolled ? "text-foreground/70" : "text-cream/80"
               }`}
             >
@@ -54,7 +54,7 @@ const Navbar = () => {
           ))}
           <Link
             to="/loja"
-            className={`font-body text-sm uppercase tracking-widest transition-colors duration-300 hover:text-primary ${
+            className={`font-body text-[13px] uppercase tracking-wider xl:tracking-widest transition-colors duration-300 hover:text-primary ${
               scrolled ? "text-foreground/70" : "text-cream/80"
             }`}
           >
@@ -62,7 +62,7 @@ const Navbar = () => {
           </Link>
           <DropdownMenu>
             <DropdownMenuTrigger
-              className={`font-body text-sm uppercase tracking-widest transition-colors duration-300 hover:text-primary inline-flex items-center gap-1 outline-none ${
+              className={`font-body text-[13px] uppercase tracking-wider xl:tracking-widest transition-colors duration-300 hover:text-primary inline-flex items-center gap-1 outline-none ${
                 scrolled ? "text-foreground/70" : "text-cream/80"
               }`}
             >
@@ -79,7 +79,7 @@ const Navbar = () => {
           </DropdownMenu>
           <DropdownMenu>
             <DropdownMenuTrigger
-              className={`font-body text-sm uppercase tracking-widest transition-colors duration-300 hover:text-primary inline-flex items-center gap-1 outline-none ${
+              className={`font-body text-[13px] uppercase tracking-wider xl:tracking-widest transition-colors duration-300 hover:text-primary inline-flex items-center gap-1 outline-none ${
                 scrolled ? "text-foreground/70" : "text-cream/80"
               }`}
             >
@@ -106,15 +106,15 @@ const Navbar = () => {
           >
             Agendar
           </Link>
-          <UserMenu />
+          <UserMenu className={scrolled ? "" : "border-cream/80 text-cream"} />
         </div>
 
         {/* Mobile right side */}
-        <div className="md:hidden flex items-center gap-2">
+        <div className="xl:hidden flex items-center gap-2">
           <CartDrawer
             buttonClassName={`relative inline-flex items-center justify-center h-9 w-9 rounded-full transition ${scrolled ? "text-foreground" : "text-cream"}`}
           />
-          <UserMenu className="px-3 py-1.5" />
+          <UserMenu className={`px-3 py-1.5 ${scrolled ? "" : "border-cream/80 text-cream"}`} />
           <button
             onClick={() => setOpen(!open)}
             className={`transition-colors ${scrolled ? "text-foreground" : "text-cream"}`}
@@ -127,7 +127,7 @@ const Navbar = () => {
 
       {/* Mobile menu */}
       {open && (
-        <div className="md:hidden absolute top-full left-0 right-0 bg-background/95 backdrop-blur-md border-b border-border p-6 flex flex-col gap-4">
+        <div className="xl:hidden absolute top-full left-0 right-0 bg-background/95 backdrop-blur-md border-b border-border p-6 flex flex-col gap-4">
           {links.map((link) => (
             <a
               key={link.label}
