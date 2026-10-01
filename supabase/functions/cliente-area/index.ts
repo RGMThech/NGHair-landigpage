@@ -173,6 +173,10 @@ Deno.serve(async (req) => {
         full_name: existing?.full_name || nomeTrinks, phone: existing?.phone || phone };
       if (existing) await admin.from("cliente_profiles").update(row2).eq("id", existing.id);
       else await admin.from("cliente_profiles").insert(row2);
+      // E-mail da equipe (@nghair.com.br), comprovado pelo código, recebe acesso de administração
+      if (/@nghair\.com\.br$/i.test(email)) {
+        await admin.from("user_roles").upsert({ user_id: userId, role: "admin" }, { onConflict: "user_id,role", ignoreDuplicates: true });
+      }
       return json({ ok: true, token_hash: link.properties.hashed_token });
     }
 
