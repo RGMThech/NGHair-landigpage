@@ -40,7 +40,7 @@ const ClienteAgendamentos = () => {
   const cancelar = async () => {
     if (!alvo) return;
     setCancelando(true);
-    const { data, error } = await supabase.functions.invoke("cliente-area", { body: { action: "cancelar", agendamentoId: alvo.id } });
+    const { data, error } = await supabase.functions.invoke("cliente-area", { body: { action: "cancelar", agendamentoId: alvo.id, unidade: (alvo as any).unidade } });
     setCancelando(false);
     if (error || data?.error) return toast.error("Não foi possível cancelar. Tente novamente ou fale com o salão pelo WhatsApp.");
     toast.success("Agendamento cancelado.");
