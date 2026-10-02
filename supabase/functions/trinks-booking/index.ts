@@ -1,4 +1,5 @@
 // Agendamento próprio via API Trinks. Nunca devolve preços ao navegador.
+import { logApiCall } from "../_shared/api-log.ts";
 const cors = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
@@ -19,6 +20,7 @@ async function trinks(path: string, estab: string, init: RequestInit = {}) {
       headers: { "X-Api-Key": key, estabelecimentoId: estab, "Content-Type": "application/json", ...(init.headers || {}) },
     });
     const t = await r.text();
+    logApiCall("Trinks", path, init.method ?? "GET", estab, r.status, "agendamento");
     if (r.ok) return t ? JSON.parse(t) : {};
     if (r.status === 429 && tentativa < 2) {
       const espera = Math.min(Number(r.headers.get("retry-after") || 2), 10) * 1000;

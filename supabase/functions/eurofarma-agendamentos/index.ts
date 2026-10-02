@@ -2,6 +2,7 @@
 // Nunca devolve valores ao navegador.
 import { createClient } from "npm:@supabase/supabase-js@2.95.0";
 import { corsHeaders } from "npm:@supabase/supabase-js@2.95.0/cors";
+import { logApiCall } from "../_shared/api-log.ts";
 
 const API = "https://api.trinks.com/v1";
 const UNIDADES: Record<string, { id: string; nome: string }> = {
@@ -17,6 +18,7 @@ async function trinks(path: string, estab: string, init: RequestInit = {}) {
     headers: { "X-Api-Key": Deno.env.get("TRINKS_API_KEY")!, estabelecimentoId: estab, "Content-Type": "application/json" },
   });
   const t = await r.text();
+  logApiCall("Trinks", path, init.method ?? "GET", estab, r.status, "eurofarma");
   if (!r.ok) { console.error("trinks", path, r.status, t.slice(0, 300)); throw new Error(`trinks_${r.status}`); }
   return t ? JSON.parse(t) : {};
 }

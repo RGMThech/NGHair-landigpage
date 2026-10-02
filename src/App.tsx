@@ -34,6 +34,7 @@ import ClienteLogin from "./pages/cliente/ClienteLogin.tsx";
 import ClientePerfil from "./pages/cliente/ClientePerfil.tsx";
 import ClienteAgendamentos from "./pages/cliente/ClienteAgendamentos.tsx";
 import PrateleiraEsmaltes from "./pages/nghair/PrateleiraEsmaltes.tsx";
+import ConsumoApi from "./pages/nghair/ConsumoApi.tsx";
 
 const queryClient = new QueryClient();
 
@@ -70,6 +71,7 @@ const AppRoutes = () => {
       <Route path="/minha-conta/perfil" element={<ClientePerfil />} />
       <Route path="/minha-conta/agendamentos" element={<ClienteAgendamentos />} />
       <Route path="/nghair/esmaltes" element={<PrateleiraEsmaltes />} />
+      <Route path="/nghair/consumo-api" element={<ConsumoApi />} />
       {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
       <Route path="*" element={<NotFound />} />
     </Routes>

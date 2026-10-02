@@ -1,0 +1,1 @@
+REVOKE EXECUTE ON FUNCTION public.api_consumo_diario(date, date) FROM PUBLIC, anon;
