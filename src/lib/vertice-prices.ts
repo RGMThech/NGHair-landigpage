@@ -38,7 +38,6 @@ export const verticePriceCategories: VerticePriceCategory[] = [
     items: [
       p("Manicure completa", 45),
       p("Pedicure completa", 50),
-      p("Pedicure Francesinha", 54),
       p("Francesinha", 5),
       p("Esmaltação de mãos ou pés", 34),
     ],
