@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      api_call_log: {
+        Row: {
+          api: string
+          created_at: string
+          endpoint: string | null
+          id: string
+          metodo: string | null
+          origem: string | null
+          status: number | null
+          unidade: string | null
+        }
+        Insert: {
+          api: string
+          created_at?: string
+          endpoint?: string | null
+          id?: string
+          metodo?: string | null
+          origem?: string | null
+          status?: number | null
+          unidade?: string | null
+        }
+        Update: {
+          api?: string
+          created_at?: string
+          endpoint?: string | null
+          id?: string
+          metodo?: string | null
+          origem?: string | null
+          status?: number | null
+          unidade?: string | null
+        }
+        Relationships: []
+      }
       cliente_login_codes: {
         Row: {
           attempts: number
@@ -601,6 +634,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      api_consumo_diario: {
+        Args: { _fim: string; _inicio: string }
+        Returns: {
+          api: string
+          dia: string
+          total: number
+        }[]
+      }
       can_access_eurofarma_dashboard: {
         Args: { _user_id: string }
         Returns: boolean

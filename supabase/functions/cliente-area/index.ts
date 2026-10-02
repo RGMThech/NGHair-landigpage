@@ -2,6 +2,7 @@
 // perfil sincronizado e agendamentos futuros com cancelamento. Nunca devolve valores.
 import { createClient } from "npm:@supabase/supabase-js@2.95.0";
 import { SMTPClient } from "https://deno.land/x/denomailer@1.6.0/mod.ts";
+import { logApiCall } from "../_shared/api-log.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -32,6 +33,7 @@ async function trinks(path: string, estab: string, init: RequestInit = {}) {
       headers: { "X-Api-Key": Deno.env.get("TRINKS_API_KEY")!, estabelecimentoId: estab, "Content-Type": "application/json" },
     });
     const t = await r.text();
+    logApiCall("Trinks", path, init.method ?? "GET", estab, r.status, "area-cliente");
     if (r.status === 429 && i < 2) {
       await new Promise((res) => setTimeout(res, Math.min(Number(r.headers.get("retry-after") ?? 2), 10) * 1000));
       continue;
