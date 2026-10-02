@@ -177,6 +177,7 @@ export type Database = {
           data_cadastro: string
           data_removido: string | null
           etiqueta: number | null
+          fotos: string[]
           id: string
           marca: string | null
           motivo: string | null
@@ -192,6 +193,7 @@ export type Database = {
           data_cadastro?: string
           data_removido?: string | null
           etiqueta?: number | null
+          fotos?: string[]
           id?: string
           marca?: string | null
           motivo?: string | null
@@ -207,6 +209,7 @@ export type Database = {
           data_cadastro?: string
           data_removido?: string | null
           etiqueta?: number | null
+          fotos?: string[]
           id?: string
           marca?: string | null
           motivo?: string | null

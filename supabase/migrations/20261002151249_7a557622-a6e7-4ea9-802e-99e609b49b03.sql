@@ -1,0 +1,4 @@
+ALTER TABLE public.esmaltes ADD COLUMN fotos text[] NOT NULL DEFAULT '{}';
+CREATE POLICY "Admins leem fotos esmaltes" ON storage.objects FOR SELECT TO authenticated USING (bucket_id = 'esmaltes' AND public.has_role(auth.uid(), 'admin'::app_role));
+CREATE POLICY "Admins enviam fotos esmaltes" ON storage.objects FOR INSERT TO authenticated WITH CHECK (bucket_id = 'esmaltes' AND public.has_role(auth.uid(), 'admin'::app_role));
+CREATE POLICY "Admins apagam fotos esmaltes" ON storage.objects FOR DELETE TO authenticated USING (bucket_id = 'esmaltes' AND public.has_role(auth.uid(), 'admin'::app_role));
