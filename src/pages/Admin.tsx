@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { fetchAll } from "@/lib/fetchAll";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -85,7 +86,7 @@ const AdminPanel = () => {
       .replace(/[\u0300-\u036f]/g, "");
 
   const fetchEurofarmaMonths = async () => {
-    const { data } = await supabase.from("eurofarma_entries").select("month_ref");
+    const data = await fetchAll<{ month_ref: string }>(() => supabase.from("eurofarma_entries").select("month_ref").order("id"));
     if (!data) return;
     const counts = data.reduce<Record<string, number>>((acc, r) => {
       acc[r.month_ref] = (acc[r.month_ref] || 0) + 1;
@@ -270,7 +271,7 @@ const AdminPanel = () => {
   const [verticeMonths, setVerticeMonths] = useState<{ month_ref: string; count: number }[]>([]);
 
   const fetchVerticeMonths = async () => {
-    const { data } = await supabase.from("vertice_entries").select("month_ref");
+    const data = await fetchAll<{ month_ref: string }>(() => supabase.from("vertice_entries").select("month_ref").order("id"));
     if (!data) return;
     const counts = data.reduce<Record<string, number>>((acc, r) => {
       acc[r.month_ref] = (acc[r.month_ref] || 0) + 1;

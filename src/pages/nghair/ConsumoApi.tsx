@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft, Loader2, RefreshCw } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { fetchAll } from "@/lib/fetchAll";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -29,9 +30,10 @@ const ConsumoApi = () => {
     setLoading(true);
     const [r1, r2, r3] = await Promise.all([
       (supabase.rpc as any)("api_consumo_diario", { _inicio: inicio, _fim: fim }),
-      (supabase.from as any)("api_call_log").select("*")
+      fetchAll(() => (supabase.from as any)("api_call_log").select("*")
         .gte("created_at", `${inicio}T00:00:00-03:00`).lte("created_at", `${fim}T23:59:59-03:00`)
-        .order("created_at", { ascending: false }).limit(500),
+        .order("created_at", { ascending: false }).order("id"))
+        .then((data) => ({ data })).catch(() => ({ data: [] })),
       supabase.functions.invoke("trinks-booking", { body: { action: "consumo", unidade: "campo-belo" } }),
     ]);
     setDiario((r1.data ?? []).map((d: any) => ({ ...d, total: Number(d.total) })));
