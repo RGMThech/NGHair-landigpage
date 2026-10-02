@@ -156,7 +156,7 @@ const VerticePortal = () => {
             <TableIcon className="h-8 w-8 text-primary mb-4" />
             <h2 className="font-display text-2xl mb-2">Tabela de preços</h2>
             <p className="text-sm text-muted-foreground">
-              Consulte os serviços de cabelo, unhas e estética com seus respectivos valores.
+              Consulte os serviços de cabelo, unhas, estética e maquiagem com seus respectivos valores.
             </p>
           </Link>
 
