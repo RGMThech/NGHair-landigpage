@@ -9,6 +9,7 @@ import { useNghairStaff } from "@/hooks/useNghairStaff";
 
 type Diario = { dia: string; api: string; total: number };
 type Chamada = { id: string; api: string; endpoint: string | null; metodo: string | null; unidade: string | null; status: number | null; origem: string | null; created_at: string };
+type ConsumoOficial = { cotaTotal: number; plano: string; saldoRestante: number; totalUtilizado: number };
 
 const hojeSP = () => new Intl.DateTimeFormat("en-CA", { timeZone: "America/Sao_Paulo" }).format(new Date());
 const menosDias = (iso: string, n: number) => { const d = new Date(iso + "T12:00:00"); d.setDate(d.getDate() - n); return d.toISOString().slice(0, 10); };
@@ -22,17 +23,20 @@ const ConsumoApi = () => {
   const [diario, setDiario] = useState<Diario[]>([]);
   const [chamadas, setChamadas] = useState<Chamada[]>([]);
   const [loading, setLoading] = useState(false);
+  const [oficial, setOficial] = useState<ConsumoOficial | null>(null);
 
   const carregar = async () => {
     setLoading(true);
-    const [r1, r2] = await Promise.all([
+    const [r1, r2, r3] = await Promise.all([
       (supabase.rpc as any)("api_consumo_diario", { _inicio: inicio, _fim: fim }),
       (supabase.from as any)("api_call_log").select("*")
         .gte("created_at", `${inicio}T00:00:00-03:00`).lte("created_at", `${fim}T23:59:59-03:00`)
         .order("created_at", { ascending: false }).limit(500),
+      supabase.functions.invoke("trinks-booking", { body: { action: "consumo", unidade: "campo-belo" } }),
     ]);
     setDiario((r1.data ?? []).map((d: any) => ({ ...d, total: Number(d.total) })));
     setChamadas(r2.data ?? []);
+    setOficial(r3.data?.consumo ?? null);
     setLoading(false);
   };
   useEffect(() => { if (!checking) carregar(); }, [checking]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -62,8 +66,15 @@ const ConsumoApi = () => {
         </div>
 
         <div className="grid gap-3 sm:grid-cols-3">
-          <div className="rounded-lg border border-border bg-card p-4"><div className="text-xs uppercase text-muted-foreground">Total no período</div><div className="text-2xl font-semibold text-foreground">{diario.reduce((s, d) => s + d.total, 0)}</div></div>
-          <div className="rounded-lg border border-border bg-card p-4"><div className="text-xs uppercase text-muted-foreground">No mês atual (dentro do período)</div><div className="text-2xl font-semibold text-foreground">{totalMes}</div></div>
+          {oficial && (
+            <div className="rounded-lg border border-primary/40 bg-primary/5 p-4">
+              <div className="text-xs uppercase text-muted-foreground">Consumo oficial Trinks ({oficial.plano})</div>
+              <div className="text-2xl font-semibold text-foreground">{oficial.totalUtilizado.toLocaleString("pt-BR")} <span className="text-sm font-normal text-muted-foreground">de {oficial.cotaTotal.toLocaleString("pt-BR")}</span></div>
+              <div className="text-xs text-muted-foreground">Saldo restante: {oficial.saldoRestante.toLocaleString("pt-BR")} chamadas</div>
+            </div>
+          )}
+          <div className="rounded-lg border border-border bg-card p-4"><div className="text-xs uppercase text-muted-foreground">Nosso registro — total no período</div><div className="text-2xl font-semibold text-foreground">{diario.reduce((s, d) => s + d.total, 0)}</div></div>
+          <div className="rounded-lg border border-border bg-card p-4"><div className="text-xs uppercase text-muted-foreground">Nosso registro — no mês atual</div><div className="text-2xl font-semibold text-foreground">{totalMes}</div></div>
           {apis.map((a) => (
             <div key={a} className="rounded-lg border border-border bg-card p-4"><div className="text-xs uppercase text-muted-foreground">{a}</div><div className="text-2xl font-semibold text-foreground">{totalApi(a)}</div></div>
           ))}
