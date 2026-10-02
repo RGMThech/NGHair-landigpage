@@ -35,6 +35,7 @@ const PrateleiraEsmaltes = () => {
   const [pagina, setPagina] = useState(1);
   const [novo, setNovo] = useState(false);
   const [remover, setRemover] = useState<Esmalte | null>(null);
+  const [editar, setEditar] = useState<Esmalte | null>(null);
   const [galeria, setGaleria] = useState<Esmalte | null>(null);
   const [urls, setUrls] = useState<Record<string, string>>({});
   useEffect(() => {
@@ -55,13 +56,20 @@ const PrateleiraEsmaltes = () => {
   };
   useEffect(() => { if (!checking) void carregar(); }, [checking]);
 
+  const proxima = Math.max(0, ...lista.map((e) => e.etiqueta ?? 0)) + 1;
+  const marcas = useMemo(() => {
+    const m = new Map<string, string>();
+    lista.forEach((e) => { const v = e.marca?.trim(); if (v && !m.has(v.toLowerCase())) m.set(v.toLowerCase(), v); });
+    return [...m.values()].sort((a, b) => a.localeCompare(b, "pt-BR"));
+  }, [lista]);
   const filtrados = useMemo(() => {
     const t = busca.trim().toLowerCase();
     return lista.filter((e) =>
       (unidade === "todas" || e.unidade === unidade) &&
       (status === "todos" || e.status === status) &&
       (validade === "todas" || situacaoValidade(e.validade) === validade) &&
-      (!t || [e.etiqueta, e.marca, e.serie, e.cor].some((x) => String(x ?? "").toLowerCase().includes(t))));
+      (!t || [e.etiqueta, e.marca, e.serie, e.cor].some((x) => String(x ?? "").toLowerCase().includes(t))))
+      .sort((a, b) => (b.etiqueta ?? -1) - (a.etiqueta ?? -1));
   }, [lista, busca, unidade, status, validade]);
   useEffect(() => setPagina(1), [busca, unidade, status, validade]);
 
@@ -144,7 +152,7 @@ const PrateleiraEsmaltes = () => {
                         </button>
                       ) : <div className="h-10 w-10 rounded bg-muted" />}
                     </td>
-                    <td className="px-3 py-2 font-semibold">{e.etiqueta}</td>
+                    <td className="px-3 py-2 font-semibold"><button onClick={() => setEditar(e)} className="text-primary underline underline-offset-2 hover:opacity-80" title="Editar esmalte">{e.etiqueta ?? "—"}</button></td>
                     <td className="px-3 py-2 capitalize">{e.marca}</td>
                     <td className="px-3 py-2 capitalize">{e.serie}</td>
                     <td className="px-3 py-2 capitalize">{e.cor}</td>
@@ -173,7 +181,8 @@ const PrateleiraEsmaltes = () => {
         </div>
       </div>
 
-      <NovoEsmalte open={novo} onClose={() => setNovo(false)} proxima={Math.max(0, ...lista.map((e) => e.etiqueta ?? 0)) + 1} onSaved={carregar} />
+      <NovoEsmalte open={novo} onClose={() => setNovo(false)} proxima={proxima} onSaved={carregar} marcas={marcas} />
+      <NovoEsmalte open={!!editar} esmalte={editar} urls={urls} onClose={() => setEditar(null)} proxima={proxima} onSaved={carregar} marcas={marcas} />
       <RemoverEsmalte esmalte={remover} onClose={() => setRemover(null)} onSaved={carregar} />
       <Dialog open={!!galeria} onOpenChange={(o) => !o && setGaleria(null)}>
         <DialogContent className="max-h-[95dvh] overflow-y-auto w-[calc(100vw-1rem)] sm:max-w-2xl">
@@ -188,6 +197,7 @@ const PrateleiraEsmaltes = () => {
 };
 
 const MAX_FOTOS = 5;
+const NOVA_MARCA = "__nova__";
 
 /** Reduz a foto do celular para no máximo 1280px em JPEG. */
 async function comprimir(file: File): Promise<Blob> {
@@ -200,36 +210,74 @@ async function comprimir(file: File): Promise<Blob> {
   return await new Promise((r) => c.toBlob((b) => r(b ?? file), "image/jpeg", 0.8));
 }
 
-const NovoEsmalte = ({ open, onClose, proxima, onSaved }: { open: boolean; onClose: () => void; proxima: number; onSaved: () => void }) => {
-  const [f, setF] = useState({ etiqueta: "", marca: "", serie: "", cor: "", validade: "", unidade: "Campo Belo" });
+type FormProps = {
+  open: boolean; onClose: () => void; proxima: number; onSaved: () => void;
+  marcas: string[]; esmalte?: Esmalte | null; urls?: Record<string, string>;
+};
+
+const NovoEsmalte = ({ open, onClose, proxima, onSaved, marcas, esmalte, urls = {} }: FormProps) => {
+  const vazio = { etiqueta: "", marca: "", serie: "", cor: "", validade: "", unidade: "Campo Belo", status: "Prateleira", motivo: "" };
+  const [f, setF] = useState(vazio);
+  const [novaMarca, setNovaMarca] = useState(false);
   const [fotos, setFotos] = useState<File[]>([]);
+  const [existentes, setExistentes] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
-  useEffect(() => { if (open) { setF((p) => ({ ...p, etiqueta: String(proxima), marca: "", serie: "", cor: "", validade: "" })); setFotos([]); } }, [open, proxima]);
+  useEffect(() => {
+    if (!open) return;
+    if (esmalte) {
+      setF({
+        etiqueta: String(esmalte.etiqueta ?? ""), marca: esmalte.marca ?? "", serie: esmalte.serie ?? "", cor: esmalte.cor ?? "",
+        validade: esmalte.validade ? esmalte.validade.slice(0, 7) : "", unidade: esmalte.unidade, status: esmalte.status, motivo: esmalte.motivo ?? "",
+      });
+      setExistentes(esmalte.fotos ?? []);
+      setNovaMarca(false);
+    } else {
+      setF((p) => ({ ...vazio, unidade: p.unidade || "Campo Belo", etiqueta: String(proxima) }));
+      setExistentes([]);
+      setNovaMarca(false);
+    }
+    setFotos([]);
+  }, [open, proxima, esmalte]); // eslint-disable-line react-hooks/exhaustive-deps
   const previews = useMemo(() => fotos.map((x) => URL.createObjectURL(x)), [fotos]);
   useEffect(() => () => previews.forEach((u) => URL.revokeObjectURL(u)), [previews]);
+  const total = existentes.length + fotos.length;
   const addFotos = (list: FileList | null) => {
     const novas = Array.from(list ?? []).filter((x) => x.type.startsWith("image/"));
-    if (fotos.length + novas.length > MAX_FOTOS) toast({ title: `Máximo de ${MAX_FOTOS} fotos por esmalte` });
-    setFotos([...fotos, ...novas].slice(0, MAX_FOTOS));
+    if (total + novas.length > MAX_FOTOS) toast({ title: `Máximo de ${MAX_FOTOS} fotos por esmalte` });
+    setFotos([...fotos, ...novas].slice(0, MAX_FOTOS - existentes.length));
   };
+  const marcaNaLista = marcas.some((m) => m.toLowerCase() === f.marca.trim().toLowerCase());
   const salvar = async () => {
     if (!f.marca.trim() || !f.cor.trim() || !f.validade) { toast({ title: "Preencha marca, cor e validade", variant: "destructive" }); return; }
     setSaving(true);
-    const pasta = crypto.randomUUID();
-    const caminhos: string[] = [];
+    const pasta = esmalte?.fotos?.[0]?.split("/")[0] ?? crypto.randomUUID();
+    const caminhos: string[] = [...existentes];
     for (const [i, foto] of fotos.entries()) {
       const path = `${pasta}/${Date.now()}-${i}.jpg`;
       const { error } = await supabase.storage.from("esmaltes").upload(path, await comprimir(foto), { contentType: "image/jpeg" });
       if (error) { setSaving(false); toast({ title: "Erro ao enviar foto", description: error.message, variant: "destructive" }); return; }
       caminhos.push(path);
     }
-    const { error } = await esmaltesTable().insert({
+    const base = {
       etiqueta: Number(f.etiqueta) || null, marca: f.marca.trim(), serie: f.serie.trim() || null, cor: f.cor.trim(),
-      validade: `${f.validade}-01`, unidade: f.unidade, status: "Prateleira", data_cadastro: hojeISO(), fotos: caminhos,
-    });
+      validade: `${f.validade}-01`, unidade: f.unidade, fotos: caminhos,
+    };
+    let error;
+    if (esmalte) {
+      const removido = f.status !== "Prateleira";
+      ({ error } = await esmaltesTable().update({
+        ...base, status: f.status,
+        motivo: removido ? (f.motivo || null) : null,
+        data_removido: removido ? (esmalte.data_removido ?? hojeISO()) : null,
+      }).eq("id", esmalte.id));
+      const apagadas = (esmalte.fotos ?? []).filter((p) => !existentes.includes(p));
+      if (!error && apagadas.length) await supabase.storage.from("esmaltes").remove(apagadas);
+    } else {
+      ({ error } = await esmaltesTable().insert({ ...base, status: "Prateleira", data_cadastro: hojeISO() }));
+    }
     setSaving(false);
-    if (error) { toast({ title: "Erro ao cadastrar", description: error.message, variant: "destructive" }); return; }
-    toast({ title: "Esmalte cadastrado" }); onClose(); onSaved();
+    if (error) { toast({ title: "Erro ao salvar", description: error.message, variant: "destructive" }); return; }
+    toast({ title: esmalte ? "Esmalte atualizado" : "Esmalte cadastrado" }); onClose(); onSaved();
   };
   const campo = (k: keyof typeof f, label: string, type = "text") => (
     <div className="space-y-1"><Label>{label}</Label><Input className="h-11 text-base" type={type} inputMode={type === "number" ? "numeric" : undefined} value={f[k]} onChange={(e) => setF({ ...f, [k]: e.target.value })} /></div>
@@ -237,10 +285,16 @@ const NovoEsmalte = ({ open, onClose, proxima, onSaved }: { open: boolean; onClo
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="max-h-[95dvh] overflow-y-auto w-[calc(100vw-1rem)] sm:max-w-lg">
-        <DialogHeader><DialogTitle>Cadastrar esmalte</DialogTitle></DialogHeader>
+        <DialogHeader><DialogTitle>{esmalte ? `Editar esmalte — etiqueta ${esmalte.etiqueta ?? ""}` : "Cadastrar esmalte"}</DialogTitle></DialogHeader>
         <div className="space-y-2">
-          <Label>Fotos ({fotos.length}/{MAX_FOTOS})</Label>
+          <Label>Fotos ({total}/{MAX_FOTOS})</Label>
           <div className="grid grid-cols-5 gap-2">
+            {existentes.map((p) => (
+              <div key={p} className="relative aspect-square">
+                {urls[p] ? <img src={urls[p]} alt="" className="h-full w-full rounded-md object-cover" /> : <div className="h-full w-full rounded-md bg-muted" />}
+                <button type="button" onClick={() => setExistentes(existentes.filter((x) => x !== p))} className="absolute -top-1.5 -right-1.5 rounded-full bg-destructive p-0.5 text-destructive-foreground" aria-label="Remover foto"><X className="h-3 w-3" /></button>
+              </div>
+            ))}
             {previews.map((u, i) => (
               <div key={u} className="relative aspect-square">
                 <img src={u} alt="" className="h-full w-full rounded-md object-cover" />
@@ -248,7 +302,7 @@ const NovoEsmalte = ({ open, onClose, proxima, onSaved }: { open: boolean; onClo
               </div>
             ))}
           </div>
-          {fotos.length < MAX_FOTOS && (
+          {total < MAX_FOTOS && (
             <div className="grid grid-cols-2 gap-2">
               <label className="flex h-11 cursor-pointer items-center justify-center gap-2 rounded-md border border-primary text-sm text-primary">
                 <Camera className="h-4 w-4" />Tirar foto
@@ -265,16 +319,52 @@ const NovoEsmalte = ({ open, onClose, proxima, onSaved }: { open: boolean; onClo
           {campo("etiqueta", "Etiqueta", "number")}
           <div className="space-y-1"><Label>Unidade</Label>
             <Select value={f.unidade} onValueChange={(v) => setF({ ...f, unidade: v })}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectTrigger className="h-11"><SelectValue /></SelectTrigger>
               <SelectContent>{UNIDADES.map((u) => <SelectItem key={u} value={u}>{u}</SelectItem>)}</SelectContent>
             </Select>
           </div>
-          {campo("marca", "Marca")}
+          <div className="space-y-1"><Label>Marca</Label>
+            {novaMarca || (f.marca && !marcaNaLista) ? (
+              <div className="flex gap-2">
+                <Input className="h-11 text-base" autoFocus placeholder="Nome da nova marca" value={f.marca} onChange={(e) => setF({ ...f, marca: e.target.value })} />
+                <Button type="button" variant="ghost" className="h-11" onClick={() => { setNovaMarca(false); setF({ ...f, marca: "" }); }}>Lista</Button>
+              </div>
+            ) : (
+              <Select value={marcas.find((m) => m.toLowerCase() === f.marca.toLowerCase()) ?? ""} onValueChange={(v) => {
+                if (v === NOVA_MARCA) { setNovaMarca(true); setF({ ...f, marca: "" }); } else setF({ ...f, marca: v });
+              }}>
+                <SelectTrigger className="h-11"><SelectValue placeholder="Selecione a marca" /></SelectTrigger>
+                <SelectContent>
+                  {marcas.map((m) => <SelectItem key={m} value={m} className="capitalize">{m}</SelectItem>)}
+                  <SelectItem value={NOVA_MARCA}>+ Incluir nova marca</SelectItem>
+                </SelectContent>
+              </Select>
+            )}
+          </div>
           {campo("serie", "Série")}
           {campo("cor", "Cor")}
           {campo("validade", "Validade (mês/ano)", "month")}
+          {esmalte && (
+            <>
+              <div className="space-y-1"><Label>Status</Label>
+                <Select value={f.status} onValueChange={(v) => setF({ ...f, status: v })}>
+                  <SelectTrigger className="h-11"><SelectValue /></SelectTrigger>
+                  <SelectContent>{["Prateleira", "Removido", "Desaparecido"].map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
+                </Select>
+              </div>
+              {f.status !== "Prateleira" && (
+                <div className="space-y-1"><Label>Motivo</Label>
+                  <Select value={f.motivo} onValueChange={(v) => setF({ ...f, motivo: v })}>
+                    <SelectTrigger className="h-11"><SelectValue placeholder="Selecione" /></SelectTrigger>
+                    <SelectContent>{MOTIVOS.map((m) => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent>
+                  </Select>
+                </div>
+              )}
+            </>
+          )}
         </div>
-        <p className="text-xs text-muted-foreground">Data de cadastro: hoje ({fmtData(hojeISO())}) · Status: Prateleira</p>
+        {!esmalte && <p className="text-xs text-muted-foreground">Data de cadastro: hoje ({fmtData(hojeISO())}) · Status: Prateleira</p>}
+        {esmalte && <p className="text-xs text-muted-foreground">Cadastrado em {fmtData(esmalte.data_cadastro)}</p>}
         <DialogFooter><Button onClick={salvar} disabled={saving}>{saving && <Loader2 className="h-4 w-4 mr-1 animate-spin" />}Salvar</Button></DialogFooter>
       </DialogContent>
     </Dialog>
