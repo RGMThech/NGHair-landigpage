@@ -3,6 +3,7 @@
 import { createClient } from "npm:@supabase/supabase-js@2.95.0";
 import { corsHeaders } from "npm:@supabase/supabase-js@2.95.0/cors";
 import { logApiCall } from "../_shared/api-log.ts";
+import { trinksKeys } from "../_shared/trinks-key.ts";
 
 const API = "https://api.trinks.com/v1";
 const UNIDADES: Record<string, { id: string; nome: string }> = {
@@ -13,14 +14,21 @@ const json = (b: unknown, s = 200) =>
   new Response(JSON.stringify(b), { status: s, headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
 async function trinks(path: string, estab: string, init: RequestInit = {}) {
-  const r = await fetch(`${API}${path}`, {
-    ...init,
-    headers: { "X-Api-Key": Deno.env.get("TRINKS_API_KEY")!, estabelecimentoId: estab, "Content-Type": "application/json" },
-  });
-  const t = await r.text();
-  logApiCall("Trinks", path, init.method ?? "GET", estab, r.status, "eurofarma");
-  if (!r.ok) { console.error("trinks", path, r.status, t.slice(0, 300)); throw new Error(`trinks_${r.status}`); }
-  return t ? JSON.parse(t) : {};
+  const keys = trinksKeys(estab);
+  if (!keys.length) throw new Error("not_configured");
+  for (const key of keys) {
+    const r = await fetch(`${API}${path}`, {
+      ...init,
+      headers: { "X-Api-Key": key, estabelecimentoId: estab, "Content-Type": "application/json" },
+    });
+    const t = await r.text();
+    logApiCall("Trinks", path, init.method ?? "GET", estab, r.status, "eurofarma");
+    // Cota do token esgotada: tenta o token reserva do outro salão.
+    if (r.status === 429) continue;
+    if (!r.ok) { console.error("trinks", path, r.status, t.slice(0, 300)); throw new Error(`trinks_${r.status}`); }
+    return t ? JSON.parse(t) : {};
+  }
+  throw new Error("trinks_429");
 }
 const list = (d: any) => (Array.isArray(d) ? d : d?.data ?? []);
 const normRe = (s: string) => s.replace(/\D/g, "").replace(/^0+/, "") || "0";

@@ -23,7 +23,7 @@ const ConsumoApi = () => {
   const [diario, setDiario] = useState<Diario[]>([]);
   const [chamadas, setChamadas] = useState<Chamada[]>([]);
   const [loading, setLoading] = useState(false);
-  const [oficial, setOficial] = useState<ConsumoOficial | null>(null);
+  const [oficial, setOficial] = useState<Record<string, ConsumoOficial | null>>({});
 
   const carregar = async () => {
     setLoading(true);
@@ -36,7 +36,7 @@ const ConsumoApi = () => {
     ]);
     setDiario((r1.data ?? []).map((d: any) => ({ ...d, total: Number(d.total) })));
     setChamadas(r2.data ?? []);
-    setOficial(r3.data?.consumo ?? null);
+    setOficial(r3.data?.consumo ?? {});
     setLoading(false);
   };
   useEffect(() => { if (!checking) carregar(); }, [checking]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -66,13 +66,22 @@ const ConsumoApi = () => {
         </div>
 
         <div className="grid gap-3 sm:grid-cols-3">
-          {oficial && (
-            <div className="rounded-lg border border-primary/40 bg-primary/5 p-4">
-              <div className="text-xs uppercase text-muted-foreground">Consumo oficial Trinks ({oficial.plano})</div>
-              <div className="text-2xl font-semibold text-foreground">{oficial.totalUtilizado.toLocaleString("pt-BR")} <span className="text-sm font-normal text-muted-foreground">de {oficial.cotaTotal.toLocaleString("pt-BR")}</span></div>
-              <div className="text-xs text-muted-foreground">Saldo restante: {oficial.saldoRestante.toLocaleString("pt-BR")} chamadas</div>
-            </div>
-          )}
+          {[["campo-belo", "Campo Belo"], ["brooklin", "Brooklin"]].map(([unid, nome]) => {
+            const c = oficial[unid];
+            return (
+              <div key={unid} className="rounded-lg border border-primary/40 bg-primary/5 p-4">
+                <div className="text-xs uppercase text-muted-foreground">Consumo oficial Trinks — {nome}{c?.plano ? ` (${c.plano})` : ""}</div>
+                {c ? (
+                  <>
+                    <div className="text-2xl font-semibold text-foreground">{c.totalUtilizado.toLocaleString("pt-BR")} <span className="text-sm font-normal text-muted-foreground">de {c.cotaTotal.toLocaleString("pt-BR")}</span></div>
+                    <div className="text-xs text-muted-foreground">Saldo restante: {c.saldoRestante.toLocaleString("pt-BR")} chamadas</div>
+                  </>
+                ) : (
+                  <div className="text-sm text-muted-foreground">Indisponível no momento</div>
+                )}
+              </div>
+            );
+          })}
           <div className="rounded-lg border border-border bg-card p-4"><div className="text-xs uppercase text-muted-foreground">Nosso registro — total no período</div><div className="text-2xl font-semibold text-foreground">{diario.reduce((s, d) => s + d.total, 0)}</div></div>
           <div className="rounded-lg border border-border bg-card p-4"><div className="text-xs uppercase text-muted-foreground">Nosso registro — no mês atual</div><div className="text-2xl font-semibold text-foreground">{totalMes}</div></div>
           {apis.map((a) => (
