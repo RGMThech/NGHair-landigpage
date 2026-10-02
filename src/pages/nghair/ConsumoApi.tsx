@@ -9,6 +9,7 @@ import { useNghairStaff } from "@/hooks/useNghairStaff";
 
 type Diario = { dia: string; api: string; total: number };
 type Chamada = { id: string; api: string; endpoint: string | null; metodo: string | null; unidade: string | null; status: number | null; origem: string | null; created_at: string };
+type ConsumoOficial = { cotaTotal: number; plano: string; saldoRestante: number; totalUtilizado: number };
 
 const hojeSP = () => new Intl.DateTimeFormat("en-CA", { timeZone: "America/Sao_Paulo" }).format(new Date());
 const menosDias = (iso: string, n: number) => { const d = new Date(iso + "T12:00:00"); d.setDate(d.getDate() - n); return d.toISOString().slice(0, 10); };
