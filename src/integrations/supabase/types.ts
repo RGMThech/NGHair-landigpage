@@ -668,6 +668,10 @@ export type Database = {
           valor: number
         }[]
       }
+      eurofarma_dashboard_resumo: {
+        Args: { _from?: string; _month?: string; _to?: string }
+        Returns: Json
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
