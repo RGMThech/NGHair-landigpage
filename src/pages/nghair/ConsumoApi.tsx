@@ -107,7 +107,7 @@ const ConsumoApi = () => {
         </section>
 
         <section className="space-y-2">
-          <h2 className="font-display text-xl text-foreground">Chamadas registradas <span className="text-sm text-muted-foreground">(últimas 500 do período)</span></h2>
+          <h2 className="font-display text-xl text-foreground">Chamadas registradas <span className="text-sm text-muted-foreground">(todas do período)</span></h2>
           <div className="overflow-x-auto rounded-lg border border-border">
             <table className="w-full text-sm">
               <thead className="bg-muted text-left"><tr><th className="p-2">Data e hora</th><th className="p-2">API</th><th className="p-2">Chamada</th><th className="p-2">Unidade</th><th className="p-2">Origem</th><th className="p-2 text-right">Resultado</th></tr></thead>
