@@ -23,17 +23,20 @@ const ConsumoApi = () => {
   const [diario, setDiario] = useState<Diario[]>([]);
   const [chamadas, setChamadas] = useState<Chamada[]>([]);
   const [loading, setLoading] = useState(false);
+  const [oficial, setOficial] = useState<ConsumoOficial | null>(null);
 
   const carregar = async () => {
     setLoading(true);
-    const [r1, r2] = await Promise.all([
+    const [r1, r2, r3] = await Promise.all([
       (supabase.rpc as any)("api_consumo_diario", { _inicio: inicio, _fim: fim }),
       (supabase.from as any)("api_call_log").select("*")
         .gte("created_at", `${inicio}T00:00:00-03:00`).lte("created_at", `${fim}T23:59:59-03:00`)
         .order("created_at", { ascending: false }).limit(500),
+      supabase.functions.invoke("trinks-booking", { body: { action: "consumo", unidade: "campo-belo" } }),
     ]);
     setDiario((r1.data ?? []).map((d: any) => ({ ...d, total: Number(d.total) })));
     setChamadas(r2.data ?? []);
+    setOficial(r3.data?.consumo ?? null);
     setLoading(false);
   };
   useEffect(() => { if (!checking) carregar(); }, [checking]); // eslint-disable-line react-hooks/exhaustive-deps
