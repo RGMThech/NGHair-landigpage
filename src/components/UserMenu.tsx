@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { CalendarClock, CalendarPlus, LogIn, LogOut, Shield, UserRound } from "lucide-react";
+import { CalendarClock, CalendarPlus, LogIn, LogOut, UserRound } from "lucide-react";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
   DropdownMenuSeparator, DropdownMenuTrigger,
@@ -43,9 +43,6 @@ export const UserMenu = ({ className = "" }: { className?: string }) => {
         <DropdownMenuItem asChild><Link to="/minha-conta/perfil"><UserRound className="h-4 w-4 mr-2" />Meu perfil</Link></DropdownMenuItem>
         <DropdownMenuItem asChild><Link to="/minha-conta/agendamentos"><CalendarClock className="h-4 w-4 mr-2" />Meus agendamentos</Link></DropdownMenuItem>
         <DropdownMenuItem asChild><Link to="/agendamento"><CalendarPlus className="h-4 w-4 mr-2" />Agendar horário</Link></DropdownMenuItem>
-        {/@nghair\.com\.br$/i.test(profile.email ?? "") && (
-          <DropdownMenuItem asChild><Link to="/admin"><Shield className="h-4 w-4 mr-2" />Administração</Link></DropdownMenuItem>
-        )}
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={() => void clienteLogout()} className="text-destructive focus:text-destructive">
           <LogOut className="h-4 w-4 mr-2" />Sair

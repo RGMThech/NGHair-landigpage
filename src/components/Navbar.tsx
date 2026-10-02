@@ -112,7 +112,7 @@ const Navbar = () => {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
                 <DropdownMenuItem asChild><Link to="/nghair/esmaltes">Prateleira Esmaltes</Link></DropdownMenuItem>
-                <DropdownMenuItem asChild><Link to="/nghair/carga">Carga de Dados</Link></DropdownMenuItem>
+                <DropdownMenuItem asChild><Link to="/admin">Carga de Dados</Link></DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           )}
@@ -205,7 +205,7 @@ const Navbar = () => {
             <>
               <div className="font-body text-xs uppercase tracking-widest text-muted-foreground pt-2">NGHair</div>
               <Link to="/nghair/esmaltes" onClick={() => setOpen(false)} className="font-body text-sm uppercase tracking-widest text-foreground/70 hover:text-primary pl-3">Prateleira Esmaltes</Link>
-              <Link to="/nghair/carga" onClick={() => setOpen(false)} className="font-body text-sm uppercase tracking-widest text-foreground/70 hover:text-primary pl-3">Carga de Dados</Link>
+              <Link to="/admin" onClick={() => setOpen(false)} className="font-body text-sm uppercase tracking-widest text-foreground/70 hover:text-primary pl-3">Carga de Dados</Link>
             </>
           )}
           <Link
