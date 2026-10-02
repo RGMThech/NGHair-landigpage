@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { ArrowLeft, Scissors, Sparkles, Hand } from "lucide-react";
+import { ArrowLeft, Scissors, Sparkles, Hand, Brush } from "lucide-react";
 import { verticePriceCategories } from "@/lib/vertice-prices";
 import { useVerticeAuth } from "@/hooks/useVerticeAuth";
 import {
@@ -13,6 +13,7 @@ const categoryIcons = {
   Cabelo: Scissors,
   Unhas: Hand,
   Estética: Sparkles,
+  Maquiagem: Brush,
 };
 
 const VerticePrices = () => {
