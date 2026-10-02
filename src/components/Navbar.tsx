@@ -6,6 +6,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { CartDrawer } from "@/components/CartDrawer";
 import { UserMenu } from "@/components/UserMenu";
+import { useClienteProfile } from "@/hooks/useClienteAuth";
+import { isNghairEmail } from "@/lib/esmaltes";
 
 const links = [
   { label: "Início", href: "#" },
@@ -17,6 +19,8 @@ const links = [
 const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
+  const { profile } = useClienteProfile();
+  const staff = isNghairEmail(profile?.email);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 50);
@@ -97,6 +101,21 @@ const Navbar = () => {
                 </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
+          {staff && (
+            <DropdownMenu>
+              <DropdownMenuTrigger
+                className={`font-body text-[13px] uppercase tracking-wider xl:tracking-widest transition-colors duration-300 hover:text-primary inline-flex items-center gap-1 outline-none ${
+                  scrolled ? "text-foreground/70" : "text-cream/80"
+                }`}
+              >
+                NGHair <ChevronDown className="h-3 w-3" />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuItem asChild><Link to="/nghair/esmaltes">Prateleira Esmaltes</Link></DropdownMenuItem>
+                <DropdownMenuItem asChild><Link to="/nghair/carga">Carga de Dados</Link></DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
           <CartDrawer
             buttonClassName={`relative inline-flex items-center justify-center h-9 w-9 rounded-full transition ${scrolled ? "text-foreground/70 hover:text-primary" : "text-cream/80 hover:text-primary"}`}
           />
@@ -182,6 +201,13 @@ const Navbar = () => {
           >
             Convênios Corporativos
           </Link>
+          {staff && (
+            <>
+              <div className="font-body text-xs uppercase tracking-widest text-muted-foreground pt-2">NGHair</div>
+              <Link to="/nghair/esmaltes" onClick={() => setOpen(false)} className="font-body text-sm uppercase tracking-widest text-foreground/70 hover:text-primary pl-3">Prateleira Esmaltes</Link>
+              <Link to="/nghair/carga" onClick={() => setOpen(false)} className="font-body text-sm uppercase tracking-widest text-foreground/70 hover:text-primary pl-3">Carga de Dados</Link>
+            </>
+          )}
           <Link
             to="/agendamento"
             onClick={() => setOpen(false)}

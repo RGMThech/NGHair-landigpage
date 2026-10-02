@@ -170,6 +170,54 @@ export type Database = {
         }
         Relationships: []
       }
+      esmaltes: {
+        Row: {
+          cor: string | null
+          created_at: string
+          data_cadastro: string
+          data_removido: string | null
+          etiqueta: number | null
+          id: string
+          marca: string | null
+          motivo: string | null
+          serie: string | null
+          status: string
+          unidade: string
+          updated_at: string
+          validade: string | null
+        }
+        Insert: {
+          cor?: string | null
+          created_at?: string
+          data_cadastro?: string
+          data_removido?: string | null
+          etiqueta?: number | null
+          id?: string
+          marca?: string | null
+          motivo?: string | null
+          serie?: string | null
+          status?: string
+          unidade?: string
+          updated_at?: string
+          validade?: string | null
+        }
+        Update: {
+          cor?: string | null
+          created_at?: string
+          data_cadastro?: string
+          data_removido?: string | null
+          etiqueta?: number | null
+          id?: string
+          marca?: string | null
+          motivo?: string | null
+          serie?: string | null
+          status?: string
+          unidade?: string
+          updated_at?: string
+          validade?: string | null
+        }
+        Relationships: []
+      }
       eurofarma_dashboard_access: {
         Row: {
           created_at: string
