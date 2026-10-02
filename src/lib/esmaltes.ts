@@ -12,6 +12,7 @@ export type Esmalte = {
   motivo: string | null;
   data_removido: string | null;
   unidade: string;
+  fotos: string[];
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
