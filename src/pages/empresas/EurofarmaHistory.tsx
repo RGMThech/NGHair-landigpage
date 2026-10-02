@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { ArrowLeft, Calendar } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { fetchAll } from "@/lib/fetchAll";
 import { useEurofarmaAuth } from "@/hooks/useEurofarmaAuth";
 import {
   Table,
@@ -48,10 +49,11 @@ const EurofarmaHistory = () => {
   useEffect(() => {
     if (!userId) return;
     (async () => {
-      const { data } = await supabase
+      const data = await fetchAll<{ month_ref: string }>(() => supabase
         .from("eurofarma_entries")
         .select("month_ref")
-        .order("month_ref", { ascending: false });
+        .order("month_ref", { ascending: false })
+        .order("id"));
       const unique = Array.from(new Set((data ?? []).map((d) => d.month_ref)));
       setMonths(unique);
       setLoading(false);
@@ -65,12 +67,13 @@ const EurofarmaHistory = () => {
     }
     (async () => {
       setLoading(true);
-      const { data } = await supabase
+      const data = await fetchAll(() => supabase
         .from("eurofarma_entries")
         .select("*")
         .eq("month_ref", selectedMonth)
         .order("data", { ascending: true })
-        .order("hora", { ascending: true });
+        .order("hora", { ascending: true })
+        .order("id"));
       setEntries((data ?? []) as Entry[]);
       setLoading(false);
     })();
