@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowLeft, Plus, Search, Loader2, PackageX } from "lucide-react";
+import { ArrowLeft, Plus, Search, Loader2, PackageX, Camera, ImagePlus, X } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -34,6 +35,17 @@ const PrateleiraEsmaltes = () => {
   const [pagina, setPagina] = useState(1);
   const [novo, setNovo] = useState(false);
   const [remover, setRemover] = useState<Esmalte | null>(null);
+  const [galeria, setGaleria] = useState<Esmalte | null>(null);
+  const [urls, setUrls] = useState<Record<string, string>>({});
+  useEffect(() => {
+    const faltam = lista.flatMap((e) => e.fotos ?? []).filter((p) => !urls[p]);
+    if (!faltam.length) return;
+    supabase.storage.from("esmaltes").createSignedUrls(faltam, 3600).then(({ data }) => {
+      const m: Record<string, string> = {};
+      data?.forEach((d) => { if (d.path && d.signedUrl) m[d.path] = d.signedUrl; });
+      setUrls((u) => ({ ...u, ...m }));
+    });
+  }, [lista]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const carregar = async () => {
     setLoading(true);
@@ -119,11 +131,19 @@ const PrateleiraEsmaltes = () => {
           {loading ? <div className="p-10 grid place-items-center"><Loader2 className="h-5 w-5 animate-spin text-primary" /></div> : (
             <table className="w-full text-sm">
               <thead className="bg-muted/50 text-muted-foreground text-xs uppercase tracking-wider">
-                <tr>{["Etiqueta", "Marca", "Série", "Cor", "Validade", "Situação", "Cadastro", "Status", "Unidade", ""].map((h) => <th key={h} className="px-3 py-2 text-left font-medium">{h}</th>)}</tr>
+                <tr>{["Foto", "Etiqueta", "Marca", "Série", "Cor", "Validade", "Situação", "Cadastro", "Status", "Unidade", ""].map((h) => <th key={h} className="px-3 py-2 text-left font-medium">{h}</th>)}</tr>
               </thead>
               <tbody>
                 {visiveis.map((e) => (
                   <tr key={e.id} className="border-t border-border">
+                    <td className="px-3 py-2">
+                      {e.fotos?.length && urls[e.fotos[0]] ? (
+                        <button onClick={() => setGaleria(e)} className="relative block">
+                          <img src={urls[e.fotos[0]]} alt="" className="h-10 w-10 rounded object-cover" />
+                          {e.fotos.length > 1 && <span className="absolute -bottom-1 -right-1 rounded-full bg-primary px-1 text-[10px] text-primary-foreground">{e.fotos.length}</span>}
+                        </button>
+                      ) : <div className="h-10 w-10 rounded bg-muted" />}
+                    </td>
                     <td className="px-3 py-2 font-semibold">{e.etiqueta}</td>
                     <td className="px-3 py-2 capitalize">{e.marca}</td>
                     <td className="px-3 py-2 capitalize">{e.serie}</td>
@@ -155,33 +175,93 @@ const PrateleiraEsmaltes = () => {
 
       <NovoEsmalte open={novo} onClose={() => setNovo(false)} proxima={Math.max(0, ...lista.map((e) => e.etiqueta ?? 0)) + 1} onSaved={carregar} />
       <RemoverEsmalte esmalte={remover} onClose={() => setRemover(null)} onSaved={carregar} />
+      <Dialog open={!!galeria} onOpenChange={(o) => !o && setGaleria(null)}>
+        <DialogContent className="max-h-[95dvh] overflow-y-auto w-[calc(100vw-1rem)] sm:max-w-2xl">
+          <DialogHeader><DialogTitle>Fotos — etiqueta {galeria?.etiqueta}</DialogTitle></DialogHeader>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {galeria?.fotos.map((p) => urls[p] && <img key={p} src={urls[p]} alt="" className="w-full rounded-md object-cover" />)}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
 
+const MAX_FOTOS = 5;
+
+/** Reduz a foto do celular para no máximo 1280px em JPEG. */
+async function comprimir(file: File): Promise<Blob> {
+  const img = await createImageBitmap(file).catch(() => null);
+  if (!img) return file;
+  const esc = Math.min(1, 1280 / Math.max(img.width, img.height));
+  const c = document.createElement("canvas");
+  c.width = Math.round(img.width * esc); c.height = Math.round(img.height * esc);
+  c.getContext("2d")!.drawImage(img, 0, 0, c.width, c.height);
+  return await new Promise((r) => c.toBlob((b) => r(b ?? file), "image/jpeg", 0.8));
+}
+
 const NovoEsmalte = ({ open, onClose, proxima, onSaved }: { open: boolean; onClose: () => void; proxima: number; onSaved: () => void }) => {
   const [f, setF] = useState({ etiqueta: "", marca: "", serie: "", cor: "", validade: "", unidade: "Campo Belo" });
+  const [fotos, setFotos] = useState<File[]>([]);
   const [saving, setSaving] = useState(false);
-  useEffect(() => { if (open) setF((p) => ({ ...p, etiqueta: String(proxima), marca: "", serie: "", cor: "", validade: "" })); }, [open, proxima]);
+  useEffect(() => { if (open) { setF((p) => ({ ...p, etiqueta: String(proxima), marca: "", serie: "", cor: "", validade: "" })); setFotos([]); } }, [open, proxima]);
+  const previews = useMemo(() => fotos.map((x) => URL.createObjectURL(x)), [fotos]);
+  useEffect(() => () => previews.forEach((u) => URL.revokeObjectURL(u)), [previews]);
+  const addFotos = (list: FileList | null) => {
+    const novas = Array.from(list ?? []).filter((x) => x.type.startsWith("image/"));
+    if (fotos.length + novas.length > MAX_FOTOS) toast({ title: `Máximo de ${MAX_FOTOS} fotos por esmalte` });
+    setFotos([...fotos, ...novas].slice(0, MAX_FOTOS));
+  };
   const salvar = async () => {
     if (!f.marca.trim() || !f.cor.trim() || !f.validade) { toast({ title: "Preencha marca, cor e validade", variant: "destructive" }); return; }
     setSaving(true);
+    const pasta = crypto.randomUUID();
+    const caminhos: string[] = [];
+    for (const [i, foto] of fotos.entries()) {
+      const path = `${pasta}/${Date.now()}-${i}.jpg`;
+      const { error } = await supabase.storage.from("esmaltes").upload(path, await comprimir(foto), { contentType: "image/jpeg" });
+      if (error) { setSaving(false); toast({ title: "Erro ao enviar foto", description: error.message, variant: "destructive" }); return; }
+      caminhos.push(path);
+    }
     const { error } = await esmaltesTable().insert({
       etiqueta: Number(f.etiqueta) || null, marca: f.marca.trim(), serie: f.serie.trim() || null, cor: f.cor.trim(),
-      validade: `${f.validade}-01`, unidade: f.unidade, status: "Prateleira", data_cadastro: hojeISO(),
+      validade: `${f.validade}-01`, unidade: f.unidade, status: "Prateleira", data_cadastro: hojeISO(), fotos: caminhos,
     });
     setSaving(false);
     if (error) { toast({ title: "Erro ao cadastrar", description: error.message, variant: "destructive" }); return; }
     toast({ title: "Esmalte cadastrado" }); onClose(); onSaved();
   };
   const campo = (k: keyof typeof f, label: string, type = "text") => (
-    <div className="space-y-1"><Label>{label}</Label><Input type={type} value={f[k]} onChange={(e) => setF({ ...f, [k]: e.target.value })} /></div>
+    <div className="space-y-1"><Label>{label}</Label><Input className="h-11 text-base" type={type} inputMode={type === "number" ? "numeric" : undefined} value={f[k]} onChange={(e) => setF({ ...f, [k]: e.target.value })} /></div>
   );
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent>
+      <DialogContent className="max-h-[95dvh] overflow-y-auto w-[calc(100vw-1rem)] sm:max-w-lg">
         <DialogHeader><DialogTitle>Cadastrar esmalte</DialogTitle></DialogHeader>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="space-y-2">
+          <Label>Fotos ({fotos.length}/{MAX_FOTOS})</Label>
+          <div className="grid grid-cols-5 gap-2">
+            {previews.map((u, i) => (
+              <div key={u} className="relative aspect-square">
+                <img src={u} alt="" className="h-full w-full rounded-md object-cover" />
+                <button type="button" onClick={() => setFotos(fotos.filter((_, j) => j !== i))} className="absolute -top-1.5 -right-1.5 rounded-full bg-destructive p-0.5 text-destructive-foreground" aria-label="Remover foto"><X className="h-3 w-3" /></button>
+              </div>
+            ))}
+          </div>
+          {fotos.length < MAX_FOTOS && (
+            <div className="grid grid-cols-2 gap-2">
+              <label className="flex h-11 cursor-pointer items-center justify-center gap-2 rounded-md border border-primary text-sm text-primary">
+                <Camera className="h-4 w-4" />Tirar foto
+                <input type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => { addFotos(e.target.files); e.target.value = ""; }} />
+              </label>
+              <label className="flex h-11 cursor-pointer items-center justify-center gap-2 rounded-md border border-border text-sm">
+                <ImagePlus className="h-4 w-4" />Galeria
+                <input type="file" accept="image/*" multiple className="hidden" onChange={(e) => { addFotos(e.target.files); e.target.value = ""; }} />
+              </label>
+            </div>
+          )}
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {campo("etiqueta", "Etiqueta", "number")}
           <div className="space-y-1"><Label>Unidade</Label>
             <Select value={f.unidade} onValueChange={(v) => setF({ ...f, unidade: v })}>
