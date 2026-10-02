@@ -334,9 +334,14 @@ Deno.serve(async (req) => {
         return json({ ok: true, id: ag.id ?? null });
       }
       case "consumo": {
-        // Consumo oficial informado pelo próprio Trinks (endpoint /consumo).
-        const d = await trinks("/consumo", estab);
-        return json({ consumo: d });
+        // Consumo oficial informado pelo próprio Trinks (endpoint /consumo),
+        // consultado com o token de cada salão.
+        const consumo: Record<string, unknown> = {};
+        for (const [unidade, estabId] of Object.entries(UNIDADES)) {
+          try { consumo[unidade] = await trinks("/consumo", estabId); }
+          catch { consumo[unidade] = null; }
+        }
+        return json({ consumo });
       }
       default: return json({ error: "acao_invalida" }, 400);
     }

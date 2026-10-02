@@ -27,19 +27,25 @@ const RESEND_MS = 60 * 1000;
 const MAX_ATTEMPTS = 5;
 
 async function trinks(path: string, estab: string, init: RequestInit = {}) {
-  for (let i = 0; i < 3; i++) {
-    const r = await fetch(`${API}${path}`, {
-      ...init,
-      headers: { "X-Api-Key": Deno.env.get("TRINKS_API_KEY")!, estabelecimentoId: estab, "Content-Type": "application/json" },
-    });
-    const t = await r.text();
-    logApiCall("Trinks", path, init.method ?? "GET", estab, r.status, "area-cliente");
-    if (r.status === 429 && i < 2) {
-      await new Promise((res) => setTimeout(res, Math.min(Number(r.headers.get("retry-after") ?? 2), 10) * 1000));
-      continue;
+  const keys = trinksKeys(estab);
+  if (!keys.length) throw new Error("not_configured");
+  for (const key of keys) {
+    for (let i = 0; i < 3; i++) {
+      const r = await fetch(`${API}${path}`, {
+        ...init,
+        headers: { "X-Api-Key": key, estabelecimentoId: estab, "Content-Type": "application/json" },
+      });
+      const t = await r.text();
+      logApiCall("Trinks", path, init.method ?? "GET", estab, r.status, "area-cliente");
+      if (r.status === 429 && i < 2) {
+        await new Promise((res) => setTimeout(res, Math.min(Number(r.headers.get("retry-after") ?? 2), 10) * 1000));
+        continue;
+      }
+      // Cota do token esgotada: tenta o token reserva do outro salão.
+      if (r.status === 429) break;
+      if (!r.ok) { console.error("trinks", path, r.status, t.slice(0, 300)); throw new Error(`trinks_${r.status}`); }
+      try { return t ? JSON.parse(t) : {}; } catch { return {}; }
     }
-    if (!r.ok) { console.error("trinks", path, r.status, t.slice(0, 300)); throw new Error(`trinks_${r.status}`); }
-    try { return t ? JSON.parse(t) : {}; } catch { return {}; }
   }
   throw new Error("trinks_429");
 }
