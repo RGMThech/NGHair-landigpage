@@ -31,6 +31,10 @@ export const verticePriceCategories: VerticePriceCategory[] = [
       p("Botox ou Progressiva", 390),
       p("Redutora sem formol", 420),
       p("Aplicação de coloração com produto do cliente", 198),
+      p("Hidratação L'Oréal", 198),
+      p("Cauterização molecular", 340),
+      p("Hidratação Joico", 220),
+      p("Cauterização Joico", 340),
     ],
   },
   {
