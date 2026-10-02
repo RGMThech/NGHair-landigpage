@@ -3,6 +3,7 @@
 import { createClient } from "npm:@supabase/supabase-js@2.95.0";
 import { corsHeaders } from "npm:@supabase/supabase-js@2.95.0/cors";
 import { logApiCall } from "../_shared/api-log.ts";
+import { trinksKeys } from "../_shared/trinks-key.ts";
 
 const API = "https://api.trinks.com/v1";
 const UNIDADES: Record<string, { id: string; nome: string }> = {

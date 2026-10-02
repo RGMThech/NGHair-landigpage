@@ -3,6 +3,7 @@
 import { createClient } from "npm:@supabase/supabase-js@2.95.0";
 import { SMTPClient } from "https://deno.land/x/denomailer@1.6.0/mod.ts";
 import { logApiCall } from "../_shared/api-log.ts";
+import { trinksKeys } from "../_shared/trinks-key.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
