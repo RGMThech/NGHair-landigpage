@@ -5,7 +5,7 @@ import { useVerticeAuth } from "@/hooks/useVerticeAuth";
 const promotions = [
   {
     title: "Serviços de cabelo",
-    description: "Condição especial para colaboradores Vértice em serviços de cabelo.",
+    description: "Durante o mês de outubro, 20% de desconto para colaboradores Vértice em serviços de cabelo.",
     badge: "Benefício Vértice",
     highlight: "20% de desconto",
     icon: Scissors,
