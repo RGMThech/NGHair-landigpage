@@ -327,6 +327,11 @@ Deno.serve(async (req) => {
         }) });
         return json({ ok: true, id: ag.id ?? null });
       }
+      case "consumo": {
+        // Consumo oficial informado pelo próprio Trinks (endpoint /consumo).
+        const d = await trinks("/consumo", estab);
+        return json({ consumo: d });
+      }
       default: return json({ error: "acao_invalida" }, 400);
     }
   } catch (e) {
