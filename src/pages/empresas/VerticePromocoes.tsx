@@ -8,7 +8,6 @@ const promotions = [
     description: "Durante o mês de outubro, 20% de desconto para colaboradores Vértice em serviços de cabelo.",
     highlight: "20% de desconto",
     badge: "Benefício Vértice",
-    highlight: "20% de desconto",
     icon: Scissors,
   },
   {
