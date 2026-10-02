@@ -334,7 +334,7 @@ const EurofarmaDashboard = () => {
                 )}
 
                 <p className="text-sm text-muted-foreground ml-auto">
-                  {filteredRows.length} de {rows.length} lançamentos
+                  {totals.atendimentos} de {resumo?.total_geral ?? 0} lançamentos
                 </p>
               </div>
             </div>
@@ -443,7 +443,7 @@ const EurofarmaDashboard = () => {
                   {byRe.map((r) => (
                     <TableRow key={r.name}>
                       <TableCell>{r.name}</TableCell>
-                      <TableCell>{nameByRe.get(normalizeRe(r.name)) ?? "-"}</TableCell>
+                      <TableCell>{r.nome ?? "-"}</TableCell>
                       <TableCell className="text-right">{r.qtd}</TableCell>
                       <TableCell className="text-right">{brl(r.total)}</TableCell>
                     </TableRow>
