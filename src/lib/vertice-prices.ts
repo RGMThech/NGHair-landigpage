@@ -37,18 +37,12 @@ export const verticePriceCategories: VerticePriceCategory[] = [
     name: "Unhas",
     items: [
       p("Manicure completa", 45),
-      p("Manicure masculino", 46),
       p("Manicure sem esmaltação (cutícula/lixar/massagem)", 46),
       p("Pedicure completa", 50),
       p("Pedicure Francesinha", 54),
-      p("Pedicure completa com Francesinha Decorada", 55),
-      p("Pedicure masculino", 52),
       p("Pedicure sem esmaltação (cutícula/lixar/massagem)", 50),
       p("Esmaltação mãos", 34),
       p("Esmaltação dos pés", 34),
-      p("Esmaltação Decorada", 38),
-      p("Esmaltação Francesinha Decorada (mão)", 38),
-      p("Esmaltação Francesinha Decorada (adicional)", 38),
     ],
   },
   {
