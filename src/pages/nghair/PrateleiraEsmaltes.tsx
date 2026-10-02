@@ -158,7 +158,7 @@ const PrateleiraEsmaltes = () => {
                     </td>
                   </tr>
                 ))}
-                {!visiveis.length && <tr><td colSpan={10} className="p-8 text-center text-muted-foreground">Nenhum esmalte encontrado.</td></tr>}
+                {!visiveis.length && <tr><td colSpan={11} className="p-8 text-center text-muted-foreground">Nenhum esmalte encontrado.</td></tr>}
               </tbody>
             </table>
           )}
