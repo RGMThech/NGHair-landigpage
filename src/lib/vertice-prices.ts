@@ -25,6 +25,12 @@ export const verticePriceCategories: VerticePriceCategory[] = [
       p("Corte masculino", 110),
       p("Corte Máquina Masculino", 80),
       p("Prancha (adicional, qualquer tamanho)", 50),
+      p("Coloração", 320),
+      p("Luzes", 700),
+      p("Luzes contorno", 590),
+      p("Botox ou Progressiva", 390),
+      p("Redutora sem formol", 420),
+      p("Aplicação de coloração com produto do cliente", 198),
     ],
   },
   {
@@ -74,6 +80,13 @@ export const verticePriceCategories: VerticePriceCategory[] = [
       p("Virilha (1 serviço) simples", 72),
       p("Virilha Completa (3 serviços)", 109),
       p("Virilha Íntima (2 serviços)", 109),
+    ],
+  },
+  {
+    name: "Maquiagem",
+    items: [
+      p("Maquiagem", 280),
+      p("Penteado", 220),
     ],
   },
 ];
