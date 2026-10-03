@@ -18,10 +18,10 @@ const call = async (body: Record<string, unknown>) => {
 type Cliente = { id: number; nome: string; telefone: string; email?: string; nomeProtegido?: boolean };
 const emailOk = (e: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e.trim());
 const schema = z.object({
-  nome: z.string().trim().max(100),
+  nome: z.string().trim().min(3, "Informe ao menos 3 letras do nome").max(100),
   telefone: z.string().trim().max(20),
   email: z.string().trim().max(150),
-}).refine((v) => v.nome.length >= 3 || v.telefone.replace(/\D/g, "").length >= 8 || emailOk(v.email), "Informe ao menos 3 letras do nome, o telefone ou o e-mail");
+});
 
 const iso = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 const hojeEmSaoPaulo = () => {
@@ -133,11 +133,11 @@ export default function BookingFlow({ unidade, nomeUnidade, fallbackUrl }: { uni
     if (!r.success) return setErro(r.error.issues[0].message);
     setLoading(true); setErro(""); setCliente(null); setClientes(null); setTelAtualizado(false);
     try {
-      const d = await call({ action: "buscarCliente", unidade, nome: form.nome.trim(), telefone: form.telefone.trim(), email: form.email.trim() });
+      const d = await call({ action: "buscarCliente", unidade, nome: form.nome.trim() });
       const list: Cliente[] = d.clientes ?? [];
       setClientes(list);
-      if (list.length === 1) setCliente(list[0]);
-      if (!list.length) { setNaoEncontrado(true); setErro("Não encontramos seu cadastro. Tente novamente informando seu e-mail e/ou telefone com DDD. Se ainda não localizar, crie um novo cadastro abaixo."); }
+      if (list.length === 1) await selecionarCliente(list[0]);
+      if (!list.length) { setNaoEncontrado(true); setErro("Não encontramos seu cadastro por este nome. Confira a grafia ou crie um novo cadastro abaixo."); }
       else setNaoEncontrado(false);
     } catch { setErro("Não conseguimos buscar seu cadastro agora. Tente novamente."); }
     finally { setLoading(false); }
@@ -407,24 +407,27 @@ export default function BookingFlow({ unidade, nomeUnidade, fallbackUrl }: { uni
             <strong>{servico?.nome}</strong> com {slot.nome}<br />
             {new Date(data + "T12:00").toLocaleDateString("pt-BR", { weekday: "long", day: "2-digit", month: "long" })} às {slot.hora}
           </div>
-          <p className="font-body text-sm text-muted-foreground">Informe seu nome (pode ser parcial), seu telefone ou seu e-mail para localizarmos seu cadastro.</p>
-          {(["nome", "telefone", "email"] as const).map((k) => (
+          <p className="font-body text-sm text-muted-foreground">Informe seu nome (pode ser parcial) para localizarmos seu cadastro.</p>
+          {(["nome", "telefone", "email"] as const).map((k) => {
+            const bloqueado = !cliente && !naoEncontrado && k !== "nome";
+            return (
             <label key={k} className="block space-y-1">
-              {cliente && <span className="font-body text-xs text-muted-foreground">{{ nome: "Nome", telefone: "Telefone", email: "E-mail" }[k]}</span>}
+              {(cliente || naoEncontrado) && <span className="font-body text-xs text-muted-foreground">{{ nome: "Nome", telefone: "Telefone", email: "E-mail" }[k]}</span>}
               <input ref={k === "nome" ? nomeRef : undefined} value={form[k]} onChange={(e) => {
                 setForm({ ...form, [k]: e.target.value });
                 if (cliente) setTelAtualizado(false);
                 else setClientes(null);
               }}
-                disabled={k === "nome" && cliente?.nomeProtegido}
+                disabled={bloqueado || (k === "nome" && !!cliente?.nomeProtegido)}
                 placeholder={{ nome: "Nome", telefone: "Telefone com DDD", email: "E-mail (opcional)" }[k]}
                 inputMode={k === "telefone" ? "tel" : k === "email" ? "email" : undefined}
                 autoComplete={k === "telefone" ? "tel" : k === "email" ? "email" : "name"}
-                className="w-full rounded-xl border border-input bg-card px-4 py-3 font-body text-sm outline-none focus:border-primary disabled:opacity-70" />
+                className="w-full rounded-xl border border-input bg-card px-4 py-3 font-body text-sm outline-none focus:border-primary disabled:opacity-50 disabled:bg-muted/40" />
             </label>
-          ))}
+            );
+          })}
           {cliente?.nomeProtegido && <p className="font-body text-xs text-muted-foreground">Este nome contém seu código de colaborador e será mantido.</p>}
-          {!clientes?.length && (
+          {!clientes?.length && !naoEncontrado && (
             <button onClick={buscar} disabled={loading}
               className="w-full rounded-full border border-primary px-8 py-3 font-body text-xs font-semibold uppercase tracking-wider text-primary disabled:opacity-60">
               {loading ? "Buscando..." : "Localizar meu cadastro"}
@@ -432,11 +435,12 @@ export default function BookingFlow({ unidade, nomeUnidade, fallbackUrl }: { uni
           )}
           {naoEncontrado && !cliente && (
             <div className="rounded-xl border border-border bg-muted/50 p-4 space-y-3">
-              <p className="font-body text-sm text-foreground">Antes de criar, tente localizar novamente pelo e-mail e/ou telefone com DDD. Para criar o cadastro, informe um nome, um telefone com DDD e um e-mail — se você for de uma empresa parceira, utilize o e-mail da empresa.</p>
+              <p className="font-body text-sm text-foreground">Para criar o cadastro, informe um nome, um telefone com DDD e um e-mail — se você for de uma empresa parceira, utilize o e-mail da empresa.</p>
               <button onClick={criarCadastro} disabled={loading}
                 className="w-full rounded-full bg-primary px-4 py-2.5 font-body text-xs font-semibold uppercase tracking-wider text-primary-foreground disabled:opacity-60">
                 {loading ? "Criando..." : "Criar meu cadastro"}
               </button>
+              <button onClick={novaBusca} className="font-body text-xs text-muted-foreground underline">Voltar e buscar por outro nome</button>
             </div>
           )}
           {!!clientes?.length && (
