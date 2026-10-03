@@ -133,11 +133,11 @@ export default function BookingFlow({ unidade, nomeUnidade, fallbackUrl }: { uni
     if (!r.success) return setErro(r.error.issues[0].message);
     setLoading(true); setErro(""); setCliente(null); setClientes(null); setTelAtualizado(false);
     try {
-      const d = await call({ action: "buscarCliente", unidade, nome: form.nome.trim(), telefone: form.telefone.trim(), email: form.email.trim() });
+      const d = await call({ action: "buscarCliente", unidade, nome: form.nome.trim() });
       const list: Cliente[] = d.clientes ?? [];
       setClientes(list);
-      if (list.length === 1) setCliente(list[0]);
-      if (!list.length) { setNaoEncontrado(true); setErro("Não encontramos seu cadastro. Tente novamente informando seu e-mail e/ou telefone com DDD. Se ainda não localizar, crie um novo cadastro abaixo."); }
+      if (list.length === 1) await selecionarCliente(list[0]);
+      if (!list.length) { setNaoEncontrado(true); setErro("Não encontramos seu cadastro por este nome. Confira a grafia ou crie um novo cadastro abaixo."); }
       else setNaoEncontrado(false);
     } catch { setErro("Não conseguimos buscar seu cadastro agora. Tente novamente."); }
     finally { setLoading(false); }
