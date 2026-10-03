@@ -14,7 +14,7 @@ const UNIDADES: Unidade[] = [
 
 const placeIdCache = new Map<string, string>();
 let lastSync = 0;
-const SYNC_TTL = 30 * 60 * 1000; // 30 min
+const SYNC_TTL = 24 * 60 * 60 * 1000; // 24h — Google só é consultado quando alguém abre o site, no máximo 1x ao dia
 
 async function resolvePlaceId(u: Unidade, key: string): Promise<string | null> {
   if (u.placeId) return u.placeId;
