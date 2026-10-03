@@ -18,10 +18,10 @@ const call = async (body: Record<string, unknown>) => {
 type Cliente = { id: number; nome: string; telefone: string; email?: string; nomeProtegido?: boolean };
 const emailOk = (e: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e.trim());
 const schema = z.object({
-  nome: z.string().trim().max(100),
+  nome: z.string().trim().min(3, "Informe ao menos 3 letras do nome").max(100),
   telefone: z.string().trim().max(20),
   email: z.string().trim().max(150),
-}).refine((v) => v.nome.length >= 3 || v.telefone.replace(/\D/g, "").length >= 8 || emailOk(v.email), "Informe ao menos 3 letras do nome, o telefone ou o e-mail");
+});
 
 const iso = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 const hojeEmSaoPaulo = () => {
