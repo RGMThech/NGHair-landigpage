@@ -8,6 +8,7 @@ interface GoogleReview {
   rating: number;
   time: string;
   profilePhoto: string;
+  unidade?: string;
 }
 
 const TestimonialsSection = () => {
@@ -46,7 +47,8 @@ const TestimonialsSection = () => {
           const { data: cached } = await supabase
             .from("google_reviews")
             .select("*")
-            .order("rating", { ascending: false });
+            .gte("rating", 4)
+            .order("published_at", { ascending: false, nullsFirst: false });
           if (cached?.length) {
             setReviews(cached.map((r) => ({
               name: r.author_name,
@@ -54,6 +56,7 @@ const TestimonialsSection = () => {
               rating: r.rating,
               time: r.relative_time || "",
               profilePhoto: r.profile_photo_url || "",
+              unidade: r.unidade,
             })));
           }
         } catch (fallbackErr) {
@@ -122,7 +125,7 @@ const TestimonialsSection = () => {
                 ))}
               </div>
               <span className="font-display text-lg font-medium text-foreground">{overallRating.toFixed(1)}</span>
-              <span className="text-sm text-muted-foreground">({totalReviews} avaliações no Google)</span>
+              <span className="text-sm text-muted-foreground">({totalReviews} avaliações no Google · Campo Belo e Brooklin)</span>
             </div>
           )}
         </div>
@@ -191,9 +194,10 @@ const TestimonialsSection = () => {
                       )}
                       <div>
                         <p className="font-display text-base font-medium text-foreground">{t.name}</p>
-                        {t.time && (
-                          <p className="font-body text-xs text-muted-foreground mt-1">{t.time}</p>
-                        )}
+                        <p className="font-body text-xs text-muted-foreground mt-1">
+                          {t.unidade === "brooklin" ? "Unidade Brooklin" : "Unidade Campo Belo"}
+                          {t.time ? ` · ${t.time}` : ""}
+                        </p>
                       </div>
                     </div>
                   </div>
