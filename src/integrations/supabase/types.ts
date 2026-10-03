@@ -423,9 +423,11 @@ export type Database = {
           google_review_id: string | null
           id: string
           profile_photo_url: string | null
+          published_at: string | null
           rating: number
           relative_time: string | null
           review_text: string
+          unidade: string
           updated_at: string
         }
         Insert: {
@@ -434,9 +436,11 @@ export type Database = {
           google_review_id?: string | null
           id?: string
           profile_photo_url?: string | null
+          published_at?: string | null
           rating: number
           relative_time?: string | null
           review_text?: string
+          unidade?: string
           updated_at?: string
         }
         Update: {
@@ -445,9 +449,11 @@ export type Database = {
           google_review_id?: string | null
           id?: string
           profile_photo_url?: string | null
+          published_at?: string | null
           rating?: number
           relative_time?: string | null
           review_text?: string
+          unidade?: string
           updated_at?: string
         }
         Relationships: []
